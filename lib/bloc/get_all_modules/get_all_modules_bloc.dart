@@ -18,32 +18,32 @@ part 'get_photos_list_event.dart';
 part 'get_photos_list_repository.dart';
 part 'get_photos_list_state.dart';
 
-class GetPhotosListBloc extends Bloc<GetPhotosListEvent, GetPhotosListState> {
-  GetPhotosListRepository adminKeyLoginRepository = GetPhotosListRepository();
+class GetAllModulesBloc extends Bloc<GetAllModulesEvent, GetAllModulesState> {
+  GetAllModulesRepository adminKeyLoginRepository = GetAllModulesRepository();
 
-  GetPhotosListBloc() : super(GetPhotosListInitialState()) {
-    on<GetPhotosListInitialEvent>((event, emit) => emit(GetPhotosListInitialState()));
-    on<GetPhotosListDataEvent>(_acceptOrderDataEvent);
+  GetAllModulesBloc() : super(GetAllModulesInitialState()) {
+    on<GetAllModulesInitialEvent>((event, emit) => emit(GetAllModulesInitialState()));
+    on<GetAllModulesDataEvent>(_acceptOrderDataEvent);
   }
 
-  void _acceptOrderDataEvent(GetPhotosListDataEvent event, Emitter<GetPhotosListState> emit) async {
-    emit(GetPhotosListLoadingState());
+  void _acceptOrderDataEvent(GetAllModulesDataEvent event, Emitter<GetAllModulesState> emit) async {
+    emit(GetAllModulesLoadingState());
     try {
-      await adminKeyLoginRepository.GetPhotosList();
+      await adminKeyLoginRepository.GetAllModules();
       if (adminKeyLoginRepository.success == true) {
-        emit(GetPhotosListSuccessState(
+        emit(GetAllModulesSuccessState(
             photoModelResponse: adminKeyLoginRepository.makeSongResponse,
             message: adminKeyLoginRepository.message.toString().trim(),
         )
         );
       } else {
-        emit(GetPhotosListFailureState(
+        emit(GetAllModulesFailureState(
           message: adminKeyLoginRepository.message.toString().trim(),
         ));
       }
     } catch (error) {
       print(error);
-      emit(GetPhotosListExceptionState(
+      emit(GetAllModulesExceptionState(
         message: adminKeyLoginRepository.message.toString().trim(),
       ));
     }

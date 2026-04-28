@@ -1,9 +1,9 @@
-part of 'get_photos_list_bloc.dart';
+part of 'get_character_list_bloc.dart';
 
-class GetPhotosListRepository {
-  PhotosModelResponse? _makeSongResponse;
+class GetDesignByIDRepository {
+  GetCharacterListResponse? _makeSongResponse;
 
-  PhotosModelResponse? get makeSongResponse => _makeSongResponse;
+  GetCharacterListResponse? get makeSongResponse => _makeSongResponse;
 
   String _message = '';
 
@@ -12,11 +12,11 @@ class GetPhotosListRepository {
 
   bool? get success => _success;
 
-  Future<void> GetPhotosList() async {
+  Future<void> getCharacterList() async {
     try {
       SharedPreferences preferences = await SharedPreferences.getInstance();
       String accessToken = preferences.getString('access_token') ?? "";
-      const String url = '${ProjectConstant.baseUrl}photos/list';
+      const String url = '${ProjectConstant.baseUrl}character/list?main_screen=true';
 
       final response = await http.get(Uri.parse(url),headers: {
         'Authorization': 'Bearer $accessToken'
@@ -27,7 +27,7 @@ class GetPhotosListRepository {
       if (response.statusCode == 200) {
         final responseJsonMap =
             jsonDecode(response.body) as Map<String, dynamic>;
-        final responseData = PhotosModelResponse.fromJson(responseJsonMap);
+        final responseData = GetCharacterListResponse.fromJson(responseJsonMap);
         _makeSongResponse = responseData;
         _message = "Success";
         _success = true;
@@ -37,19 +37,17 @@ class GetPhotosListRepository {
         }
         final responseJsonMap =
             jsonDecode(response.body) as Map<String, dynamic>;
-        final responseData = PhotosModelResponse.fromJson(responseJsonMap);
+        final responseData = GetCharacterListResponse.fromJson(responseJsonMap);
         _makeSongResponse = responseData;
         _message = "Fail";
         _success = false;
       }
     } catch (error) {
       if (kDebugMode) {
-        print("GetPhotosList API Exception : $error");
+        print("GetDesignByID API Exception : $error");
       }
       _message = 'Something went wrong!';
       rethrow;
     }
   }
-
-
 }

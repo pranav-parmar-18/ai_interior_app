@@ -31,7 +31,7 @@ class AppRouter {
       case '/':
         return CupertinoPageRoute(
           settings: settings,
-          builder: (_) => SplashScreen(),
+          builder: (_) => OnBoardingFirstScreen(),
         );
       case OnBoardingFirstScreen.routeName:
         return CupertinoPageRoute(

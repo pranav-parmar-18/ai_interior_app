@@ -16,32 +16,32 @@ part 'get_character_list_event.dart';
 part 'get_character_list_repository.dart';
 part 'get_character_list_state.dart';
 
-class GetCharactersListBloc extends Bloc<GetCharactersListEvent, GetCharactersListState> {
-  GetCharactersListRepository adminKeyLoginRepository = GetCharactersListRepository();
+class GetDesignByIDBloc extends Bloc<GetDesignByIDEvent, GetDesignByIDState> {
+  GetDesignByIDRepository adminKeyLoginRepository = GetDesignByIDRepository();
 
-  GetCharactersListBloc() : super(GetCharactersListInitialState()) {
-    on<GetCharactersListInitialEvent>((event, emit) => emit(GetCharactersListInitialState()));
-    on<GetCharactersListDataEvent>(_acceptOrderDataEvent);
+  GetDesignByIDBloc() : super(GetDesignByIDInitialState()) {
+    on<GetDesignByIDInitialEvent>((event, emit) => emit(GetDesignByIDInitialState()));
+    on<GetDesignByIDDataEvent>(_acceptOrderDataEvent);
   }
 
-  void _acceptOrderDataEvent(GetCharactersListDataEvent event, Emitter<GetCharactersListState> emit) async {
-    emit(GetCharactersListLoadingState());
+  void _acceptOrderDataEvent(GetDesignByIDDataEvent event, Emitter<GetDesignByIDState> emit) async {
+    emit(GetDesignByIDLoadingState());
     try {
       await adminKeyLoginRepository.getCharacterList();
       if (adminKeyLoginRepository.success == true) {
-        emit(GetCharactersListSuccessState(
+        emit(GetDesignByIDSuccessState(
             exploreSongResponse: adminKeyLoginRepository.makeSongResponse,
             message: adminKeyLoginRepository.message.toString().trim(),
         )
         );
       } else {
-        emit(GetCharactersListFailureState(
+        emit(GetDesignByIDFailureState(
           message: adminKeyLoginRepository.message.toString().trim(),
         ));
       }
     } catch (error) {
       print(error);
-      emit(GetCharactersListExceptionState(
+      emit(GetDesignByIDExceptionState(
         message: adminKeyLoginRepository.message.toString().trim(),
       ));
     }

@@ -1,9 +1,9 @@
-part of 'get_character_list_bloc.dart';
+part of 'get_photos_list_bloc.dart';
 
-class GetCharactersListRepository {
-  GetCharacterListResponse? _makeSongResponse;
+class GetAllModulesRepository {
+  PhotosModelResponse? _makeSongResponse;
 
-  GetCharacterListResponse? get makeSongResponse => _makeSongResponse;
+  PhotosModelResponse? get makeSongResponse => _makeSongResponse;
 
   String _message = '';
 
@@ -12,11 +12,11 @@ class GetCharactersListRepository {
 
   bool? get success => _success;
 
-  Future<void> getCharacterList() async {
+  Future<void> GetAllModules() async {
     try {
       SharedPreferences preferences = await SharedPreferences.getInstance();
       String accessToken = preferences.getString('access_token') ?? "";
-      const String url = '${ProjectConstant.baseUrl}character/list?main_screen=true';
+      const String url = '${ProjectConstant.baseUrl}photos/list';
 
       final response = await http.get(Uri.parse(url),headers: {
         'Authorization': 'Bearer $accessToken'
@@ -27,7 +27,7 @@ class GetCharactersListRepository {
       if (response.statusCode == 200) {
         final responseJsonMap =
             jsonDecode(response.body) as Map<String, dynamic>;
-        final responseData = GetCharacterListResponse.fromJson(responseJsonMap);
+        final responseData = PhotosModelResponse.fromJson(responseJsonMap);
         _makeSongResponse = responseData;
         _message = "Success";
         _success = true;
@@ -37,17 +37,19 @@ class GetCharactersListRepository {
         }
         final responseJsonMap =
             jsonDecode(response.body) as Map<String, dynamic>;
-        final responseData = GetCharacterListResponse.fromJson(responseJsonMap);
+        final responseData = PhotosModelResponse.fromJson(responseJsonMap);
         _makeSongResponse = responseData;
         _message = "Fail";
         _success = false;
       }
     } catch (error) {
       if (kDebugMode) {
-        print("GetCharactersList API Exception : $error");
+        print("GetAllModules API Exception : $error");
       }
       _message = 'Something went wrong!';
       rethrow;
     }
   }
+
+
 }
