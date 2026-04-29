@@ -13,9 +13,9 @@ import '../../models/make_song_response.dart';
 
 
 
-part 'get_gift_list_event.dart';
-part 'get_gift_list_repository.dart';
-part 'get_gift_list_state.dart';
+part 'get_style_transfer_based_on_userid_event.dart';
+part 'get_style_transfer_based_on_userid_repository.dart';
+part 'get_style_transfer_based_on_userid_state.dart';
 
 class GetGiftListBloc extends Bloc<GetGiftListEvent, GetGiftListState> {
   GetGiftListRepository adminKeyLoginRepository = GetGiftListRepository();

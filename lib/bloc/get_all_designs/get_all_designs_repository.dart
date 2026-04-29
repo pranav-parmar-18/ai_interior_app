@@ -1,4 +1,4 @@
-part of 'get_gift_list_bloc.dart';
+part of 'get_all_designs_bloc.dart';
 
 class GetGiftListRepository {
   GetGiftListResponse? _makeSongResponse;

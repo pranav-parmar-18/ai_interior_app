@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
-import 'bloc/music/music_bloc.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
@@ -79,10 +78,7 @@ Future<void> main() async {
 
   Bloc.observer = SimpleBlocObserver();
   runApp(
-    MultiBlocProvider(
-      providers: [BlocProvider<MusicBloc>(create: (_) => MusicBloc())],
-      child: MyApp(),
-    ),
+    MyApp(),
   );
 }
 

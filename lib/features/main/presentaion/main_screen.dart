@@ -1,13 +1,10 @@
 import 'dart:io';
-
-import 'package:ai_interior/features/chat/presentation/chat_screen.dart';
-import 'package:ai_interior/features/explore/presentation/explore_screen.dart';
 import 'package:ai_interior/features/subscription/presentation/subscription_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../widgets/custom_bottom_bar.dart';
-import '../../profile/presentation/profile_screen.dart';
+import '../../home/presentation/home_screen.dart';
 
 class MainScreen extends StatefulWidget {
 
@@ -30,15 +27,13 @@ class _MainScreenState extends State<MainScreen> {
   @override
   void initState() {
     super.initState();
-    // getIsSubscribed();
     selectedIndex.value = widget.initialIndex;
 
     isSubscriptionActive();
-    print("MAIN SCREEN INITIALIZED");
     _screens.addAll([
-      ExploreScreen(),
-      ChatScreen(),
-      ProfileScreen(),
+      HomeScreen(),
+      HomeScreen(),
+      HomeScreen(),
     ]);
   }
 

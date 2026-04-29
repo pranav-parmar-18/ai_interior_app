@@ -12,9 +12,9 @@ import '../../models/make_song_response.dart';
 
 
 
-part 'get_character_list_event.dart';
-part 'get_character_list_repository.dart';
-part 'get_character_list_state.dart';
+part 'get_all_style_transfer_design_event.dart';
+part 'get_all_style_transfer_design_repository.dart';
+part 'get_all_style_transfer_design_state.dart';
 
 class GetDesignByIDBloc extends Bloc<GetDesignByIDEvent, GetDesignByIDState> {
   GetDesignByIDRepository adminKeyLoginRepository = GetDesignByIDRepository();

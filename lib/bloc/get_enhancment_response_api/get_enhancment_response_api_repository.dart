@@ -1,4 +1,4 @@
-part of 'get_character_list_bloc.dart';
+part of 'get_enhancment_response_api_bloc.dart';
 
 class GetDesignByIDRepository {
   GetCharacterListResponse? _makeSongResponse;

@@ -1,6 +1,5 @@
 import 'package:ai_interior/features/main/presentaion/main_screen.dart';
 import 'package:ai_interior/features/onboarding/presentation/first_onboarding_screen.dart';
-import 'package:ai_interior/features/user/presentation/user_data_screen_one.dart';
 import 'package:ai_interior/widgets/custom_imageview.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';

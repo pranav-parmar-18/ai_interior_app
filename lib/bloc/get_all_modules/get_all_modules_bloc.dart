@@ -14,9 +14,9 @@ import '../../models/make_song_response.dart';
 
 
 
-part 'get_photos_list_event.dart';
-part 'get_photos_list_repository.dart';
-part 'get_photos_list_state.dart';
+part 'get_all_modules_event.dart';
+part 'get_all_modules_repository.dart';
+part 'get_all_modules_state.dart';
 
 class GetAllModulesBloc extends Bloc<GetAllModulesEvent, GetAllModulesState> {
   GetAllModulesRepository adminKeyLoginRepository = GetAllModulesRepository();

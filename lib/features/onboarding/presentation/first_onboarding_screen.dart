@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:ai_interior/bloc/login/login_bloc.dart';
-import 'package:ai_interior/features/user/presentation/user_data_screen_one.dart';
 import 'package:ai_interior/models/Login_model_response.dart';
 import 'package:ai_interior/widgets/custom_elevated_button.dart';
 import 'package:ai_interior/widgets/custom_imageview.dart';

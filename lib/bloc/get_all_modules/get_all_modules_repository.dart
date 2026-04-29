@@ -1,4 +1,4 @@
-part of 'get_photos_list_bloc.dart';
+part of 'get_all_modules_bloc.dart';
 
 class GetAllModulesRepository {
   PhotosModelResponse? _makeSongResponse;

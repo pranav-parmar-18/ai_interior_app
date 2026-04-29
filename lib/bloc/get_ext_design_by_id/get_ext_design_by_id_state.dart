@@ -1,4 +1,4 @@
-part of 'get_character_list_bloc.dart';
+part of 'get_ext_design_by_id_bloc.dart';
 
 abstract class GetDesignByIDState extends Equatable {
   GetDesignByIDState();

@@ -10,9 +10,9 @@ import '../../models/common_model_response.dart';
 import '../../models/explore_model_response.dart';
 import '../../models/make_song_response.dart';
 import '../../models/partner_list_model_response.dart';
-part 'partner_list_event.dart';
-part 'partner_list_repository.dart';
-part 'partner_list_state.dart';
+part 'recent_list_event.dart';
+part 'recent_list_repository.dart';
+part 'recent_list_state.dart';
 
 class PartnerListBloc extends Bloc<PartnerListEvent, PartnerListState> {
   PartnerListRepository adminKeyLoginRepository = PartnerListRepository();

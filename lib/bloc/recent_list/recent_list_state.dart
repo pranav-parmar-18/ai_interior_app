@@ -1,4 +1,4 @@
-part of 'partner_list_bloc.dart';
+part of 'recent_list_bloc.dart';
 
 abstract class PartnerListState extends Equatable {
   PartnerListState();
