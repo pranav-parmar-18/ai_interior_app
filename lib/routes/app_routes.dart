@@ -9,14 +9,21 @@ import '../features/chat/presentation/people_chat_screen.dart';
 import '../features/chat/presentation/photos_screen.dart';
 import '../features/credit/presentataion/credit_screen.dart';
 import '../features/explore/presentation/match_screen.dart';
+import '../features/home/presentation/home_screen.dart';
+import '../features/interior/presentation/interior_list_screen.dart';
+import '../features/interior/presentation/interior_plaate.dart';
+import '../features/interior/presentation/interior_screen.dart';
 import '../features/main/presentaion/main_screen.dart';
 
 import '../features/onboarding/presentation/second_onboarding_screen.dart';
 import '../features/onboarding/presentation/third_onboarding_screen.dart';
 import '../features/profile/presentation/edit_photo.dart';
 import '../features/profile/presentation/edit_profile_screen.dart';
+import '../features/replace/presentation/replace_screen.dart';
 import '../features/setting/presentation/setting_screens.dart';
+import '../features/subscription/presentation/subscription_screen.dart';
 import '../features/subscription/presentation/subscription_screen_three.dart';
+import '../features/vision/presentation/vision_screen.dart';
 
 
 class AppRouter {
@@ -25,7 +32,7 @@ class AppRouter {
       case '/':
         return CupertinoPageRoute(
           settings: settings,
-          builder: (_) => OnBoardingFirstScreen(),
+          builder: (_) => MainScreen(),
         );
       case OnBoardingFirstScreen.routeName:
         return CupertinoPageRoute(
@@ -54,12 +61,6 @@ class AppRouter {
           builder: (_) => MainScreen(),
         );
 
-
-      case EditProfileScreen.routeName:
-        return CupertinoPageRoute(
-          settings: settings,
-          builder: (_) => EditProfileScreen(),
-        );
 
       case InviteScreen.routeName:
         return CupertinoPageRoute(

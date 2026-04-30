@@ -1,9 +1,9 @@
 part of 'recent_list_bloc.dart';
 
 class PartnerListRepository {
-  PartnerListResponse? _makeSongResponse;
+  CommonModelResponse? _makeSongResponse;
 
-  PartnerListResponse? get makeSongResponse => _makeSongResponse;
+  CommonModelResponse? get makeSongResponse => _makeSongResponse;
 
   String _message = '';
 
@@ -27,7 +27,7 @@ class PartnerListRepository {
       if (response.statusCode == 200) {
         final responseJsonMap =
             jsonDecode(response.body) as Map<String, dynamic>;
-        final responseData = PartnerListResponse.fromJson(responseJsonMap);
+        final responseData = CommonModelResponse.fromJson(responseJsonMap);
         _makeSongResponse = responseData;
         _message = "Success";
         _success = true;
@@ -37,7 +37,7 @@ class PartnerListRepository {
         }
         final responseJsonMap =
             jsonDecode(response.body) as Map<String, dynamic>;
-        final responseData = PartnerListResponse.fromJson(responseJsonMap);
+        final responseData = CommonModelResponse.fromJson(responseJsonMap);
         _makeSongResponse = responseData;
         _message = "Fail";
         _success = false;

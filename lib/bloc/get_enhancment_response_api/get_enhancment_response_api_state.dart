@@ -14,7 +14,7 @@ class GetDesignByIDLoadingState extends GetDesignByIDState {
 }
 
 class GetDesignByIDSuccessState extends GetDesignByIDState {
-  final GetCharacterListResponse? exploreSongResponse;
+  final CommonModelResponse? exploreSongResponse;
   final String message;
 
   GetDesignByIDSuccessState({

@@ -1,9 +1,9 @@
 part of 'get_all_modules_bloc.dart';
 
 class GetAllModulesRepository {
-  PhotosModelResponse? _makeSongResponse;
+  CommonModelResponse? _makeSongResponse;
 
-  PhotosModelResponse? get makeSongResponse => _makeSongResponse;
+  CommonModelResponse? get makeSongResponse => _makeSongResponse;
 
   String _message = '';
 
@@ -27,7 +27,7 @@ class GetAllModulesRepository {
       if (response.statusCode == 200) {
         final responseJsonMap =
             jsonDecode(response.body) as Map<String, dynamic>;
-        final responseData = PhotosModelResponse.fromJson(responseJsonMap);
+        final responseData = CommonModelResponse.fromJson(responseJsonMap);
         _makeSongResponse = responseData;
         _message = "Success";
         _success = true;
@@ -37,7 +37,7 @@ class GetAllModulesRepository {
         }
         final responseJsonMap =
             jsonDecode(response.body) as Map<String, dynamic>;
-        final responseData = PhotosModelResponse.fromJson(responseJsonMap);
+        final responseData = CommonModelResponse.fromJson(responseJsonMap);
         _makeSongResponse = responseData;
         _message = "Fail";
         _success = false;

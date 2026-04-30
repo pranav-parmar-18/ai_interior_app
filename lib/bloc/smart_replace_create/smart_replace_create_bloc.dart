@@ -7,7 +7,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
 
 import '../../models/explore_model_response.dart';
-import '../../models/make_song_response.dart';
 
 part 'smart_replace_create_event.dart';
 part 'smart_replace_create_repository.dart';

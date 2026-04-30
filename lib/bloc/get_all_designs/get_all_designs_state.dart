@@ -14,7 +14,7 @@ class GetGiftListLoadingState extends GetGiftListState {
 }
 
 class GetGiftListSuccessState extends GetGiftListState {
-  final GetGiftListResponse? exploreSongResponse;
+  final CommonModelResponse? exploreSongResponse;
   final String message;
 
   GetGiftListSuccessState({

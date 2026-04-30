@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../widgets/custom_bottom_bar.dart';
 import '../../home/presentation/home_screen.dart';
+import '../../recents/presentation/recent_screen.dart';
 
 class MainScreen extends StatefulWidget {
 
@@ -32,7 +33,7 @@ class _MainScreenState extends State<MainScreen> {
     isSubscriptionActive();
     _screens.addAll([
       HomeScreen(),
-      HomeScreen(),
+      ExploreScreen(),
       HomeScreen(),
     ]);
   }
@@ -44,14 +45,12 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   void _onTabChanged(BottomBarEnum type) {
-    if (type == BottomBarEnum.Explore) {
+    if (type == BottomBarEnum.Home) {
       selectedIndex.value = 0;
-    } else if (type == BottomBarEnum.Chat) {
+    } else if (type == BottomBarEnum.Explore) {
       selectedIndex.value = 1;
-    } else if (type == BottomBarEnum.Create) {
+    } else if (type == BottomBarEnum.Recents) {
       selectedIndex.value = 2;
-    } else if (type == BottomBarEnum.Profile) {
-      selectedIndex.value = 3;
     }
   }
 

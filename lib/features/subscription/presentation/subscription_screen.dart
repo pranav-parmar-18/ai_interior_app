@@ -1611,3 +1611,761 @@ class _InfiniteImageScrollerState extends State<InfiniteImageScroller> {
   }
 }
 
+class RedesignPaywallScreen extends StatefulWidget {
+  const RedesignPaywallScreen({super.key});
+
+  @override
+  State<RedesignPaywallScreen> createState() => _RedesignPaywallScreenState();
+}
+
+class _RedesignPaywallScreenState extends State<RedesignPaywallScreen>
+    with TickerProviderStateMixin {
+  int _selectedPlan = 0; // 0 = Yearly, 1 = Weekly
+  late PageController _pageController;
+  late AnimationController _fadeController;
+  late Animation<double> _fadeAnimation;
+
+  final List<Color> _cardColors = [
+    const Color(0xFFF0EBE3),
+    const Color(0xFFE8EDF2),
+    const Color(0xFFECEDE8),
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(
+      viewportFraction: 0.72,
+      initialPage: 1,
+    );
+    _fadeController = AnimationController(
+      duration: const Duration(milliseconds: 600),
+      vsync: this,
+    );
+    _fadeAnimation = CurvedAnimation(
+      parent: _fadeController,
+      curve: Curves.easeOut,
+    );
+    _fadeController.forward();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    _fadeController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final topPadding = MediaQuery.of(context).padding.top;
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F0EB),
+      body: FadeTransition(
+        opacity: _fadeAnimation,
+        child: Stack(
+          children: [
+            SingleChildScrollView(
+              physics: const ClampingScrollPhysics(),
+              child: Column(
+                children: [
+                  // ── Image Carousel ──────────────────────────────────────
+                  SizedBox(
+                    height: size.height * 0.30 + topPadding,
+                    child: Stack(
+                      children: [
+                        Positioned.fill(
+                          child: PageView.builder(
+                            controller: _pageController,
+                            itemCount: 3,
+                            itemBuilder: (context, index) {
+                              return _CarouselCard(
+                                index: index,
+                                bgColor: _cardColors[index % _cardColors.length],
+                              );
+                            },
+                          ),
+                        ),
+                        // Top padding spacer for status bar
+                        Positioned(
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          height: topPadding,
+                          child: Container(
+                            color: const Color(0xFFF5F0EB).withOpacity(0.0),
+                          ),
+                        ),
+                        // Close button
+                        Positioned(
+                          top: topPadding + 8,
+                          right: 12,
+                          child: _CloseButton(),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // ── Content ──────────────────────────────────────────────
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        const SizedBox(height: 20),
+
+                        // Title
+                        RichText(
+                          textAlign: TextAlign.center,
+                          text: const TextSpan(
+                            children: [
+                              TextSpan(
+                                text: 'Redesign Your Space with AI ',
+                                style: TextStyle(
+                                  fontFamily: 'Georgia',
+                                  fontSize: 26,
+                                  fontWeight: FontWeight.w400,
+                                  color: Color(0xFF1A1A1A),
+                                  height: 1.3,
+                                ),
+                              ),
+                              TextSpan(
+                                text: '✨',
+                                style: TextStyle(
+                                  fontSize: 22,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        // Feature list card
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 18,
+                            vertical: 14,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.55),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Column(
+                            children: [
+                              _FeatureRow(
+                                icon: Icons.all_inclusive_rounded,
+                                label: 'Unlimited Design Renders',
+                              ),
+                              const SizedBox(height: 10),
+                              _FeatureRow(
+                                icon: Icons.palette_outlined,
+                                label: 'Access All Styles',
+                              ),
+                              const SizedBox(height: 10),
+                              _FeatureRow(
+                                icon: Icons.location_city_outlined,
+                                label: 'Create Your Own Custom Spaces',
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(height: 14),
+
+                        // Plan selection
+                        _PlanCard(
+                          isSelected: _selectedPlan == 0,
+                          isPopular: true,
+                          title: 'Yearly\nUnlimited',
+                          subtitle: '(Less than \$0.77/week)',
+                          price: '\$3.99/year',
+                          onTap: () => setState(() => _selectedPlan = 0),
+                        ),
+                        const SizedBox(height: 10),
+                        _PlanCard(
+                          isSelected: _selectedPlan == 1,
+                          isPopular: false,
+                          title: 'Weekly Unlimited',
+                          subtitle: null,
+                          price: '\$9.99/week',
+                          onTap: () => setState(() => _selectedPlan = 1),
+                        ),
+
+                        const SizedBox(height: 10),
+
+                        // Fine print
+                        const Text(
+                          'Only \$5.99/week, auto-renew, cancel anytime.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFF888888),
+                            fontFamily: 'Georgia',
+                          ),
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        // CTA Button
+                        _ContinueButton(),
+
+                        const SizedBox(height: 16),
+
+                        // Footer links
+                        const Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            _FooterLink(label: 'Terms Of Use'),
+                            _FooterLink(label: 'Restore'),
+                            _FooterLink(label: 'Privacy Policy'),
+                          ],
+                        ),
+
+                        const SizedBox(height: 20),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Carousel Card (placeholder rooms with colored background)
+// ─────────────────────────────────────────────────────────────────────────────
+class _CarouselCard extends StatelessWidget {
+  final int index;
+  final Color bgColor;
+
+  const _CarouselCard({required this.index, required this.bgColor});
+
+  @override
+  Widget build(BuildContext context) {
+    // Room scene palettes
+    final scenes = [
+      _RoomScene.living,
+      _RoomScene.kitchen,
+      _RoomScene.study,
+    ];
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 20),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(18),
+        child: CustomPaint(
+          painter: _RoomPainter(scenes[index % scenes.length]),
+        ),
+      ),
+    );
+  }
+}
+
+enum _RoomScene { living, kitchen, study }
+
+class _RoomPainter extends CustomPainter {
+  final _RoomScene scene;
+  _RoomPainter(this.scene);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final w = size.width;
+    final h = size.height;
+
+    // Background wall
+    final wallColor = scene == _RoomScene.kitchen
+        ? const Color(0xFFD6CFC4)
+        : scene == _RoomScene.living
+        ? const Color(0xFFE8E0D5)
+        : const Color(0xFFDDE0D8);
+
+    canvas.drawRect(Rect.fromLTWH(0, 0, w, h),
+        Paint()..color = wallColor);
+
+    // Floor
+    final floorPaint = Paint()..color = const Color(0xFFC4A882);
+    canvas.drawRect(Rect.fromLTWH(0, h * 0.6, w, h * 0.4), floorPaint);
+
+    if (scene == _RoomScene.kitchen) {
+      _drawKitchen(canvas, size);
+    } else if (scene == _RoomScene.living) {
+      _drawLiving(canvas, size);
+    } else {
+      _drawStudy(canvas, size);
+    }
+  }
+
+  void _drawKitchen(Canvas canvas, Size size) {
+    final w = size.width;
+    final h = size.height;
+
+    // Upper cabinets - blue
+    final cabinetPaint = Paint()..color = const Color(0xFF4A7C9C);
+    canvas.drawRect(Rect.fromLTWH(0, h * 0.05, w, h * 0.22), cabinetPaint);
+
+    // Cabinet lines
+    final linePaint = Paint()
+      ..color = const Color(0xFF3A6A88)
+      ..strokeWidth = 1.2;
+    for (int i = 1; i <= 3; i++) {
+      canvas.drawLine(
+        Offset(w * i / 4, h * 0.05),
+        Offset(w * i / 4, h * 0.27),
+        linePaint,
+      );
+    }
+
+    // Counter / lower cabinets - beige/wood
+    final counterPaint = Paint()..color = const Color(0xFFD4B896);
+    canvas.drawRect(Rect.fromLTWH(0, h * 0.52, w, h * 0.12), counterPaint);
+    canvas.drawRect(Rect.fromLTWH(0, h * 0.57, w, h * 0.43), counterPaint);
+
+    // Island
+    final islandPaint = Paint()..color = const Color(0xFFB8956A);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(w * 0.2, h * 0.55, w * 0.6, h * 0.45),
+        const Radius.circular(4),
+      ),
+      islandPaint,
+    );
+
+    // Dark counter top
+    final darkTop = Paint()..color = const Color(0xFF2A3540);
+    canvas.drawRect(Rect.fromLTWH(0, h * 0.52, w, h * 0.05), darkTop);
+    canvas.drawRect(
+        Rect.fromLTWH(w * 0.2, h * 0.54, w * 0.6, h * 0.04), darkTop);
+
+    // Pendant lights
+    final pendantPaint = Paint()..color = const Color(0xFFD4AA60);
+    for (int i = 0; i < 3; i++) {
+      final x = w * (0.3 + i * 0.2);
+      canvas.drawLine(
+        Offset(x, 0),
+        Offset(x, h * 0.38),
+        Paint()
+          ..color = const Color(0xFF888888)
+          ..strokeWidth = 1,
+      );
+      canvas.drawCircle(Offset(x, h * 0.40), 10, pendantPaint);
+    }
+  }
+
+  void _drawLiving(Canvas canvas, Size size) {
+    final w = size.width;
+    final h = size.height;
+
+    // Sofa
+    final sofaPaint = Paint()..color = const Color(0xFFE8E0D0);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(w * 0.05, h * 0.5, w * 0.9, h * 0.35),
+        const Radius.circular(6),
+      ),
+      sofaPaint,
+    );
+    // Sofa back
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(w * 0.05, h * 0.42, w * 0.9, h * 0.14),
+        const Radius.circular(4),
+      ),
+      Paint()..color = const Color(0xFFD8CFBE),
+    );
+
+    // Cushions
+    final cushionPaint = Paint()..color = const Color(0xFFC8BFB0);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(w * 0.12, h * 0.50, w * 0.28, h * 0.20),
+        const Radius.circular(4),
+      ),
+      cushionPaint,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(w * 0.60, h * 0.50, w * 0.28, h * 0.20),
+        const Radius.circular(4),
+      ),
+      cushionPaint,
+    );
+
+    // Side table
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(w * 0.70, h * 0.38, w * 0.18, h * 0.22),
+        const Radius.circular(3),
+      ),
+      Paint()..color = const Color(0xFFA07850),
+    );
+
+    // Floor lamp
+    canvas.drawRect(
+      Rect.fromLTWH(w * 0.82, h * 0.10, 3, h * 0.40),
+      Paint()..color = const Color(0xFF888888),
+    );
+    canvas.drawOval(
+      Rect.fromLTWH(w * 0.74, h * 0.07, 24, 16),
+      Paint()..color = const Color(0xFFEED89A),
+    );
+
+    // Wall art
+    canvas.drawRect(
+      Rect.fromLTWH(w * 0.15, h * 0.08, w * 0.28, h * 0.25),
+      Paint()..color = const Color(0xFFD0C8B8),
+    );
+    canvas.drawRect(
+      Rect.fromLTWH(w * 0.16, h * 0.09, w * 0.26, h * 0.23),
+      Paint()..color = const Color(0xFFB8D4B8),
+    );
+  }
+
+  void _drawStudy(Canvas canvas, Size size) {
+    final w = size.width;
+    final h = size.height;
+
+    // Shelves on wall
+    final shelfPaint = Paint()..color = const Color(0xFFB8956A);
+    canvas.drawRect(Rect.fromLTWH(w * 0.05, h * 0.15, w * 0.90, h * 0.04), shelfPaint);
+    canvas.drawRect(Rect.fromLTWH(w * 0.05, h * 0.30, w * 0.90, h * 0.04), shelfPaint);
+
+    // Books on shelf
+    final bookColors = [
+      const Color(0xFF6B8E6B),
+      const Color(0xFF8E7B6B),
+      const Color(0xFF6B7B8E),
+      const Color(0xFF8E8E6B),
+      const Color(0xFF9E6B6B),
+    ];
+    for (int s = 0; s < 2; s++) {
+      final shelfY = h * (s == 0 ? 0.05 : 0.20);
+      for (int b = 0; b < 5; b++) {
+        canvas.drawRect(
+          Rect.fromLTWH(w * 0.08 + b * (w * 0.16), shelfY, w * 0.12, h * 0.12),
+          Paint()..color = bookColors[b % bookColors.length],
+        );
+      }
+    }
+
+    // Plant
+    canvas.drawRect(
+      Rect.fromLTWH(w * 0.70, h * 0.55, w * 0.15, h * 0.08),
+      Paint()..color = const Color(0xFF8B6914),
+    );
+    canvas.drawCircle(
+      Offset(w * 0.775, h * 0.50),
+      w * 0.10,
+      Paint()..color = const Color(0xFF5A8A5A),
+    );
+    canvas.drawCircle(
+      Offset(w * 0.735, h * 0.48),
+      w * 0.07,
+      Paint()..color = const Color(0xFF4A7A4A),
+    );
+
+    // Desk
+    canvas.drawRect(
+      Rect.fromLTWH(0, h * 0.60, w, h * 0.06),
+      Paint()..color = const Color(0xFFB8956A),
+    );
+    // Desk legs
+    canvas.drawRect(
+      Rect.fromLTWH(w * 0.05, h * 0.63, w * 0.05, h * 0.37),
+      Paint()..color = const Color(0xFF9A7A52),
+    );
+    canvas.drawRect(
+      Rect.fromLTWH(w * 0.88, h * 0.63, w * 0.05, h * 0.37),
+      Paint()..color = const Color(0xFF9A7A52),
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Close Button
+// ─────────────────────────────────────────────────────────────────────────────
+class _CloseButton extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => Navigator.of(context).maybePop(),
+      child: Container(
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          color: Colors.black.withOpacity(0.45),
+          shape: BoxShape.circle,
+        ),
+        child: const Icon(
+          Icons.close,
+          color: Colors.white,
+          size: 18,
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Feature Row
+// ─────────────────────────────────────────────────────────────────────────────
+class _FeatureRow extends StatelessWidget {
+  final IconData icon;
+  final String label;
+
+  const _FeatureRow({required this.icon, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          width: 38,
+          height: 38,
+          decoration: BoxDecoration(
+            color: const Color(0xFFF0EBE3),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(icon, size: 20, color: const Color(0xFF3A3A3A)),
+        ),
+        const SizedBox(width: 12),
+        Text(
+          label,
+          style: const TextStyle(
+            fontFamily: 'Georgia',
+            fontSize: 15,
+            color: Color(0xFF2A2A2A),
+            fontWeight: FontWeight.w400,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Plan Card
+// ─────────────────────────────────────────────────────────────────────────────
+class _PlanCard extends StatelessWidget {
+  final bool isSelected;
+  final bool isPopular;
+  final String title;
+  final String? subtitle;
+  final String price;
+  final VoidCallback onTap;
+
+  const _PlanCard({
+    required this.isSelected,
+    required this.isPopular,
+    required this.title,
+    required this.subtitle,
+    required this.price,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? Colors.white
+              : Colors.white.withOpacity(0.50),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: isSelected
+                ? const Color(0xFF3A3A3A)
+                : Colors.transparent,
+            width: 1.5,
+          ),
+        ),
+        child: Stack(
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Title + subtitle
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          fontFamily: 'Georgia',
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF1A1A1A),
+                          height: 1.3,
+                        ),
+                      ),
+                      if (subtitle != null) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          subtitle!,
+                          style: const TextStyle(
+                            fontFamily: 'Georgia',
+                            fontSize: 12,
+                            color: Color(0xFF666666),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                // Price
+                Text(
+                  price,
+                  style: const TextStyle(
+                    fontFamily: 'Georgia',
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF1A1A1A),
+                  ),
+                ),
+              ],
+            ),
+
+            // Popular badge
+            if (isPopular)
+              Positioned(
+                top: -20,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: Container(
+                    padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF5B8FA8),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: const Text(
+                      'Popular - 80% OFF',
+                      style: TextStyle(
+                        fontFamily: 'Georgia',
+                        fontSize: 11,
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Continue Button
+// ─────────────────────────────────────────────────────────────────────────────
+class _ContinueButton extends StatefulWidget {
+  @override
+  State<_ContinueButton> createState() => _ContinueButtonState();
+}
+
+class _ContinueButtonState extends State<_ContinueButton>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnim;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 100),
+      lowerBound: 0.96,
+      upperBound: 1.0,
+    )..value = 1.0;
+    _scaleAnim = _controller;
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: (_) => _controller.reverse(),
+      onTapUp: (_) => _controller.forward(),
+      onTapCancel: () => _controller.forward(),
+      child: ScaleTransition(
+        scale: _scaleAnim,
+        child: Container(
+          width: double.infinity,
+          height: 56,
+          decoration: BoxDecoration(
+            color: const Color(0xFFDDC4A0),
+            borderRadius: BorderRadius.circular(30),
+          ),
+          child: const Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'Continue',
+                style: TextStyle(
+                  fontFamily: 'Georgia',
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xFF3A2A1A),
+                  letterSpacing: 0.2,
+                ),
+              ),
+              SizedBox(width: 8),
+              Icon(
+                Icons.chevron_right,
+                color: Color(0xFF3A2A1A),
+                size: 22,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Footer Link
+// ─────────────────────────────────────────────────────────────────────────────
+class _FooterLink extends StatelessWidget {
+  final String label;
+  const _FooterLink({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {},
+      child: Text(
+        label,
+        style: const TextStyle(
+          fontFamily: 'Georgia',
+          fontSize: 12,
+          color: Color(0xFF555555),
+          decoration: TextDecoration.none,
+        ),
+      ),
+    );
+  }
+}

@@ -14,7 +14,7 @@ class PartnerListLoadingState extends PartnerListState {
 }
 
 class PartnerListSuccessState extends PartnerListState {
-  final PartnerListResponse? exploreSongResponse;
+  final CommonModelResponse? exploreSongResponse;
   final String message;
 
   PartnerListSuccessState({

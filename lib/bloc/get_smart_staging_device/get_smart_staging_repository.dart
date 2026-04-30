@@ -1,9 +1,9 @@
 part of 'get_smart_staging_bloc.dart';
 
 class GetGiftListRepository {
-  GetGiftListResponse? _makeSongResponse;
+  CommonModelResponse? _makeSongResponse;
 
-  GetGiftListResponse? get makeSongResponse => _makeSongResponse;
+  CommonModelResponse? get makeSongResponse => _makeSongResponse;
 
   String _message = '';
 
@@ -27,7 +27,7 @@ class GetGiftListRepository {
       if (response.statusCode == 200) {
         final responseJsonMap =
             jsonDecode(response.body) as Map<String, dynamic>;
-        final responseData = GetGiftListResponse.fromJson(responseJsonMap);
+        final responseData = CommonModelResponse.fromJson(responseJsonMap);
         _makeSongResponse = responseData;
         _message = "Success";
         _success = true;
@@ -37,7 +37,7 @@ class GetGiftListRepository {
         }
         final responseJsonMap =
             jsonDecode(response.body) as Map<String, dynamic>;
-        final responseData = GetGiftListResponse.fromJson(responseJsonMap);
+        final responseData = CommonModelResponse.fromJson(responseJsonMap);
         _makeSongResponse = responseData;
         _message = "Fail";
         _success = false;

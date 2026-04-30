@@ -1,3 +1,4 @@
+import 'package:ai_interior/widgets/custom_imageview.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:math' as math;
@@ -9,15 +10,15 @@ class FeatureItem {
   final String title;
   final String subtitle;
   final IconData icon;
-  final CustomPainter imagePainter;
-  final Widget? overlay;
+  CustomPainter? imagePainter;
+  final String imagePath;
 
-  const FeatureItem({
+  FeatureItem({
     required this.title,
     required this.subtitle,
     required this.icon,
-    required this.imagePainter,
-    this.overlay,
+    this.imagePainter,
+    required this.imagePath,
   });
 }
 
@@ -43,41 +44,37 @@ class _HomeScreenState extends State<HomeScreen> {
         title: 'Revamp Your Interior',
         subtitle: 'Transform your space with a fresh design',
         icon: Icons.weekend_outlined,
-        imagePainter: _InteriorPainter(),
+        imagePath: "assets/images/home_1.jpg",
       ),
       FeatureItem(
         title: 'Redesign Your Exterior',
         subtitle: 'Transform your outdoor space',
         icon: Icons.home_outlined,
-        imagePainter: _ExteriorPainter(),
+        imagePath: "assets/images/home_2.png",
       ),
       FeatureItem(
         title: 'Style Transfer',
         subtitle: 'Apply a style from any reference image',
         icon: Icons.palette_outlined,
-        imagePainter: _StyleTransferPainter(),
-        overlay: const _StyleSwatchOverlay(),
+        imagePath: "assets/images/home_3.png",
       ),
       FeatureItem(
         title: 'Smart Staging',
         subtitle: 'Effortlessly furnish and style your room',
         icon: Icons.auto_awesome_outlined,
-        imagePainter: _StagingPainter(),
-        overlay: const _BeforeAfterOverlay(),
+        imagePath: "assets/images/home_4.jpg",
       ),
       FeatureItem(
         title: 'Replace',
         subtitle: 'Replace any part of your space with ease',
         icon: Icons.swap_horiz_rounded,
-        imagePainter: _ReplacePainter(),
-        overlay: const _ReplacePromptOverlay(),
+        imagePath: "assets/images/home_5.jpg",
       ),
       FeatureItem(
         title: 'Design Your Dream Space',
         subtitle: 'Build your ideal space from scratch',
         icon: Icons.auto_fix_high_rounded,
-        imagePainter: _DreamSpacePainter(),
-        overlay: const _ImaginePromptOverlay(),
+        imagePath: "",
       ),
     ];
 
@@ -106,7 +103,6 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
 
           // ── Bottom Navigation Bar ──
-          const _BottomNavBar(),
         ],
       ),
     );
@@ -128,11 +124,9 @@ class _TopBar extends StatelessWidget {
           const Text(
             'AI Interior Design',
             style: TextStyle(
-              fontFamily: 'Georgia',
               fontSize: 22,
               fontWeight: FontWeight.w600,
               color: Color(0xFFB87333),
-              // warm copper/amber
               letterSpacing: -0.2,
             ),
           ),
@@ -211,8 +205,9 @@ class _FeatureCard extends StatelessWidget {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  CustomPaint(painter: item.imagePainter),
-                  if (item.overlay != null) item.overlay!,
+                  CustomImageview(
+                    imagePath: item.imagePath,
+                  )
                 ],
               ),
             ),

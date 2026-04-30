@@ -1,9 +1,9 @@
 part of 'get_user_details_bloc.dart';
 
 class GetUsersRepository {
-  UserModelResponse? _makeSongResponse;
+  CommonModelResponse? _makeSongResponse;
 
-  UserModelResponse? get makeSongResponse => _makeSongResponse;
+  CommonModelResponse? get makeSongResponse => _makeSongResponse;
 
   String _message = '';
 
@@ -26,7 +26,7 @@ class GetUsersRepository {
       if (response.statusCode == 200) {
         final responseJsonMap =
             jsonDecode(response.body) as Map<String, dynamic>;
-        final responseData = UserModelResponse.fromJson(responseJsonMap);
+        final responseData = CommonModelResponse.fromJson(responseJsonMap);
         _makeSongResponse = responseData;
         _message = "Success";
         _success = true;
@@ -36,7 +36,7 @@ class GetUsersRepository {
         }
         final responseJsonMap =
             jsonDecode(response.body) as Map<String, dynamic>;
-        final responseData = UserModelResponse.fromJson(responseJsonMap);
+        final responseData = CommonModelResponse.fromJson(responseJsonMap);
         _makeSongResponse = responseData;
         _message = "Fail";
         _success = false;

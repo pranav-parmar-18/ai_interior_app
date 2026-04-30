@@ -7,9 +7,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../models/common_model_response.dart';
-import '../../models/explore_model_response.dart';
-import '../../models/make_song_response.dart';
-import '../../models/partner_list_model_response.dart';
+
 part 'recent_single_api_event.dart';
 part 'recent_single_api_repository.dart';
 part 'recent_single_api_state.dart';

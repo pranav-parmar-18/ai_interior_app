@@ -14,7 +14,7 @@ class GetUsersLoadingState extends GetUsersState {
 }
 
 class GetUsersSuccessState extends GetUsersState {
-  final UserModelResponse? user;
+  final CommonModelResponse? user;
   final String message;
 
   GetUsersSuccessState({

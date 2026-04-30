@@ -14,7 +14,7 @@ class GetAllModulesLoadingState extends GetAllModulesState {
 }
 
 class GetAllModulesSuccessState extends GetAllModulesState {
-  final PhotosModelResponse? photoModelResponse;
+  final CommonModelResponse? photoModelResponse;
   final String message;
 
   GetAllModulesSuccessState({

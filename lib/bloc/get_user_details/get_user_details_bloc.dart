@@ -7,8 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../models/common_model_response.dart';
 import '../../models/explore_model_response.dart';
-import '../../models/get_user_model_response.dart';
-import '../../models/make_song_response.dart';
+
 import '../../utils/app_utils.dart';
 
 

@@ -89,10 +89,10 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final appRouter = AppRouter();
     return MaterialApp(
-      title: 'AI Girlfriend',
+      title: 'AI Interior',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        fontFamily: 'Sora',
+        fontFamily: 'Playfair Display',
       ),
       onGenerateRoute: (settings) => appRouter.onGenerateRoute(settings),
     );

@@ -1,3 +1,3 @@
 class ProjectConstant{
-  static const baseUrl = "https://flutteraigf.askchatai.app/api/";
+  static const baseUrl = "https://instea.org/ai-home/api/";
 }

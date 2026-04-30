@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 
 import '../theme/theme.dart';
 
-enum BottomBarEnum { Explore, Chat, Create, Profile }
+enum BottomBarEnum { Home, Explore, Recents }
 
 // class CustomBottomBar extends StatefulWidget {
 //   CustomBottomBar({super.key, this.onChanged, required this.selectedTab,});
@@ -149,28 +149,22 @@ class CustomBottomBar extends StatelessWidget {
   Widget build(BuildContext context) {
     List<BottomMenuModel> bottomMenuList = [
       BottomMenuModel(
+        icon: "assets/images/home.png",
+        activeIcon: "assets/images/home.png",
+        type: BottomBarEnum.Home,
+        title: "Home",
+      ),
+      BottomMenuModel(
         icon: "assets/images/explore.png",
-        activeIcon: "assets/images/explore_active.png",
+        activeIcon: "assets/images/explore.png",
         type: BottomBarEnum.Explore,
         title: "Explore",
       ),
       BottomMenuModel(
-        icon: "assets/images/chat.png",
-        activeIcon: "assets/images/chat_active.png",
-        type: BottomBarEnum.Chat,
-        title: "Chat",
-      ),
-      BottomMenuModel(
-        icon: "assets/images/create.png",
-        activeIcon: "assets/images/create_active.png",
-        type: BottomBarEnum.Create,
-        title: "Create",
-      ),
-      BottomMenuModel(
-        icon: "assets/images/profile.png",
-        activeIcon: "assets/images/profile_active.png",
-        type: BottomBarEnum.Profile,
-        title: "Profile",
+        icon: "assets/images/recents.png",
+        activeIcon: "assets/images/recents.png",
+        type: BottomBarEnum.Recents,
+        title: "Resents",
       ),
     ];
 
@@ -180,20 +174,20 @@ class CustomBottomBar extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: Color.fromRGBO(13, 13, 16, 1),
+        color: Colors.white,
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(15),
           topRight: Radius.circular(15),
         ),
-        border: Border(
-          top: BorderSide(color: theme.colorScheme.errorContainer, width: 2),
-        ),
+        // border: Border(
+        //   top: BorderSide(color: Colors.white, width: 2),
+        // ),
       ),
       child: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
 
         currentIndex: selectedIndex,
-        backgroundColor: Color.fromRGBO(13, 13, 16, 1),
+        backgroundColor: Colors.white,
         showSelectedLabels: false,
         showUnselectedLabels: false,
         selectedFontSize: 0,
@@ -211,9 +205,27 @@ class CustomBottomBar extends StatelessWidget {
                   children: [
                     CustomImageview(
                       imagePath: isSelected ? item.activeIcon : item.icon,
-                      height: isSelected ? isIPad(context)?50:33 :isIPad(context)?45: 30,
-                      width: isSelected ? isIPad(context)?50:30 : isIPad(context)?45:25,
+                      height:
+                          isSelected
+                              ? isIPad(context)
+                                  ? 50
+                                  : 33
+                              : isIPad(context)
+                              ? 45
+                              : 30,
+                      width:
+                          isSelected
+                              ? isIPad(context)
+                                  ? 50
+                                  : 30
+                              : isIPad(context)
+                              ? 45
+                              : 25,
                       fit: BoxFit.contain,
+                      color:
+                          isSelected
+                              ? Color.fromRGBO(50, 116, 127, 1)
+                              : Color.fromRGBO(168, 168, 168, 1),
                     ),
                     const SizedBox(height: 5),
                     Text(
@@ -223,25 +235,14 @@ class CustomBottomBar extends StatelessWidget {
                       style:
                           isSelected
                               ? TextStyle(
-                                fontSize: isIPad(context)?30:15.16,
+                                fontSize: isIPad(context) ? 30 : 15.16,
                                 fontFamily: 'Poppins',
                                 fontWeight: FontWeight.w500,
-                                foreground:
-                                    Paint()
-                                      ..shader = LinearGradient(
-                                        begin: Alignment.centerLeft,
-                                        end: Alignment.centerRight,
-                                        colors: [
-                                          Color.fromRGBO(233, 64, 87, 1),
-                                          Color.fromRGBO(242, 113, 33, 1),
-                                        ],
-                                      ).createShader(
-                                        Rect.fromLTWH(0, 0, 300, 0),
-                                      ),
+                                color: Color.fromRGBO(50, 116, 127, 1),
                               )
                               : TextStyle(
-                                color: appTheme.whiteA700,
-                                fontSize: isIPad(context)?25:11.16,
+                                color: Color.fromRGBO(168, 168, 168, 1),
+                                fontSize: isIPad(context) ? 25 : 11.16,
                                 fontFamily: 'Poppins',
                                 fontWeight: FontWeight.w500,
                               ),

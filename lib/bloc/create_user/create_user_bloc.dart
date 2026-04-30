@@ -6,9 +6,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
 
-import '../../models/explore_model_response.dart';
-import '../../models/make_song_response.dart';
-
 part 'create_user_event.dart';
 part 'create_user_repository.dart';
 part 'create_user_state.dart';

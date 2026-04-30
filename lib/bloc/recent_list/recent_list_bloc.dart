@@ -8,8 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../models/common_model_response.dart';
 import '../../models/explore_model_response.dart';
-import '../../models/make_song_response.dart';
-import '../../models/partner_list_model_response.dart';
+
 part 'recent_list_event.dart';
 part 'recent_list_repository.dart';
 part 'recent_list_state.dart';

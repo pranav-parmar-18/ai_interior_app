@@ -1,9 +1,9 @@
 part of 'get_all_style_transfer_design_bloc.dart';
 
 class GetDesignByIDRepository {
-  GetCharacterListResponse? _makeSongResponse;
+  CommonModelResponse? _makeSongResponse;
 
-  GetCharacterListResponse? get makeSongResponse => _makeSongResponse;
+  CommonModelResponse? get makeSongResponse => _makeSongResponse;
 
   String _message = '';
 
@@ -27,7 +27,7 @@ class GetDesignByIDRepository {
       if (response.statusCode == 200) {
         final responseJsonMap =
             jsonDecode(response.body) as Map<String, dynamic>;
-        final responseData = GetCharacterListResponse.fromJson(responseJsonMap);
+        final responseData = CommonModelResponse.fromJson(responseJsonMap);
         _makeSongResponse = responseData;
         _message = "Success";
         _success = true;
@@ -37,7 +37,7 @@ class GetDesignByIDRepository {
         }
         final responseJsonMap =
             jsonDecode(response.body) as Map<String, dynamic>;
-        final responseData = GetCharacterListResponse.fromJson(responseJsonMap);
+        final responseData = CommonModelResponse.fromJson(responseJsonMap);
         _makeSongResponse = responseData;
         _message = "Fail";
         _success = false;

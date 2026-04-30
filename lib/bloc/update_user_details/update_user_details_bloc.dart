@@ -9,7 +9,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../models/category_model_response.dart';
 import '../../models/common_model_response.dart';
 import '../../models/explore_model_response.dart';
-import '../../models/make_song_response.dart';
 
 part 'update_user_details_event.dart';
 part 'update_user_details_repository.dart';
