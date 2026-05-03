@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:ai_interior/models/common_model_response.dart';
 import 'package:ai_interior/utils/app_utils.dart';
 import 'package:equatable/equatable.dart';
@@ -7,6 +8,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
 
 import '../../models/explore_model_response.dart';
+import '../../models/smart_staging_create_model_response.dart';
 
 part 'smart_staging_create_event.dart';
 part 'smart_staging_create_repository.dart';
@@ -23,7 +25,7 @@ class SmartStagingCreateBloc extends Bloc<SmartStagingCreateEvent, SmartStagingC
   void _acceptOrderDataEvent(SmartStagingCreateDataEvent event, Emitter<SmartStagingCreateState> emit) async {
     emit(SmartStagingCreateLoadingState());
     try {
-      await adminKeySmartStagingCreateRepository.login(event.login);
+      await adminKeySmartStagingCreateRepository.smartStagingCreate(event.login,event.image);
       if (adminKeySmartStagingCreateRepository.success == true) {
         emit(SmartStagingCreateSuccessState(
             login: adminKeySmartStagingCreateRepository.makeSongResponse,

@@ -1,16 +1,22 @@
 part of 'create_style_transfer_bloc.dart';
 
-abstract class SmartReplaceObjEvent extends Equatable {
-  const SmartReplaceObjEvent();
+abstract class CreateStyleTransferEvent extends Equatable {
+  const CreateStyleTransferEvent();
 
   @override
   List<Object> get props => [];
 }
 
-class SmartReplaceObjInitialEvent extends SmartReplaceObjEvent {}
+class CreateStyleTransferInitialEvent extends CreateStyleTransferEvent {}
 
-class SmartReplaceObjDataEvent extends SmartReplaceObjEvent {
+class CreateStyleTransferDataEvent extends CreateStyleTransferEvent {
   final Map<String, dynamic> login;
+  final File image;
+  final File refImage;
 
-  const SmartReplaceObjDataEvent({required this.login});
+  const CreateStyleTransferDataEvent({
+    required this.login,
+    required this.image,
+    required this.refImage,
+  });
 }

@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../widgets/custom_imageview.dart';
-import 'exterior_ash_list_screen.dart';
+import 'exterior_describe_me.dart';
+import 'exterior_plaate.dart';
 
 class RoomItem {
   final String name;
@@ -16,53 +17,53 @@ class RoomItem {
   });
 }
 
-class ExteriorRoomSelectionScreen extends StatefulWidget {
-  static const routeName = "/exterior-room-selection";
+class ExteriorAshSelectionScreen extends StatefulWidget {
+  static const routeName = "/exterior-ash-selection";
 
-  const ExteriorRoomSelectionScreen({super.key});
+  const ExteriorAshSelectionScreen({super.key});
 
   @override
-  State<ExteriorRoomSelectionScreen> createState() =>
-      _ExteriorRoomSelectionScreenState();
+  State<ExteriorAshSelectionScreen> createState() =>
+      _ExteriorAshSelectionScreenState();
 }
 
-class _ExteriorRoomSelectionScreenState
-    extends State<ExteriorRoomSelectionScreen> {
+class _ExteriorAshSelectionScreenState
+    extends State<ExteriorAshSelectionScreen> {
   String? _selectedRoom;
 
   final List<RoomItem> rooms = const [
     RoomItem(
-      name: 'Living Room',
+      name: 'Describe Me!',
       imageUrl:
           'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=400&q=80',
       fallbackIcon: Icons.weekend_rounded,
     ),
     RoomItem(
-      name: 'Bedroom',
+      name: 'Minimalistic',
       imageUrl:
           'https://images.unsplash.com/photo-1616594039964-ae9021a400a0?w=400&q=80',
       fallbackIcon: Icons.bed_rounded,
     ),
     RoomItem(
-      name: 'Kitchen',
+      name: 'Farmhouse',
       imageUrl:
           'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&q=80',
       fallbackIcon: Icons.kitchen_rounded,
     ),
     RoomItem(
-      name: 'Dining Room',
+      name: 'Christmas',
       imageUrl:
           'https://images.unsplash.com/photo-1617104678098-de229db51175?w=400&q=80',
       fallbackIcon: Icons.dining_rounded,
     ),
     RoomItem(
-      name: 'Bathroom',
+      name: 'Modern',
       imageUrl:
           'https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=400&q=80',
       fallbackIcon: Icons.bathtub_rounded,
     ),
     RoomItem(
-      name: 'Laundry Room',
+      name: 'Zen',
       imageUrl:
           'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80',
       fallbackIcon: Icons.local_laundry_service_rounded,
@@ -220,20 +221,21 @@ class _ExteriorRoomSelectionScreenState
 
   Widget _buildProgressBar() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       child: LinearProgressIndicator(
-        value: 0.45,
+        value: 0.65,
         minHeight: 3,
         backgroundColor: const Color(0xFFE0DDD8),
         valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF3A7D7B)),
       ),
     );
   }
+
   Widget _buildTitle() {
     return const Padding(
       padding: EdgeInsets.fromLTRB(16, 4, 16, 12),
       child: Text(
-        'What room are you designing?',
+        'Choose your design aesthetic',
         style: TextStyle(
           fontSize: 20,
           fontWeight: FontWeight.w500,
@@ -301,44 +303,60 @@ class _ExteriorRoomSelectionScreenState
             fit: StackFit.expand,
             children: [
               // Room image
-              Image.asset(
-                "assets/images/exterior/room_type_${index + 1}.png",
-                fit: BoxFit.cover,
-                // loadingBuilder: (context, child, loadingProgress) {
-                //   if (loadingProgress == null) return child;
-                //   return Container(
-                //     color: const Color(0xFFF5F5F5),
-                //     child: Center(
-                //       child: Icon(
-                //         room.fallbackIcon,
-                //         size: 36,
-                //         color: const Color(0xFFCCCCCC),
-                //       ),
-                //     ),
-                //   );
-                // },
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          const Color(0xFFF0EDE8),
-                          const Color(0xFFE5E0D8),
-                        ],
+              index == 0
+                  ? GestureDetector(
+                    onTap: () {
+                      Navigator.of(
+                        context,
+                      ).pushNamed(ExteriorDescribeVisionScreen.routeName);
+                    },
+                    child: Container(
+                      color: Color.fromRGBO(255, 255, 255, 0.6),
+                      child: Image.asset(
+                        "assets/gifs/describe_me.gif",
+                        height: 130,
+                        width: 130,
                       ),
                     ),
-                    child: Center(
-                      child: Icon(
-                        room.fallbackIcon,
-                        size: 42,
-                        color: const Color(0xFFAA9880),
-                      ),
-                    ),
-                  );
-                },
-              ),
+                  )
+                  : Image.asset(
+                    "assets/images/exterior/ash_${index + 1}.png",
+                    fit: BoxFit.cover,
+                    // loadingBuilder: (context, child, loadingProgress) {
+                    //   if (loadingProgress == null) return child;
+                    //   return Container(
+                    //     color: const Color(0xFFF5F5F5),
+                    //     child: Center(
+                    //       child: Icon(
+                    //         room.fallbackIcon,
+                    //         size: 36,
+                    //         color: const Color(0xFFCCCCCC),
+                    //       ),
+                    //     ),
+                    //   );
+                    // },
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              const Color(0xFFF0EDE8),
+                              const Color(0xFFE5E0D8),
+                            ],
+                          ),
+                        ),
+                        child: Center(
+                          child: Icon(
+                            room.fallbackIcon,
+                            size: 42,
+                            color: const Color(0xFFAA9880),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
 
               // Gradient overlay at bottom
               Positioned(
@@ -417,7 +435,7 @@ class _ExteriorRoomSelectionScreenState
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       child: GestureDetector(
         onTap: () {
-          Navigator.of(context).pushNamed(ExteriorAshSelectionScreen.routeName);
+          Navigator.of(context).pushNamed(ExteriorColorPaletteScreen.routeName);
         },
         child: Container(
           width: double.infinity,

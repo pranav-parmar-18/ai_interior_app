@@ -1,40 +1,40 @@
 part of 'create_style_transfer_bloc.dart';
 
-abstract class SmartReplaceObjState extends Equatable {
-  SmartReplaceObjState();
+abstract class CreateStyleTransferState extends Equatable {
+  CreateStyleTransferState();
 
   @override
   List<Object> get props => [];
 }
 
-class SmartReplaceObjInitialState extends SmartReplaceObjState {}
+class CreateStyleTransferInitialState extends CreateStyleTransferState {}
 
-class SmartReplaceObjLoadingState extends SmartReplaceObjState {
-  SmartReplaceObjLoadingState();
+class CreateStyleTransferLoadingState extends CreateStyleTransferState {
+  CreateStyleTransferLoadingState();
 }
 
-class SmartReplaceObjSuccessState extends SmartReplaceObjState {
-  final CommonModelResponse? login;
+class CreateStyleTransferSuccessState extends CreateStyleTransferState {
+  final CreateStyleTransferResponse? login;
   final String message;
 
-  SmartReplaceObjSuccessState({
+  CreateStyleTransferSuccessState({
     required this.login,
     required this.message,
   });
 }
 
-class SmartReplaceObjFailureState extends SmartReplaceObjState {
+class CreateStyleTransferFailureState extends CreateStyleTransferState {
   final String message;
 
-  SmartReplaceObjFailureState({
+  CreateStyleTransferFailureState({
     required this.message,
   });
 }
 
-class SmartReplaceObjExceptionState extends SmartReplaceObjState {
+class CreateStyleTransferExceptionState extends CreateStyleTransferState {
   final String message;
 
-  SmartReplaceObjExceptionState({
+  CreateStyleTransferExceptionState({
     required this.message,
   });
 }

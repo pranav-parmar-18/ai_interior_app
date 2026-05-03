@@ -25,13 +25,13 @@ class _OnBoardingFirstScreenState extends State<OnBoardingFirstScreen> {
       'Upload a photo and let AI redesign your interiors and exteriors effortlessly.',
     ),
     OnboardingData(
-      imagePath: 'assets/images/room2.jpg',
+      imagePath: 'assets/images/on_board_2.png',
       title: 'Style It Your Way',
       subtitle:
       'Choose from presets or create a custom design with AI-powered suggestions',
     ),
     OnboardingData(
-      imagePath: 'assets/images/room3.jpg',
+      imagePath: 'assets/images/on_board_3.png',
       title: 'Reimagine Any Space',
       subtitle:
       'Select an area, describe your vision, and let AI bring it to life.',

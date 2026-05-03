@@ -217,91 +217,82 @@ class _ImageGrid extends StatelessWidget {
             state is CreateUserFailureState) {}
       },
       builder: (context, state) {
-        return Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Left column — two images stacked, equal height
-            Expanded(
-              child: Column(
-                children: [
-                  Expanded(
-                    child: _GridCell(
-                      painter: _LivingRoomPainter(),
-                      imagePath: 'assets/images/living_room_warm.jpg',
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Expanded(
-                    child: _GridCell(
-                      painter: _ModernLivingPainter(),
-                      imagePath: 'assets/images/modern_living.jpg',
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+        return GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          padding: EdgeInsets.zero,
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2, // 2 columns → 2x2 grid
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
+            childAspectRatio: 0.85, // square cells
+          ),
+          itemCount: 4,
+          itemBuilder: (context, index) {
+            final items = [
+              {
+                "painter": _LivingRoomPainter(),
+                "image": "assets/images/exterior/exterior_1.png",
+                "showClose": false,
+              },
+              {
+                "painter": _ModernLivingPainter(),
+                "image": "assets/images/interior/interior_2.jpg",
+                "showClose": true,
+              },
+              {
+                "painter": _ExteriorPainter(),
+                "image": "assets/images/exterior/exterior_3.png",
+                "showClose": false, // close button here
+              },
+              {
+                "painter": _GreenBedroomPainter(),
+                "image": "assets/images/interior/interior_7.jpg",
+                "showClose": false,
+              },
+            ];
 
-            const SizedBox(width: 10),
+            final item = items[index];
 
-            Expanded(
-              child: Column(
-                children: [
-                  Expanded(
-                    flex: 52,
-                    child: Stack(
-                      children: [
-                        _GridCell(
-                          painter: _ExteriorPainter(),
-                          imagePath: 'assets/images/exterior.jpg',
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        // Close button top-right
-                        Positioned(
-                          top: 8,
-                          right: 8,
-                          child: GestureDetector(
-                            onTap: () {
-                              _createUserBloc.add(
-                                CreateUserDataEvent(
-                                  login: {"uuid": deviceId.toString()},
-                                ),
-                              );
-                            },
-                            child: Container(
-                              width: 30,
-                              height: 30,
-                              decoration: BoxDecoration(
-                                color: Colors.black.withOpacity(0.55),
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.close,
-                                color: Colors.white,
-                                size: 16,
-                              ),
-                            ),
+            return Stack(
+              children: [
+                _GridCell(
+                  painter: item["painter"] as CustomPainter,
+                  imagePath: item["image"] as String,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+
+                // Close button (only on one tile)
+                if (item["showClose"] == true)
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: GestureDetector(
+                      onTap: () {
+                        _createUserBloc.add(
+                          CreateUserDataEvent(
+                            login: {"uuid": deviceId.toString()},
                           ),
+                        );
+                      },
+                      child: Container(
+                        width: 30,
+                        height: 30,
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.55),
+                          shape: BoxShape.circle,
                         ),
-                      ],
+                        child: const Icon(
+                          Icons.close,
+                          color: Colors.white,
+                          size: 16,
+                        ),
+                      ),
                     ),
                   ),
-
-                  const SizedBox(height: 10),
-
-                  Expanded(
-                    flex: 48,
-                    child: _GridCell(
-                      painter: _GreenBedroomPainter(),
-                      imagePath: 'assets/images/green_bedroom.jpg',
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+              ],
+            );
+          },
         );
       },
     );

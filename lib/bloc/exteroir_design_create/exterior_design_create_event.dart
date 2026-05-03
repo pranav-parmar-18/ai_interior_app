@@ -11,6 +11,6 @@ class ExteriorDeignCreateInitialEvent extends ExteriorDeignCreateEvent {}
 
 class ExteriorDeignCreateDataEvent extends ExteriorDeignCreateEvent {
   final Map<String, dynamic> login;
-
-  const ExteriorDeignCreateDataEvent({required this.login});
+  final File image;
+  const ExteriorDeignCreateDataEvent({required this.login, required this.image});
 }

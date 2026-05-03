@@ -8,12 +8,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:path_provider/path_provider.dart';
 
-import '../../../bloc/exteroir_design_create/exterior_design_create_bloc.dart';
-import '../../../models/exterior_design_create_model_response.dart';
+import '../../../bloc/smart_staging_create/smart_staging_create_bloc.dart';
 import '../../../models/interior_design_create_model_response.dart';
+import '../../../models/smart_staging_create_model_response.dart';
 import '../../../theme/app_colors.dart';
-import 'exterior_output_screen.dart';
-import 'exterior_screen.dart';
+import 'staging_output_screen.dart';
+import 'staging_screen.dart';
 
 class ColorPalette {
   final String name;
@@ -214,32 +214,31 @@ final List<ColorPalette> palettes = [
   ),
 ];
 
-class ExteriorColorPaletteScreen extends StatefulWidget {
-  const ExteriorColorPaletteScreen({super.key});
+class StagingColorPaletteScreen extends StatefulWidget {
+  const StagingColorPaletteScreen({super.key});
 
-  static const routeName = "/exterior-color-palette-screen";
+  static const routeName = "/staging-color-palette-screen";
 
   @override
-  State<ExteriorColorPaletteScreen> createState() =>
-      _ExteriorColorPaletteScreenState();
+  State<StagingColorPaletteScreen> createState() =>
+      _StagingColorPaletteScreenState();
 }
 
-class _ExteriorColorPaletteScreenState
-    extends State<ExteriorColorPaletteScreen> {
-  final ExteriorDeignCreateBloc _interiorDeignCreateBloc =
-      ExteriorDeignCreateBloc();
-  ExteriorDesignCreateModelResponse? interiorDesignCreateModelResponse;
+class _StagingColorPaletteScreenState extends State<StagingColorPaletteScreen> {
+  final SmartStagingCreateBloc _interiorDeignCreateBloc =
+      SmartStagingCreateBloc();
+  SmartStagingCreateModelResponse? interiorDesignCreateModelResponse;
   String? _selectedPalette;
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<ExteriorDeignCreateBloc, ExteriorDeignCreateState>(
+    return BlocConsumer<SmartStagingCreateBloc, SmartStagingCreateState>(
       bloc: _interiorDeignCreateBloc,
       listener: (context, state) {
-        if (state is ExteriorDeignCreateSuccessState) {
+        if (state is SmartStagingCreateSuccessState) {
           interiorDesignCreateModelResponse = state.login;
           Navigator.of(context).pushNamed(
-            ExteriorOutputScreen.routeName,
+            StagingOutputScreen.routeName,
             arguments: {
               "image":
                   interiorDesignCreateModelResponse?.data?.outputImage ?? "",
@@ -251,9 +250,9 @@ class _ExteriorColorPaletteScreenState
                   interiorDesignCreateModelResponse?.data?.designAsthetic ?? "",
             },
           );
-        } else if (state is ExteriorDeignCreateFailureState) {
+        } else if (state is SmartStagingCreateFailureState) {
           showSnackError(context, "Please try once again");
-        } else if (state is ExteriorDeignCreateExceptionState) {
+        } else if (state is SmartStagingCreateExceptionState) {
           showSnackError(context, "Please try once again");
         }
       },
@@ -261,7 +260,7 @@ class _ExteriorColorPaletteScreenState
         return Scaffold(
           backgroundColor: const Color(0xFFF5F3EF),
           body:
-              state is ExteriorDeignCreateLoadingState
+              state is SmartStagingCreateLoadingState
                   ? Column(
                     children: [
                       SizedBox(height: 300),
@@ -347,7 +346,7 @@ class _ExteriorColorPaletteScreenState
           const Expanded(
             child: Center(
               child: Text(
-                'Exterior Design',
+                'Smart Staging',
                 style: TextStyle(
                   fontSize: 36,
                   fontFamily: 'Georgia',
@@ -565,7 +564,7 @@ class _ExteriorColorPaletteScreenState
           );
 
           _interiorDeignCreateBloc.add(
-            ExteriorDeignCreateDataEvent(
+            SmartStagingCreateDataEvent(
               login: {
                 "user_id": 334,
                 "colors": "retro",

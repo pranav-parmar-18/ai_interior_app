@@ -14,7 +14,7 @@ class ExteriorDeignCreateLoadingState extends ExteriorDeignCreateState {
 }
 
 class ExteriorDeignCreateSuccessState extends ExteriorDeignCreateState {
-  final CommonModelResponse? login;
+  final ExteriorDesignCreateModelResponse? login;
   final String message;
 
   ExteriorDeignCreateSuccessState({

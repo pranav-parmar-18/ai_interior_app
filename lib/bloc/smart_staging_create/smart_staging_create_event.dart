@@ -11,6 +11,7 @@ class SmartStagingCreateInitialEvent extends SmartStagingCreateEvent {}
 
 class SmartStagingCreateDataEvent extends SmartStagingCreateEvent {
   final Map<String, dynamic> login;
+  final File image;
 
-  const SmartStagingCreateDataEvent({required this.login});
+  const SmartStagingCreateDataEvent({required this.login, required this.image});
 }

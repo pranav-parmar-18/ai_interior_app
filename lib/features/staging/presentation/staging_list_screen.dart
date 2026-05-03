@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../widgets/custom_imageview.dart';
-import 'exterior_ash_list_screen.dart';
+import 'staging_ash_list_screen.dart';
 
 class RoomItem {
   final String name;
@@ -16,18 +16,18 @@ class RoomItem {
   });
 }
 
-class ExteriorRoomSelectionScreen extends StatefulWidget {
-  static const routeName = "/exterior-room-selection";
+class StagingRoomSelectionScreen extends StatefulWidget {
+  static const routeName = "/staging-room-selection";
 
-  const ExteriorRoomSelectionScreen({super.key});
+  const StagingRoomSelectionScreen({super.key});
 
   @override
-  State<ExteriorRoomSelectionScreen> createState() =>
-      _ExteriorRoomSelectionScreenState();
+  State<StagingRoomSelectionScreen> createState() =>
+      _StagingRoomSelectionScreenState();
 }
 
-class _ExteriorRoomSelectionScreenState
-    extends State<ExteriorRoomSelectionScreen> {
+class _StagingRoomSelectionScreenState
+    extends State<StagingRoomSelectionScreen> {
   String? _selectedRoom;
 
   final List<RoomItem> rooms = const [
@@ -170,7 +170,7 @@ class _ExteriorRoomSelectionScreenState
           const Expanded(
             child: Center(
               child: Text(
-                'Exterior Design',
+                'Smart Staging',
                 style: TextStyle(
                   fontSize: 36,
                   fontFamily: 'Georgia',
@@ -302,7 +302,7 @@ class _ExteriorRoomSelectionScreenState
             children: [
               // Room image
               Image.asset(
-                "assets/images/exterior/room_type_${index + 1}.png",
+                "assets/images/interior/room_type_${index + 1}.png",
                 fit: BoxFit.cover,
                 // loadingBuilder: (context, child, loadingProgress) {
                 //   if (loadingProgress == null) return child;
@@ -417,7 +417,7 @@ class _ExteriorRoomSelectionScreenState
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       child: GestureDetector(
         onTap: () {
-          Navigator.of(context).pushNamed(ExteriorAshSelectionScreen.routeName);
+          Navigator.of(context).pushNamed(StagingAshSelectionScreen.routeName);
         },
         child: Container(
           width: double.infinity,

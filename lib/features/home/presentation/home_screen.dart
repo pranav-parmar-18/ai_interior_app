@@ -1,12 +1,16 @@
+import 'package:ai_interior/features/style_transfer/presentation/style_transfer_screeen.dart';
 import 'package:ai_interior/widgets/custom_imageview.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:math' as math;
 
 import '../../credit/presentataion/credit_screen.dart';
+import '../../dream/presentation/dream_screen.dart';
 import '../../exterior/presentation/exterior_screen.dart';
 import '../../interior/presentation/interior_screen.dart';
+import '../../replace/presentation/replace_screen.dart';
 import '../../setting/presentation/setting_screens.dart';
+import '../../staging/presentation/staging_screen.dart';
 
 // ─────────────────────────────────────────────
 // Data Model
@@ -14,7 +18,7 @@ import '../../setting/presentation/setting_screens.dart';
 class FeatureItem {
   final String title;
   final String subtitle;
-  final IconData icon;
+  final String icon;
   CustomPainter? imagePainter;
   final String imagePath;
 
@@ -48,37 +52,37 @@ class _HomeScreenState extends State<HomeScreen> {
       FeatureItem(
         title: 'Revamp Your Interior',
         subtitle: 'Transform your space with a fresh design',
-        icon: Icons.weekend_outlined,
+        icon: "assets/images/home_icon_1.png",
         imagePath: "assets/images/home_0.png",
       ),
       FeatureItem(
         title: 'Redesign Your Exterior',
         subtitle: 'Transform your outdoor space',
-        icon: Icons.home_outlined,
+        icon: "assets/images/home_icon_2.png",
         imagePath: "assets/images/home_3.png",
       ),
       FeatureItem(
         title: 'Style Transfer',
         subtitle: 'Apply a style from any reference image',
-        icon: Icons.palette_outlined,
+        icon: "assets/images/home_icon_3.png",
         imagePath: "assets/images/home_6.png",
       ),
       FeatureItem(
         title: 'Smart Staging',
         subtitle: 'Effortlessly furnish and style your room',
-        icon: Icons.auto_awesome_outlined,
+        icon: "assets/images/home_icon_4.png",
         imagePath: "assets/images/home_9.png",
       ),
       FeatureItem(
         title: 'Replace',
         subtitle: 'Replace any part of your space with ease',
-        icon: Icons.swap_horiz_rounded,
+        icon: "assets/images/home_icon_5.png",
         imagePath: "assets/images/home_8.png",
       ),
       FeatureItem(
         title: 'Design Your Dream Space',
         subtitle: 'Build your ideal space from scratch',
-        icon: Icons.auto_fix_high_rounded,
+        icon: "assets/images/home_icon_6.png",
         imagePath: "assets/images/home_2.png",
       ),
     ];
@@ -97,7 +101,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 // Feature cards list
                 SliverList(
                   delegate: SliverChildBuilderDelegate(
-                    (context, index) => _FeatureCard(item: features[index]),
+                    (context, index) =>
+                        _FeatureCard(item: features[index], index: index),
                     childCount: features.length,
                   ),
                 ),
@@ -185,7 +190,7 @@ class _TopBar extends StatelessWidget {
               height: 25,
               width: 25,
             ),
-          )
+          ),
         ],
       ),
     );
@@ -197,8 +202,9 @@ class _TopBar extends StatelessWidget {
 // ─────────────────────────────────────────────
 class _FeatureCard extends StatelessWidget {
   final FeatureItem item;
+  final int index;
 
-  const _FeatureCard({required this.item});
+  const _FeatureCard({required this.item, required this.index});
 
   @override
   Widget build(BuildContext context) {
@@ -209,7 +215,23 @@ class _FeatureCard extends StatelessWidget {
           // Image area
           GestureDetector(
             onTap: () {
-              Navigator.of(context).pushNamed(InteriorDesignScreen.routeName);
+              if (index == 0) {
+                Navigator.of(context).pushNamed(InteriorDesignScreen.routeName);
+              }
+              if (index == 1) {
+                Navigator.of(context).pushNamed(ExteriorDesignScreen.routeName);
+              }
+              if (index == 2) {
+                Navigator.of(context).pushNamed(StyleTransferScreen.routeName);
+              }
+              if (index == 3) {
+                Navigator.of(context).pushNamed(StagingDesignScreen.routeName);
+              }
+              if (index == 4) {
+                Navigator.of(context).pushNamed(ReplaceScreen.routeName);
+              } if (index == 5) {
+                Navigator.of(context).pushNamed(DreamSpaceScreen.routeName);
+              }
             },
             child: ClipRRect(
               borderRadius: BorderRadius.circular(18),
@@ -218,11 +240,7 @@ class _FeatureCard extends StatelessWidget {
                 width: double.infinity,
                 child: Stack(
                   fit: StackFit.expand,
-                  children: [
-                    CustomImageview(
-                      imagePath: item.imagePath,
-                    )
-                  ],
+                  children: [CustomImageview(imagePath: item.imagePath)],
                 ),
               ),
             ),
@@ -240,19 +258,7 @@ class _FeatureCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Icon circle
-                Container(
-                  width: 38,
-                  height: 38,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF0E8DC),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(
-                    item.icon,
-                    size: 20,
-                    color: const Color(0xFF8A6A40),
-                  ),
-                ),
+                CustomImageview(imagePath: item.icon, height: 45, width: 45),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Column(
@@ -261,18 +267,20 @@ class _FeatureCard extends StatelessWidget {
                       Text(
                         item.title,
                         style: const TextStyle(
-                          fontFamily: 'Georgia',
-                          fontSize: 15.5,
+                          fontFamily: 'Lato',
+                          fontSize: 18,
                           fontWeight: FontWeight.w600,
-                          color: Color(0xFF2C2C2C),
+                          color: Color.fromRGBO(46, 46, 46, 1),
                         ),
                       ),
                       const SizedBox(height: 2),
                       Text(
                         item.subtitle,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          color: Color(0xFF8A8A8A),
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontFamily: 'Lato',
+
+                          color: Color.fromRGBO(46, 46, 46, 1),
                           height: 1.3,
                         ),
                       ),

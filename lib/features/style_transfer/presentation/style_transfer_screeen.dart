@@ -1,27 +1,35 @@
 import 'dart:io';
 
+import 'package:ai_interior/bloc/create_style_transfer/create_style_transfer_bloc.dart';
 import 'package:ai_interior/features/snap_trip/presentation/snap_trip_screen.dart';
+import 'package:ai_interior/features/style_transfer/presentation/style_output_screen.dart';
 import 'package:ai_interior/widgets/custom_imageview.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
-import 'exterior_list_screen.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:image_picker/image_picker.dart';
+
+import '../../../models/create_style_transfer_model_response.dart';
+
 File? picked;
 
-class ExteriorDesignScreen extends StatefulWidget {
-  const ExteriorDesignScreen({super.key});
+class StyleTransferScreen extends StatefulWidget {
+  const StyleTransferScreen({super.key});
 
-  static const routeName = "/exterior-design-screen";
+  static const routeName = "/style-transfer-screen";
 
   @override
-  State<ExteriorDesignScreen> createState() => _ExteriorDesignScreenState();
+  State<StyleTransferScreen> createState() => _StyleTransferScreenState();
 }
 
-class _ExteriorDesignScreenState extends State<ExteriorDesignScreen> {
+class _StyleTransferScreenState extends State<StyleTransferScreen> {
   int _selectedTemplate = -1;
+
+  final CreateStyleTransferBloc _createStyleTransferBloc =
+      CreateStyleTransferBloc();
+  CreateStyleTransferResponse? createStyleTransferResponse;
 
   final List<String> _templateColors = [
     '#E8D5C4', // Living room warm
@@ -32,10 +40,10 @@ class _ExteriorDesignScreenState extends State<ExteriorDesignScreen> {
 
   // Template placeholder colors (replace with real AssetImage in a real project)
   final List<Color> _templateSwatches = [
-    const Color(0xFFE07B54), // warm orange living
-    const Color(0xFFB8C8D8), // cool blue bedroom
-    const Color(0xFF6B9E8F), // teal bathroom
-    const Color(0xFF4A5E3A), // dark green dining
+    const Color(0xFFE07B54),
+    const Color(0xFFB8C8D8),
+    const Color(0xFF6B9E8F),
+    const Color(0xFF4A5E3A),
   ];
 
   @override
@@ -44,42 +52,76 @@ class _ExteriorDesignScreenState extends State<ExteriorDesignScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F3EF),
-      body: Column(
-        children: [
-          // ── Status bar spacer + AppBar ──────────────────────────────
-          SizedBox(height: topPadding),
-          _buildAppBar(),
+      body: BlocConsumer<CreateStyleTransferBloc, CreateStyleTransferState>(
+        bloc: _createStyleTransferBloc,
+        listener: (context, state) {
+          if (state is CreateStyleTransferSuccessState) {
+            createStyleTransferResponse = state.login;
+            Navigator.of(context).pushNamed(StyleOutputScreen.routeName,arguments: {
+              "image":
+              createStyleTransferResponse?.data?.outputImage ?? "",
+            });
+          } else if (state is CreateStyleTransferFailureState ||
+              state is CreateStyleTransferExceptionState) {}
+        },
+        builder: (context, state) {
+          return Column(
+            children: [
+              // ── Status bar spacer + AppBar ──────────────────────────────
+              SizedBox(height: topPadding),
+              _buildAppBar(),
 
-          // ── Progress bar ────────────────────────────────────────────
-          _buildProgressBar(),
-
-          // ── Scrollable content ──────────────────────────────────────
-          Expanded(
-            child: SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.only(bottom: 24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 22),
-                  _buildSectionTitle('Upload a photo of your room'),
-                  const SizedBox(height: 14),
-                  _buildUploadCard(),
-                  const SizedBox(height: 20),
-                  _buildOrDivider(),
-                  const SizedBox(height: 20),
-                  _buildSectionTitle('Choose from Template'),
-                  const SizedBox(height: 14),
-                  _buildTemplateGrid(),
-                ],
+              _buildProgressBar(),
+              Expanded(
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.only(bottom: 24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 22),
+                      _buildSectionTitle('Upload a photo of your room'),
+                      const SizedBox(height: 14),
+                      _buildUploadCard(),
+                      const SizedBox(height: 20),
+                      _buildOrDivider(),
+                      const SizedBox(height: 20),
+                      _buildSectionTitle('Choose from Template'),
+                      const SizedBox(height: 14),
+                      _buildTemplateGrid(),
+                      const SizedBox(height: 14),
+                      Container(
+                        width: double.maxFinite,
+                        margin: EdgeInsets.symmetric(horizontal: 15),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 15,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Color.fromRGBO(255, 255, 255, 1),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Text(
+                          "Upload a style reference",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                            color: Color.fromRGBO(46, 46, 46, 1),
+                            letterSpacing: -0.2,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-            ),
-          ),
 
-          // ── Next button ─────────────────────────────────────────────
-          _buildNextButton(),
-          SizedBox(height: MediaQuery.of(context).padding.bottom + 8),
-        ],
+              // ── Next button ─────────────────────────────────────────────
+              _buildNextButton(),
+              SizedBox(height: MediaQuery.of(context).padding.bottom + 8),
+            ],
+          );
+        },
       ),
     );
   }
@@ -109,7 +151,7 @@ class _ExteriorDesignScreenState extends State<ExteriorDesignScreen> {
           const Expanded(
             child: Center(
               child: Text(
-                'Exterior Design',
+                'Style Transfer',
                 style: TextStyle(
                   fontSize: 36,
                   fontFamily: 'Georgia',
@@ -264,7 +306,7 @@ class _ExteriorDesignScreenState extends State<ExteriorDesignScreen> {
                         color: const Color(0xFFF8F6F2),
 
                         child: CustomImageview(
-                          imagePath: "assets/images/exterior/exterior_home.png",
+                          imagePath: "assets/images/interior/interior_home.png",
                           fit: BoxFit.contain,
                         ),
                       ),
@@ -303,10 +345,11 @@ class _ExteriorDesignScreenState extends State<ExteriorDesignScreen> {
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 18),
               child: GestureDetector(
-                onTap: () => showMediaSourcePicker(
-                  context,
-                  onFilePicked: (file) => setState(() => picked = file),
-                ),
+                onTap:
+                    () => showMediaSourcePicker(
+                      context,
+                      onFilePicked: (file) => setState(() => picked = file),
+                    ),
                 child: Container(
                   height: 48,
                   padding: const EdgeInsets.symmetric(horizontal: 32),
@@ -501,9 +544,13 @@ class _ExteriorDesignScreenState extends State<ExteriorDesignScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
       child: GestureDetector(
         onTap: () {
-          Navigator.of(
-            context,
-          ).pushNamed(ExteriorRoomSelectionScreen.routeName);
+          _createStyleTransferBloc.add(
+            CreateStyleTransferDataEvent(
+              login: {"user_id": ""},
+              image: File(""),
+              refImage: File(""),
+            ),
+          );
         },
         child: Container(
           width: double.infinity,

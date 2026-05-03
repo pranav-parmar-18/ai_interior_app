@@ -14,7 +14,7 @@ class SmartStagingCreateLoadingState extends SmartStagingCreateState {
 }
 
 class SmartStagingCreateSuccessState extends SmartStagingCreateState {
-  final CommonModelResponse? login;
+  final SmartStagingCreateModelResponse? login;
   final String message;
 
   SmartStagingCreateSuccessState({

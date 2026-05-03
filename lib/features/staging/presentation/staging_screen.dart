@@ -6,21 +6,21 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import 'exterior_list_screen.dart';
+import 'staging_list_screen.dart';
 
 import 'package:image_picker/image_picker.dart';
 File? picked;
 
-class ExteriorDesignScreen extends StatefulWidget {
-  const ExteriorDesignScreen({super.key});
+class StagingDesignScreen extends StatefulWidget {
+  const StagingDesignScreen({super.key});
 
-  static const routeName = "/exterior-design-screen";
+  static const routeName = "/staging-design-screen";
 
   @override
-  State<ExteriorDesignScreen> createState() => _ExteriorDesignScreenState();
+  State<StagingDesignScreen> createState() => _StagingDesignScreenState();
 }
 
-class _ExteriorDesignScreenState extends State<ExteriorDesignScreen> {
+class _StagingDesignScreenState extends State<StagingDesignScreen> {
   int _selectedTemplate = -1;
 
   final List<String> _templateColors = [
@@ -109,7 +109,7 @@ class _ExteriorDesignScreenState extends State<ExteriorDesignScreen> {
           const Expanded(
             child: Center(
               child: Text(
-                'Exterior Design',
+                'Smart Staging',
                 style: TextStyle(
                   fontSize: 36,
                   fontFamily: 'Georgia',
@@ -264,7 +264,7 @@ class _ExteriorDesignScreenState extends State<ExteriorDesignScreen> {
                         color: const Color(0xFFF8F6F2),
 
                         child: CustomImageview(
-                          imagePath: "assets/images/exterior/exterior_home.png",
+                          imagePath: "assets/images/staging_home.png",
                           fit: BoxFit.contain,
                         ),
                       ),
@@ -503,7 +503,7 @@ class _ExteriorDesignScreenState extends State<ExteriorDesignScreen> {
         onTap: () {
           Navigator.of(
             context,
-          ).pushNamed(ExteriorRoomSelectionScreen.routeName);
+          ).pushNamed(StagingRoomSelectionScreen.routeName);
         },
         child: Container(
           width: double.infinity,

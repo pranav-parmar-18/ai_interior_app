@@ -69,7 +69,9 @@ class _SnapTipsScreenState extends State<SnapTipsScreen> {
       child: Padding(
         padding: const EdgeInsets.fromLTRB(0, 12, 16, 0),
         child: GestureDetector(
-          onTap: () {},
+          onTap: () {
+            Navigator.of(context).pop();
+          },
           child: const Icon(Icons.close, size: 26, color: Color(0xFF1A1A1A)),
         ),
       ),
