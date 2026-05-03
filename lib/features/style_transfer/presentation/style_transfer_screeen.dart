@@ -312,13 +312,13 @@ class _StyleTransferScreenState extends State<StyleTransferScreen> {
                       ),
                     ),
 
-                GestureDetector(
-                  onTap: () {
-                    Navigator.of(context).pushNamed(SnapTipsScreen.routeName);
-                  },
-                  child: Positioned(
-                    top: 14,
-                    right: 14,
+                Positioned(
+                  top: 14,
+                  right: 14,
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.of(context).pushNamed(SnapTipsScreen.routeName);
+                    },
                     child: Container(
                       width: 32,
                       height: 32,
