@@ -1,8 +1,21 @@
+import 'dart:io';
+
+import 'package:ai_interior/features/snap_trip/presentation/snap_trip_screen.dart';
+import 'package:ai_interior/widgets/custom_imageview.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../../exterior/presentation/exterior_list_screen.dart';
+import 'interior_list_screen.dart';
+
+import 'package:image_picker/image_picker.dart';
+File? picked;
 
 class InteriorDesignScreen extends StatefulWidget {
   const InteriorDesignScreen({super.key});
+
+  static const routeName = "/interior-design-screen";
 
   @override
   State<InteriorDesignScreen> createState() => _InteriorDesignScreenState();
@@ -36,7 +49,7 @@ class _InteriorDesignScreenState extends State<InteriorDesignScreen> {
         children: [
           // ── Status bar spacer + AppBar ──────────────────────────────
           SizedBox(height: topPadding),
-          _buildAppBar(context),
+          _buildAppBar(),
 
           // ── Progress bar ────────────────────────────────────────────
           _buildProgressBar(),
@@ -75,42 +88,71 @@ class _InteriorDesignScreenState extends State<InteriorDesignScreen> {
   // ─────────────────────────────────────────────
   // AppBar
   // ─────────────────────────────────────────────
-  Widget _buildAppBar(BuildContext context) {
+  Widget _buildAppBar() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
       child: Row(
         children: [
-          // Back button
           GestureDetector(
-            onTap: () => Navigator.maybePop(context),
-            child: Container(
+            onTap: () {
+              Navigator.of(context).pop();
+            },
+            child: const SizedBox(
               width: 36,
               height: 36,
-              alignment: Alignment.center,
-              child: const Icon(
-                Icons.chevron_left_rounded,
-                size: 28,
-                color: Color(0xFF1C1C1C),
+              child: Icon(
+                Icons.arrow_back_ios_rounded,
+                size: 20,
+                color: Color(0xFF1A1A1A),
               ),
             ),
           ),
-
-          // Title
           const Expanded(
-            child: Text(
-              'Interior Design',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF1C1C1C),
-                letterSpacing: 0.2,
+            child: Center(
+              child: Text(
+                'Interior Design',
+                style: TextStyle(
+                  fontSize: 36,
+                  fontFamily: 'Georgia',
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xFF1A1A1A),
+                  letterSpacing: -0.3,
+                ),
               ),
             ),
           ),
-
           // Coin badge
-          _buildCoinBadge(),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFF3E8),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: const Color(0xFFE8873A).withOpacity(0.3),
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  '200',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF1A1A1A),
+                    letterSpacing: -0.2,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                CustomImageview(
+                  imagePath: "assets/images/credit.png",
+                  height: 25,
+                  width: 25,
+                  fit: BoxFit.contain,
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -159,13 +201,12 @@ class _InteriorDesignScreenState extends State<InteriorDesignScreen> {
   // ─────────────────────────────────────────────
   Widget _buildProgressBar() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       child: LinearProgressIndicator(
         value: 0.25,
         minHeight: 3,
         backgroundColor: const Color(0xFFE0DDD8),
-        valueColor:
-        const AlwaysStoppedAnimation<Color>(Color(0xFF3A7D7B)),
+        valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF3A7D7B)),
       ),
     );
   }
@@ -180,7 +221,7 @@ class _InteriorDesignScreenState extends State<InteriorDesignScreen> {
         text,
         style: const TextStyle(
           fontSize: 18,
-          fontWeight: FontWeight.w700,
+          fontWeight: FontWeight.w500,
           color: Color(0xFF1C1C1C),
           letterSpacing: -0.2,
         ),
@@ -212,36 +253,47 @@ class _InteriorDesignScreenState extends State<InteriorDesignScreen> {
             // Room preview area
             Stack(
               children: [
-                ClipRRect(
-                  borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(20)),
-                  child: Container(
-                    width: double.infinity,
-                    height: 260,
-                    color: const Color(0xFFF8F6F2),
-                    child: _buildIsometricRoomPlaceholder(),
-                  ),
-                ),
+                picked != null
+                    ? CustomImageview(imagePath: picked!.path)
+                    : ClipRRect(
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(20),
+                      ),
+                      child: Container(
+                        width: double.infinity,
+                        height: 330,
+                        color: const Color(0xFFF8F6F2),
 
-                // Info button
-                Positioned(
-                  top: 14,
-                  right: 14,
-                  child: Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: const Color(0xFFD0CEC9),
-                        width: 1.5,
+                        child: CustomImageview(
+                          imagePath: "assets/images/interior/interior_home.png",
+                          fit: BoxFit.contain,
+                        ),
                       ),
                     ),
-                    child: const Icon(
-                      Icons.info_outline_rounded,
-                      size: 18,
-                      color: Color(0xFF5A5754),
+
+                GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).pushNamed(SnapTipsScreen.routeName);
+                  },
+                  child: Positioned(
+                    top: 14,
+                    right: 14,
+                    child: Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: const Color(0xFFD0CEC9),
+                          width: 1.5,
+                        ),
+                      ),
+                      child: const Icon(
+                        Icons.info_outline_rounded,
+                        size: 18,
+                        color: Color(0xFF5A5754),
+                      ),
                     ),
                   ),
                 ),
@@ -252,7 +304,10 @@ class _InteriorDesignScreenState extends State<InteriorDesignScreen> {
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 18),
               child: GestureDetector(
-                onTap: () {},
+                onTap: () => showMediaSourcePicker(
+                  context,
+                  onFilePicked: (file) => setState(() => picked = file),
+                ),
                 child: Container(
                   height: 48,
                   padding: const EdgeInsets.symmetric(horizontal: 32),
@@ -288,6 +343,17 @@ class _InteriorDesignScreenState extends State<InteriorDesignScreen> {
     );
   }
 
+  void showMediaSourcePicker(
+    BuildContext context, {
+    required void Function(File file) onFilePicked,
+  }) {
+    showCupertinoModalPopup<void>(
+      context: context,
+      builder:
+          (BuildContext ctx) => _MediaSourceSheet(onFilePicked: onFilePicked),
+    );
+  }
+
   /// A simple painter that mimics the isometric room illustration.
   Widget _buildIsometricRoomPlaceholder() {
     return CustomPaint(
@@ -304,9 +370,7 @@ class _InteriorDesignScreenState extends State<InteriorDesignScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(
         children: [
-          Expanded(
-            child: Container(height: 1, color: const Color(0xFFD8D4CE)),
-          ),
+          Expanded(child: Container(height: 1, color: const Color(0xFFD8D4CE))),
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 14),
             child: Text(
@@ -319,9 +383,7 @@ class _InteriorDesignScreenState extends State<InteriorDesignScreen> {
               ),
             ),
           ),
-          Expanded(
-            child: Container(height: 1, color: const Color(0xFFD8D4CE)),
-          ),
+          Expanded(child: Container(height: 1, color: const Color(0xFFD8D4CE))),
         ],
       ),
     );
@@ -333,9 +395,21 @@ class _InteriorDesignScreenState extends State<InteriorDesignScreen> {
   Widget _buildTemplateGrid() {
     // Template data: label + accent color pairs
     final templates = [
-      _TemplateData('Living Room', const Color(0xFFE07B54), const Color(0xFFF5E8DF)),
-      _TemplateData('Bedroom', const Color(0xFF7A9DBF), const Color(0xFFE0EAF4)),
-      _TemplateData('Bathroom', const Color(0xFF6B9E8F), const Color(0xFFD5EAE5)),
+      _TemplateData(
+        'Living Room',
+        const Color(0xFFE07B54),
+        const Color(0xFFF5E8DF),
+      ),
+      _TemplateData(
+        'Bedroom',
+        const Color(0xFF7A9DBF),
+        const Color(0xFFE0EAF4),
+      ),
+      _TemplateData(
+        'Bathroom',
+        const Color(0xFF6B9E8F),
+        const Color(0xFFD5EAE5),
+      ),
       _TemplateData('Dining', const Color(0xFF5C7A5A), const Color(0xFFD5E5D3)),
     ];
 
@@ -344,7 +418,7 @@ class _InteriorDesignScreenState extends State<InteriorDesignScreen> {
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 20),
-        itemCount: templates.length,
+        itemCount: 8,
         separatorBuilder: (_, __) => const SizedBox(width: 12),
         itemBuilder: (context, i) {
           final selected = _selectedTemplate == i;
@@ -356,9 +430,8 @@ class _InteriorDesignScreenState extends State<InteriorDesignScreen> {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: selected
-                      ? const Color(0xFF3A7D7B)
-                      : Colors.transparent,
+                  color:
+                      selected ? const Color(0xFF3A7D7B) : Colors.transparent,
                   width: 2.5,
                 ),
                 boxShadow: [
@@ -375,50 +448,9 @@ class _InteriorDesignScreenState extends State<InteriorDesignScreen> {
                   fit: StackFit.expand,
                   children: [
                     // Gradient background mimicking photo
-                    Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            templates[i].lightColor,
-                            templates[i].accentColor,
-                          ],
-                        ),
-                      ),
+                    CustomImageview(
+                      imagePath: "assets/images/interior/interior_${i + 1}.jpg",
                     ),
-
-                    // Room icon overlay
-                    Center(
-                      child: Icon(
-                        _roomIcon(i),
-                        size: 40,
-                        color: Colors.white.withOpacity(0.85),
-                      ),
-                    ),
-
-                    // Label at bottom
-                    Positioned(
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 6),
-                        color: Colors.black.withOpacity(0.28),
-                        child: Text(
-                          templates[i].label,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 0.3,
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    // Checkmark when selected
                     if (selected)
                       Positioned(
                         top: 8,
@@ -467,9 +499,13 @@ class _InteriorDesignScreenState extends State<InteriorDesignScreen> {
   // ─────────────────────────────────────────────
   Widget _buildNextButton() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
       child: GestureDetector(
-        onTap: () {},
+        onTap: () {
+          Navigator.of(
+            context,
+          ).pushNamed(InteriorRoomSelectionScreen.routeName);
+        },
         child: Container(
           width: double.infinity,
           height: 58,
@@ -503,10 +539,136 @@ class _InteriorDesignScreenState extends State<InteriorDesignScreen> {
 // ─────────────────────────────────────────────────────────────────────────────
 // Data model
 // ─────────────────────────────────────────────────────────────────────────────
+class _MediaSourceSheet extends StatelessWidget {
+  const _MediaSourceSheet({required this.onFilePicked});
+
+  final void Function(File file) onFilePicked;
+
+  Future<void> _takePhoto(BuildContext context) async {
+    Navigator.of(context).pop();
+    final picker = ImagePicker();
+    final XFile? photo = await picker.pickImage(source: ImageSource.camera);
+    if (photo != null) onFilePicked(File(photo.path));
+  }
+
+  Future<void> _chooseFromPhotos(BuildContext context) async {
+    Navigator.of(context).pop();
+    final picker = ImagePicker();
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+    if (image != null) onFilePicked(File(image.path));
+  }
+
+  Future<void> _browseFiles(BuildContext context) async {
+    Navigator.of(context).pop();
+    final result = await FilePicker.pickFiles();
+    if (result != null && result.files.single.path != null) {
+      onFilePicked(File(result.files.single.path!));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // ── Action sheet ──────────────────────────────────────────────────
+        CupertinoActionSheet(
+          title: const Text(
+            'Choose a Media Source',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: CupertinoColors.secondaryLabel,
+            ),
+          ),
+          actions: [
+            // Take Photo
+            CupertinoActionSheetAction(
+              onPressed: () => _takePhoto(context),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: const [
+                  Icon(CupertinoIcons.camera, size: 22),
+                  SizedBox(width: 10),
+                  Text('Take Photo', style: TextStyle(fontSize: 17)),
+                ],
+              ),
+            ),
+
+            // Choose From Photos
+            CupertinoActionSheetAction(
+              onPressed: () => _chooseFromPhotos(context),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Multicolor Photos-app icon approximation
+                  ShaderMask(
+                    shaderCallback:
+                        (bounds) => const LinearGradient(
+                          colors: [
+                            Color(0xFFFF2D55),
+                            Color(0xFFFF9500),
+                            Color(0xFFFFCC00),
+                            Color(0xFF34C759),
+                            Color(0xFF007AFF),
+                            Color(0xFF5856D6),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ).createShader(bounds),
+                    child: const Icon(
+                      CupertinoIcons.photo,
+                      size: 22,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  const Text(
+                    'Choose From Photos',
+                    style: TextStyle(fontSize: 17),
+                  ),
+                ],
+              ),
+            ),
+
+            // Browse Files
+            CupertinoActionSheetAction(
+              onPressed: () => _browseFiles(context),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: const [
+                  Icon(
+                    CupertinoIcons.folder,
+                    size: 22,
+                    color: Color(0xFF007AFF),
+                  ),
+                  SizedBox(width: 10),
+                  Text('Browse Files', style: TextStyle(fontSize: 17)),
+                ],
+              ),
+            ),
+          ],
+
+          // Cancel button
+          cancelButton: CupertinoActionSheetAction(
+            onPressed: () => Navigator.of(context).pop(),
+            isDefaultAction: true,
+            child: const Text(
+              'Cancel',
+              style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class _TemplateData {
   final String label;
   final Color accentColor;
   final Color lightColor;
+
   const _TemplateData(this.label, this.accentColor, this.lightColor);
 }
 
@@ -521,19 +683,21 @@ class _IsometricRoomPainter extends CustomPainter {
     final cy = size.height / 2 + 10;
 
     // ── Floor ──────────────────────────────────────────────────────────
-    final floorPath = Path()
-      ..moveTo(cx, cy - 80)
-      ..lineTo(cx + 140, cy - 10)
-      ..lineTo(cx, cy + 70)
-      ..lineTo(cx - 140, cy - 10)
-      ..close();
+    final floorPath =
+        Path()
+          ..moveTo(cx, cy - 80)
+          ..lineTo(cx + 140, cy - 10)
+          ..lineTo(cx, cy + 70)
+          ..lineTo(cx - 140, cy - 10)
+          ..close();
     canvas.drawPath(floorPath, Paint()..color = const Color(0xFFD4B896));
 
     // Floor planks (subtle lines)
-    final plankPaint = Paint()
-      ..color = const Color(0xFFC4A882)
-      ..strokeWidth = 0.8
-      ..style = PaintingStyle.stroke;
+    final plankPaint =
+        Paint()
+          ..color = const Color(0xFFC4A882)
+          ..strokeWidth = 0.8
+          ..style = PaintingStyle.stroke;
     for (int i = -3; i <= 3; i++) {
       canvas.drawLine(
         Offset(cx + i * 35 - 10, cy - 70 + i * 5),
@@ -543,58 +707,64 @@ class _IsometricRoomPainter extends CustomPainter {
     }
 
     // ── Left wall ─────────────────────────────────────────────────────
-    final leftWall = Path()
-      ..moveTo(cx - 140, cy - 10)
-      ..lineTo(cx, cy - 80)
-      ..lineTo(cx, cy - 160)
-      ..lineTo(cx - 140, cy - 90)
-      ..close();
+    final leftWall =
+        Path()
+          ..moveTo(cx - 140, cy - 10)
+          ..lineTo(cx, cy - 80)
+          ..lineTo(cx, cy - 160)
+          ..lineTo(cx - 140, cy - 90)
+          ..close();
     canvas.drawPath(leftWall, Paint()..color = const Color(0xFFDDD5C8));
 
     // ── Right wall ────────────────────────────────────────────────────
-    final rightWall = Path()
-      ..moveTo(cx, cy - 80)
-      ..lineTo(cx + 140, cy - 10)
-      ..lineTo(cx + 140, cy - 90)
-      ..lineTo(cx, cy - 160)
-      ..close();
+    final rightWall =
+        Path()
+          ..moveTo(cx, cy - 80)
+          ..lineTo(cx + 140, cy - 10)
+          ..lineTo(cx + 140, cy - 90)
+          ..lineTo(cx, cy - 160)
+          ..close();
     canvas.drawPath(rightWall, Paint()..color = const Color(0xFFC8BFB0));
 
     // ── Dark slat panel on left wall ──────────────────────────────────
-    final slatPath = Path()
-      ..moveTo(cx - 140, cy - 90)
-      ..lineTo(cx - 88, cy - 118)
-      ..lineTo(cx - 88, cy - 26)
-      ..lineTo(cx - 140, cy - 10)
-      ..close();
+    final slatPath =
+        Path()
+          ..moveTo(cx - 140, cy - 90)
+          ..lineTo(cx - 88, cy - 118)
+          ..lineTo(cx - 88, cy - 26)
+          ..lineTo(cx - 140, cy - 10)
+          ..close();
     canvas.drawPath(slatPath, Paint()..color = const Color(0xFF3A2E24));
 
     // ── Rug ───────────────────────────────────────────────────────────
-    final rugPath = Path()
-      ..moveTo(cx, cy - 20)
-      ..lineTo(cx + 80, cy + 20)
-      ..lineTo(cx, cy + 55)
-      ..lineTo(cx - 80, cy + 20)
-      ..close();
+    final rugPath =
+        Path()
+          ..moveTo(cx, cy - 20)
+          ..lineTo(cx + 80, cy + 20)
+          ..lineTo(cx, cy + 55)
+          ..lineTo(cx - 80, cy + 20)
+          ..close();
     canvas.drawPath(rugPath, Paint()..color = const Color(0xFFE8DFD0));
 
     // ── L-shaped sofa ─────────────────────────────────────────────────
     // Main sofa body
-    final sofaBody = Path()
-      ..moveTo(cx - 72, cy - 30)
-      ..lineTo(cx + 30, cy + 28)
-      ..lineTo(cx + 20, cy + 50)
-      ..lineTo(cx - 82, cy - 8)
-      ..close();
+    final sofaBody =
+        Path()
+          ..moveTo(cx - 72, cy - 30)
+          ..lineTo(cx + 30, cy + 28)
+          ..lineTo(cx + 20, cy + 50)
+          ..lineTo(cx - 82, cy - 8)
+          ..close();
     canvas.drawPath(sofaBody, Paint()..color = const Color(0xFFEFEAE2));
 
     // Sofa back
-    final sofaBack = Path()
-      ..moveTo(cx - 82, cy - 8)
-      ..lineTo(cx - 72, cy - 30)
-      ..lineTo(cx - 64, cy - 56)
-      ..lineTo(cx - 74, cy - 34)
-      ..close();
+    final sofaBack =
+        Path()
+          ..moveTo(cx - 82, cy - 8)
+          ..lineTo(cx - 72, cy - 30)
+          ..lineTo(cx - 64, cy - 56)
+          ..lineTo(cx - 74, cy - 34)
+          ..close();
     canvas.drawPath(sofaBack, Paint()..color = const Color(0xFFE0D8CC));
 
     // Cushions (yellow)
@@ -609,9 +779,10 @@ class _IsometricRoomPainter extends CustomPainter {
     );
 
     // ── Coffee table ──────────────────────────────────────────────────
-    final tablePaint = Paint()
-      ..color = const Color(0xFF8EAAA0)
-      ..style = PaintingStyle.fill;
+    final tablePaint =
+        Paint()
+          ..color = const Color(0xFF8EAAA0)
+          ..style = PaintingStyle.fill;
     canvas.drawOval(
       Rect.fromCenter(center: Offset(cx + 20, cy + 22), width: 46, height: 28),
       tablePaint,
@@ -622,21 +793,23 @@ class _IsometricRoomPainter extends CustomPainter {
     );
 
     // ── Small sofa (front) ────────────────────────────────────────────
-    final sofaFront = Path()
-      ..moveTo(cx - 30, cy + 52)
-      ..lineTo(cx + 60, cy + 10)
-      ..lineTo(cx + 68, cy + 28)
-      ..lineTo(cx - 22, cy + 70)
-      ..close();
+    final sofaFront =
+        Path()
+          ..moveTo(cx - 30, cy + 52)
+          ..lineTo(cx + 60, cy + 10)
+          ..lineTo(cx + 68, cy + 28)
+          ..lineTo(cx - 22, cy + 70)
+          ..close();
     canvas.drawPath(sofaFront, Paint()..color = const Color(0xFFEFEAE2));
 
     // ── TV / dark console ─────────────────────────────────────────────
-    final consolePath = Path()
-      ..moveTo(cx + 80, cy - 8)
-      ..lineTo(cx + 135, cy + 24)
-      ..lineTo(cx + 128, cy + 36)
-      ..lineTo(cx + 73, cy + 4)
-      ..close();
+    final consolePath =
+        Path()
+          ..moveTo(cx + 80, cy - 8)
+          ..lineTo(cx + 135, cy + 24)
+          ..lineTo(cx + 128, cy + 36)
+          ..lineTo(cx + 73, cy + 4)
+          ..close();
     canvas.drawPath(consolePath, Paint()..color = const Color(0xFF2E2822));
 
     // ── Wall art frames ───────────────────────────────────────────────

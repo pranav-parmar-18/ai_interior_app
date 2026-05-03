@@ -90,6 +90,10 @@ class AppColors {
 
   static const shimmerBack = Color(0xFFF6F7F9);
   static const shimmerFront = Color(0xFFFFE7CC);
+
+
+
+  static const fontColor = Color.fromRGBO(46, 46, 46, 1);
 }
 
 

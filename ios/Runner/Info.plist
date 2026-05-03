@@ -45,5 +45,16 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<!-- CAMERA → Take Photo -->
+    <key>NSCameraUsageDescription</key>
+    <string>We need camera access to let you take a photo of your room for interior design suggestions.</string>
+
+    <!-- PHOTO LIBRARY → Choose From Photos -->
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>We need access to your photo library so you can choose an existing photo of your room.</string>
+
+    <!-- SAVE photos back to library (optional) -->
+    <key>NSPhotoLibraryAddUsageDescription</key>
+    <string>We need permission to save your redesigned room images to your photo library.</string>
 </dict>
 </plist>

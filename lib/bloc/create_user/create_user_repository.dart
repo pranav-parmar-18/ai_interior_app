@@ -1,9 +1,9 @@
 part of 'create_user_bloc.dart';
 
 class CreateUserRepository {
-  CommonModelResponse? _makeSongResponse;
+  CreateUserModelResponse? _makeSongResponse;
 
-  CommonModelResponse? get makeSongResponse => _makeSongResponse;
+  CreateUserModelResponse? get makeSongResponse => _makeSongResponse;
 
   String _message = '';
 
@@ -14,7 +14,7 @@ class CreateUserRepository {
 
   Future<void> login(Map<String, dynamic> data) async {
     try {
-      const String url = '${ProjectConstant.baseUrl}login';
+      const String url = '${ProjectConstant.baseUrl}user/create';
       String jsonPayload = jsonEncode(data);
 
       final response = await http.post(
@@ -28,7 +28,7 @@ class CreateUserRepository {
       if (response.statusCode == 200) {
         final responseJsonMap =
             jsonDecode(response.body) as Map<String, dynamic>;
-        final responseData = CommonModelResponse.fromJson(responseJsonMap);
+        final responseData = CreateUserModelResponse.fromJson(responseJsonMap);
         print("LOGIN Success: ${response.body}");
         _makeSongResponse = responseData;
         _message = "Success";
@@ -39,7 +39,7 @@ class CreateUserRepository {
         }
         final responseJsonMap =
             jsonDecode(response.body) as Map<String, dynamic>;
-        final responseData = CommonModelResponse.fromJson(responseJsonMap);
+        final responseData = CreateUserModelResponse.fromJson(responseJsonMap);
         _makeSongResponse = responseData;
         _message = "Fail";
         _success = false;

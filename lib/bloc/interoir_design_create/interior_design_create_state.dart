@@ -14,7 +14,7 @@ class InteriorDeignCreateLoadingState extends InteriorDeignCreateState {
 }
 
 class InteriorDeignCreateSuccessState extends InteriorDeignCreateState {
-  final CommonModelResponse? login;
+  final InteriorDesignCreateModelResponse? login;
   final String message;
 
   InteriorDeignCreateSuccessState({

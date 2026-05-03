@@ -1,20 +1,10 @@
-import 'dart:io';
+import 'dart:async';
 
-import 'package:ai_interior/bloc/login/login_bloc.dart';
-import 'package:ai_interior/models/Login_model_response.dart';
-import 'package:ai_interior/widgets/custom_elevated_button.dart';
-import 'package:ai_interior/widgets/custom_imageview.dart';
-import 'package:firebase_analytics/firebase_analytics.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shimmer/shimmer.dart';
 
-import '../../../main.dart';
-import '../../../services/device_indentification_service.dart';
+import 'fourth_onboarding_screen.dart';
 
 class OnBoardingFirstScreen extends StatefulWidget {
   const OnBoardingFirstScreen({super.key});
@@ -36,15 +26,15 @@ class _OnBoardingFirstScreenState extends State<OnBoardingFirstScreen> {
     ),
     OnboardingData(
       imagePath: 'assets/images/room2.jpg',
-      title: 'AI-Powered Design',
+      title: 'Style It Your Way',
       subtitle:
-      'Get stunning design suggestions tailored to your style and preferences.',
+      'Choose from presets or create a custom design with AI-powered suggestions',
     ),
     OnboardingData(
       imagePath: 'assets/images/room3.jpg',
-      title: 'Transform Any Space',
+      title: 'Reimagine Any Space',
       subtitle:
-      'From living rooms to exteriors, reimagine every corner of your home.',
+      'Select an area, describe your vision, and let AI bring it to life.',
     ),
   ];
 
@@ -61,7 +51,7 @@ class _OnBoardingFirstScreenState extends State<OnBoardingFirstScreen> {
         curve: Curves.easeInOut,
       );
     } else {
-      // Navigate to main app
+      Navigator.of(context).pushNamed(OnboardingFourScreen.routeName);
     }
   }
 
@@ -74,7 +64,7 @@ class _OnBoardingFirstScreenState extends State<OnBoardingFirstScreen> {
       backgroundColor: const Color(0xFFF5F0EA),
       body: Column(
         children: [
-          // Image Section — takes up ~60% of screen
+
           Expanded(
             flex: 60,
             child: PageView.builder(
@@ -84,23 +74,23 @@ class _OnBoardingFirstScreenState extends State<OnBoardingFirstScreen> {
                 setState(() => _currentPage = index);
               },
               itemBuilder: (context, index) {
-                return _HeroImage(imagePath: _pages[index].imagePath);
+                return index==0?ShimmerSwitchImage(
+                  firstImage: 'assets/images/on_1.jpg',
+                  secondImage: 'assets/images/on_2.jpg',
+                ):_HeroImage(imagePath: _pages[index].imagePath);
               },
             ),
           ),
 
-          // Bottom Content Section
           Expanded(
             flex: 40,
             child: Container(
               color: const Color(0xFFF5F0EA),
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 28.0),
+                padding: const EdgeInsets.symmetric(horizontal: 7.0),
                 child: Column(
                   children: [
                     const SizedBox(height: 32),
-
-                    // Title
                     AnimatedSwitcher(
                       duration: const Duration(milliseconds: 300),
                       child: Text(
@@ -109,7 +99,7 @@ class _OnBoardingFirstScreenState extends State<OnBoardingFirstScreen> {
                         textAlign: TextAlign.left,
                         style: const TextStyle(
                           fontFamily: 'Georgia',
-                          fontSize: 36,
+                          fontSize: 35,
                           fontWeight: FontWeight.w400,
                           color: Color(0xFF2C2C2C),
                           height: 1.15,
@@ -118,22 +108,24 @@ class _OnBoardingFirstScreenState extends State<OnBoardingFirstScreen> {
                       ),
                     ),
 
-                    const SizedBox(height: 14),
+                    const SizedBox(height: 30),
 
-                    // Subtitle
-                    AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 300),
-                      child: Text(
-                        _pages[_currentPage].subtitle,
-                        key: ValueKey('sub_$_currentPage'),
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontFamily: 'Georgia',
-                          fontSize: 15.5,
-                          fontWeight: FontWeight.w400,
-                          color: Color(0xFF7A8080),
-                          height: 1.5,
-                          letterSpacing: 0.1,
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 30.0),
+                      child: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 300),
+                        child: Text(
+                          _pages[_currentPage].subtitle,
+                          key: ValueKey('sub_$_currentPage'),
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontFamily: 'Georgia',
+                            fontSize: 16,
+                            fontWeight: FontWeight.w400,
+                            color: Color(0xFF7A8080),
+                            height: 1.5,
+                            letterSpacing: 0.1,
+                          ),
                         ),
                       ),
                     ),
@@ -180,7 +172,6 @@ class _HeroImage extends StatelessWidget {
       child: Image.asset(
         imagePath,
         fit: BoxFit.cover,
-        // Fallback placeholder when asset is not available
         errorBuilder: (context, error, stackTrace) {
           return Container(
             color: const Color(0xFFE8E0D5),
@@ -198,6 +189,88 @@ class _HeroImage extends StatelessWidget {
     );
   }
 }
+
+
+
+class ShimmerSwitchImage extends StatefulWidget {
+  const ShimmerSwitchImage({
+    super.key,
+    required this.firstImage,
+    required this.secondImage,
+  });
+
+  final String firstImage;
+  final String secondImage;
+
+  @override
+  State<ShimmerSwitchImage> createState() => _ShimmerSwitchImageState();
+}
+
+class _ShimmerSwitchImageState extends State<ShimmerSwitchImage> {
+  bool _showFirst = true;
+  late Timer _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer.periodic(
+      const Duration(seconds: 2),
+          (_) => setState(() => _showFirst = !_showFirst),
+    );
+  }
+
+  @override
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox.expand( // ✅ fill PageView (60%)
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          /// 🖼 IMAGE (FORCED FULL SIZE)
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 600),
+
+            // ⭐ THIS IS THE KEY FIX ⭐
+            layoutBuilder: (currentChild, previousChildren) {
+              return Stack(
+                fit: StackFit.expand,
+                children: [
+                  ...previousChildren,
+                  if (currentChild != null) currentChild,
+                ],
+              );
+            },
+
+            child: SizedBox.expand(
+              key: ValueKey(_showFirst),
+              child: Image.asset(
+                _showFirst ? widget.firstImage : widget.secondImage,
+                fit: BoxFit.cover, // ✅ full cover
+              ),
+            ),
+          ),
+
+          /// 🤍 HORIZONTAL SHIMMER OVERLAY
+          IgnorePointer(
+            child: Shimmer.fromColors(
+              direction: ShimmerDirection.ltr,
+              period: const Duration(milliseconds: 1500),
+              baseColor: Colors.white.withOpacity(0.08),
+              highlightColor: Colors.white.withOpacity(0.45),
+              child: Container(color: Colors.white),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 
 // ─────────────────────────────────────────────
 // Room Painter (placeholder background)
@@ -390,24 +463,30 @@ class _ContinueButton extends StatelessWidget {
       child: Container(
         width: double.infinity,
         height: 60,
+        margin: EdgeInsets.symmetric(horizontal: 10),
+        padding: EdgeInsets.symmetric(horizontal: 20),
         decoration: BoxDecoration(
           color: const Color(0xFFD9B48C), // warm tan/sand
           borderRadius: BorderRadius.circular(50),
         ),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            const Text(
-              'Continue',
-              style: TextStyle(
-                fontFamily: 'Georgia',
-                fontSize: 17,
-                fontWeight: FontWeight.w400,
-                color: Color(0xFF3C3228),
-                letterSpacing: 0.3,
+            const SizedBox(width: 140),
+
+            Align(
+              child: const Text(
+                'Continue',
+                style: TextStyle(
+                  fontFamily: 'Georgia',
+                  fontSize: 20,
+                  fontWeight: FontWeight.w400,
+                  color: Color(0xFF3C3228),
+                  letterSpacing: 0.3,
+                ),
               ),
             ),
-            const SizedBox(width: 10),
+            Spacer(),
             Container(
               width: 26,
               height: 26,
@@ -415,7 +494,7 @@ class _ContinueButton extends StatelessWidget {
               child: const Icon(
                 Icons.chevron_right,
                 color: Color(0xFF3C3228),
-                size: 22,
+                size: 30,
               ),
             ),
           ],

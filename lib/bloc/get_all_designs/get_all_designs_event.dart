@@ -1,16 +1,16 @@
 part of 'get_all_designs_bloc.dart';
 
-abstract class GetGiftListEvent extends Equatable {
-  const GetGiftListEvent();
+abstract class GetAllInteriorDesignEvent extends Equatable {
+  const GetAllInteriorDesignEvent();
 
   @override
   List<Object> get props => [];
 }
 
-class GetGiftListInitialEvent extends GetGiftListEvent {}
+class GetAllInteriorDesignInitialEvent extends GetAllInteriorDesignEvent {}
 
-class GetGiftListDataEvent extends GetGiftListEvent {
+class GetAllInteriorDesignDataEvent extends GetAllInteriorDesignEvent {
 
-
-  const GetGiftListDataEvent();
+  final Map<String,dynamic> data;
+  const GetAllInteriorDesignDataEvent({required this.data});
 }

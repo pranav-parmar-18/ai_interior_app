@@ -1,40 +1,40 @@
 part of 'get_all_designs_bloc.dart';
 
-abstract class GetGiftListState extends Equatable {
-  GetGiftListState();
+abstract class GetAllInteriorDesignState extends Equatable {
+  GetAllInteriorDesignState();
 
   @override
   List<Object> get props => [];
 }
 
-class GetGiftListInitialState extends GetGiftListState {}
+class GetAllInteriorDesignInitialState extends GetAllInteriorDesignState {}
 
-class GetGiftListLoadingState extends GetGiftListState {
-  GetGiftListLoadingState();
+class GetAllInteriorDesignLoadingState extends GetAllInteriorDesignState {
+  GetAllInteriorDesignLoadingState();
 }
 
-class GetGiftListSuccessState extends GetGiftListState {
-  final CommonModelResponse? exploreSongResponse;
+class GetAllInteriorDesignSuccessState extends GetAllInteriorDesignState {
+  final GetAllInteriorDesignModelResponse? exploreSongResponse;
   final String message;
 
-  GetGiftListSuccessState({
+  GetAllInteriorDesignSuccessState({
     required this.exploreSongResponse,
     required this.message,
   });
 }
 
-class GetGiftListFailureState extends GetGiftListState {
+class GetAllInteriorDesignFailureState extends GetAllInteriorDesignState {
   final String message;
 
-  GetGiftListFailureState({
+  GetAllInteriorDesignFailureState({
     required this.message,
   });
 }
 
-class GetGiftListExceptionState extends GetGiftListState {
+class GetAllInteriorDesignExceptionState extends GetAllInteriorDesignState {
   final String message;
 
-  GetGiftListExceptionState({
+  GetAllInteriorDesignExceptionState({
     required this.message,
   });
 }

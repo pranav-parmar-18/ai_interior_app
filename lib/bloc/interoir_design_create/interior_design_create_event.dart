@@ -11,6 +11,7 @@ class InteriorDeignCreateInitialEvent extends InteriorDeignCreateEvent {}
 
 class InteriorDeignCreateDataEvent extends InteriorDeignCreateEvent {
   final Map<String, dynamic> login;
+  final File image;
 
-  const InteriorDeignCreateDataEvent({required this.login});
+  const InteriorDeignCreateDataEvent({required this.login, required this.image});
 }

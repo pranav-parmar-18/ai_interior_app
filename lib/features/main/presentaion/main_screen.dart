@@ -1,9 +1,12 @@
 import 'dart:io';
 import 'package:ai_interior/features/subscription/presentation/subscription_screen.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../theme/app_colors.dart';
 import '../../../widgets/custom_bottom_bar.dart';
+import '../../explore/presentation/explore_screen.dart';
 import '../../home/presentation/home_screen.dart';
 import '../../recents/presentation/recent_screen.dart';
 
@@ -34,7 +37,7 @@ class _MainScreenState extends State<MainScreen> {
     _screens.addAll([
       HomeScreen(),
       ExploreScreen(),
-      HomeScreen(),
+      RecentsScreen(),
     ]);
   }
 
@@ -138,4 +141,132 @@ bool isIPhoneSE(BuildContext context) {
           (height == 667 && width == 375) || (height == 375 && width == 667) || // SE 2nd/3rd Gen
               (height == 568 && width == 320) || (height == 320 && width == 568)    // SE 1st Gen
       );
+}
+
+void showSnackSuccess(BuildContext context, String name) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      elevation: 0,
+      behavior: SnackBarBehavior.fixed,
+      backgroundColor: Colors.transparent,
+      duration: const Duration(milliseconds: 1200),
+      content: Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: MediaQuery.of(context).size.width * 0.9,
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(30),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    AppColors.orange200,
+                    AppColors.orange300,
+                  ],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                ),
+                borderRadius: BorderRadius.circular(18),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const Icon(
+                    CupertinoIcons.check_mark_circled_solid,
+                    color: Colors.white,
+                    size: 28,
+                  ),
+                  const SizedBox(width: 10),
+
+                  /// ✅ This is the important part
+                  Flexible(
+                    child: Text(
+                      name,
+                      maxLines: 2,
+                      softWrap: true,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontFamily: 'Geist',
+                        fontWeight: FontWeight.w800,
+                        fontSize: 16,
+                        color: Colors.white,
+                        height: 1.2,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+void showSnackError(BuildContext context, String name) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      elevation: 0,
+      behavior: SnackBarBehavior.fixed,
+      backgroundColor: Colors.transparent,
+      duration: const Duration(milliseconds: 1200),
+      content: Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: MediaQuery.of(context).size.width * 0.9,
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(30),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    AppColors.orange200,
+                    AppColors.orange300,
+                  ],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                ),
+                borderRadius: BorderRadius.circular(18),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const Icon(
+                    CupertinoIcons.info_circle_fill,
+                    color: Colors.white,
+                    size: 28,
+                  ),
+                  const SizedBox(width: 10),
+
+                  /// ✅ Dynamic text
+                  Flexible(
+                    child: Text(
+                      name,
+                      maxLines: 2,
+                      softWrap: true,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontFamily: 'Geist',
+                        fontWeight: FontWeight.w800,
+                        fontSize: 16,
+                        color: Colors.white,
+                        height: 1.2,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
 }

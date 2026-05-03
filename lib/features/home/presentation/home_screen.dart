@@ -3,6 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:math' as math;
 
+import '../../credit/presentataion/credit_screen.dart';
+import '../../exterior/presentation/exterior_screen.dart';
+import '../../interior/presentation/interior_screen.dart';
+import '../../setting/presentation/setting_screens.dart';
+
 // ─────────────────────────────────────────────
 // Data Model
 // ─────────────────────────────────────────────
@@ -44,37 +49,37 @@ class _HomeScreenState extends State<HomeScreen> {
         title: 'Revamp Your Interior',
         subtitle: 'Transform your space with a fresh design',
         icon: Icons.weekend_outlined,
-        imagePath: "assets/images/home_1.jpg",
+        imagePath: "assets/images/home_0.png",
       ),
       FeatureItem(
         title: 'Redesign Your Exterior',
         subtitle: 'Transform your outdoor space',
         icon: Icons.home_outlined,
-        imagePath: "assets/images/home_2.png",
+        imagePath: "assets/images/home_3.png",
       ),
       FeatureItem(
         title: 'Style Transfer',
         subtitle: 'Apply a style from any reference image',
         icon: Icons.palette_outlined,
-        imagePath: "assets/images/home_3.png",
+        imagePath: "assets/images/home_6.png",
       ),
       FeatureItem(
         title: 'Smart Staging',
         subtitle: 'Effortlessly furnish and style your room',
         icon: Icons.auto_awesome_outlined,
-        imagePath: "assets/images/home_4.jpg",
+        imagePath: "assets/images/home_9.png",
       ),
       FeatureItem(
         title: 'Replace',
         subtitle: 'Replace any part of your space with ease',
         icon: Icons.swap_horiz_rounded,
-        imagePath: "assets/images/home_5.jpg",
+        imagePath: "assets/images/home_8.png",
       ),
       FeatureItem(
         title: 'Design Your Dream Space',
         subtitle: 'Build your ideal space from scratch',
         icon: Icons.auto_fix_high_rounded,
-        imagePath: "",
+        imagePath: "assets/images/home_2.png",
       ),
     ];
 
@@ -124,58 +129,63 @@ class _TopBar extends StatelessWidget {
           const Text(
             'AI Interior Design',
             style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFFB87333),
+              fontSize: 30,
+              fontFamily: 'Georgia',
+              fontWeight: FontWeight.w500,
+              color: Color.fromRGBO(135, 63, 0, 1),
               letterSpacing: -0.2,
             ),
           ),
           const Spacer(),
           // Coin balance
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFFF3E0),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Row(
-              children: [
-                const Text(
-                  '200',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF2C2C2C),
-                  ),
+          GestureDetector(
+            onTap: () {
+              Navigator.of(context).pushNamed(CreditsScreen.routeName);
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFF3E8),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: const Color(0xFFE8873A).withOpacity(0.3),
                 ),
-                const SizedBox(width: 4),
-                Container(
-                  width: 18,
-                  height: 18,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFE8A020),
-                    shape: BoxShape.circle,
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    '200',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF1A1A1A),
+                      letterSpacing: -0.2,
+                    ),
                   ),
-                  child: const Icon(Icons.bolt, color: Colors.white, size: 12),
-                ),
-              ],
+                  const SizedBox(width: 4),
+                  CustomImageview(
+                    imagePath: "assets/images/credit.png",
+                    height: 25,
+                    width: 25,
+                    fit: BoxFit.contain,
+                  ),
+                ],
+              ),
             ),
           ),
           const SizedBox(width: 8),
           // Settings
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: const Color(0xFF4A90B8).withOpacity(0.15),
-              borderRadius: BorderRadius.circular(10),
+          InkWell(
+            onTap: () {
+              Navigator.of(context).pushNamed(SettingsScreen.routeName);
+            },
+            child: CustomImageview(
+              imagePath: "assets/images/setting.png",
+              height: 25,
+              width: 25,
             ),
-            child: const Icon(
-              Icons.settings_outlined,
-              color: Color(0xFF4A90B8),
-              size: 20,
-            ),
-          ),
+          )
         ],
       ),
     );
@@ -197,18 +207,23 @@ class _FeatureCard extends StatelessWidget {
       child: Column(
         children: [
           // Image area
-          ClipRRect(
-            borderRadius: BorderRadius.circular(18),
-            child: SizedBox(
-              height: 200,
-              width: double.infinity,
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  CustomImageview(
-                    imagePath: item.imagePath,
-                  )
-                ],
+          GestureDetector(
+            onTap: () {
+              Navigator.of(context).pushNamed(InteriorDesignScreen.routeName);
+            },
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(18),
+              child: SizedBox(
+                height: 300,
+                width: double.infinity,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    CustomImageview(
+                      imagePath: item.imagePath,
+                    )
+                  ],
+                ),
               ),
             ),
           ),

@@ -14,7 +14,7 @@ class CreateUserLoadingState extends CreateUserState {
 }
 
 class CreateUserSuccessState extends CreateUserState {
-  final CommonModelResponse? login;
+  final CreateUserModelResponse? login;
   final String message;
 
   CreateUserSuccessState({

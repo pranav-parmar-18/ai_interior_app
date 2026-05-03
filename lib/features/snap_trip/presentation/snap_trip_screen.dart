@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-
-
 class SnapTipsScreen extends StatefulWidget {
   const SnapTipsScreen({super.key});
 
+  static const routeName = "/snap-trip";
   static const List<String> _tips = [
     'Use natural light for best results.',
     'Take a clear, front-facing photo of the room.',
@@ -71,11 +70,7 @@ class _SnapTipsScreenState extends State<SnapTipsScreen> {
         padding: const EdgeInsets.fromLTRB(0, 12, 16, 0),
         child: GestureDetector(
           onTap: () {},
-          child: const Icon(
-            Icons.close,
-            size: 26,
-            color: Color(0xFF1A1A1A),
-          ),
+          child: const Icon(Icons.close, size: 26, color: Color(0xFF1A1A1A)),
         ),
       ),
     );
@@ -157,9 +152,8 @@ class _SnapTipsScreenState extends State<SnapTipsScreen> {
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: SnapTipsScreen._tips
-              .map((tip) => _buildTipItem(tip))
-              .toList(),
+          children:
+              SnapTipsScreen._tips.map((tip) => _buildTipItem(tip)).toList(),
         ),
       ),
     );
@@ -217,11 +211,10 @@ class _SnapTipsScreenState extends State<SnapTipsScreen> {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(18),
               child: Row(
-                children: imageUrls.map((url) {
-                  return Expanded(
-                    child: _NetworkImageTile(url: url),
-                  );
-                }).toList(),
+                children:
+                    imageUrls.map((url) {
+                      return Expanded(child: _NetworkImageTile(url: url));
+                    }).toList(),
               ),
             ),
           ),
@@ -233,8 +226,10 @@ class _SnapTipsScreenState extends State<SnapTipsScreen> {
             right: 0,
             child: Center(
               child: Container(
-                padding:
-                const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 7,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(30),
@@ -255,9 +250,10 @@ class _SnapTipsScreenState extends State<SnapTipsScreen> {
                       height: 22,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: isGood
-                            ? const Color(0xFF34C759)
-                            : const Color(0xFFFF3B30),
+                        color:
+                            isGood
+                                ? const Color(0xFF34C759)
+                                : const Color(0xFFFF3B30),
                       ),
                       child: Icon(
                         isGood ? Icons.check_rounded : Icons.close_rounded,
@@ -290,6 +286,7 @@ class _SnapTipsScreenState extends State<SnapTipsScreen> {
 
 class _NetworkImageTile extends StatelessWidget {
   final String url;
+
   const _NetworkImageTile({required this.url});
 
   @override
@@ -315,11 +312,15 @@ class _NetworkImageTile extends StatelessWidget {
             ),
           );
         },
-        errorBuilder: (context, error, stack) => Container(
-          color: const Color(0xFFDDDDDD),
-          child: const Icon(Icons.image_not_supported_rounded,
-              color: Color(0xFFAAAAAA), size: 32),
-        ),
+        errorBuilder:
+            (context, error, stack) => Container(
+              color: const Color(0xFFDDDDDD),
+              child: const Icon(
+                Icons.image_not_supported_rounded,
+                color: Color(0xFFAAAAAA),
+                size: 32,
+              ),
+            ),
       ),
     );
   }
