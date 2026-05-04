@@ -12,33 +12,33 @@ part 'dream_space_event.dart';
 part 'dream_space_repository.dart';
 part 'dream_space_state.dart';
 
-class CreateUserBloc extends Bloc<CreateUserEvent, CreateUserState> {
-  CreateUserRepository adminKeyCreateUserRepository = CreateUserRepository();
+class DreamSpaceCreateBloc extends Bloc<DreamSpaceCreateEvent, DreamSpaceCreateState> {
+  DreamSpaceCreateRepository adminKeyDreamSpaceCreateRepository = DreamSpaceCreateRepository();
 
-  CreateUserBloc() : super(CreateUserInitialState()) {
-    on<CreateUserInitialEvent>((event, emit) => emit(CreateUserInitialState()));
-    on<CreateUserDataEvent>(_acceptOrderDataEvent);
+  DreamSpaceCreateBloc() : super(DreamSpaceCreateInitialState()) {
+    on<DreamSpaceCreateInitialEvent>((event, emit) => emit(DreamSpaceCreateInitialState()));
+    on<DreamSpaceCreateDataEvent>(_acceptOrderDataEvent);
   }
 
-  void _acceptOrderDataEvent(CreateUserDataEvent event, Emitter<CreateUserState> emit) async {
-    emit(CreateUserLoadingState());
+  void _acceptOrderDataEvent(DreamSpaceCreateDataEvent event, Emitter<DreamSpaceCreateState> emit) async {
+    emit(DreamSpaceCreateLoadingState());
     try {
-      await adminKeyCreateUserRepository.login(event.login);
-      if (adminKeyCreateUserRepository.success == true) {
-        emit(CreateUserSuccessState(
-            login: adminKeyCreateUserRepository.makeSongResponse,
-            message: adminKeyCreateUserRepository.message.toString().trim(),
+      await adminKeyDreamSpaceCreateRepository.login(event.login);
+      if (adminKeyDreamSpaceCreateRepository.success == true) {
+        emit(DreamSpaceCreateSuccessState(
+            login: adminKeyDreamSpaceCreateRepository.makeSongResponse,
+            message: adminKeyDreamSpaceCreateRepository.message.toString().trim(),
         )
         );
       } else {
-        emit(CreateUserFailureState(
-          message: adminKeyCreateUserRepository.message.toString().trim(),
+        emit(DreamSpaceCreateFailureState(
+          message: adminKeyDreamSpaceCreateRepository.message.toString().trim(),
         ));
       }
     } catch (error) {
       print(error);
-      emit(CreateUserExceptionState(
-        message: adminKeyCreateUserRepository.message.toString().trim(),
+      emit(DreamSpaceCreateExceptionState(
+        message: adminKeyDreamSpaceCreateRepository.message.toString().trim(),
       ));
     }
   }

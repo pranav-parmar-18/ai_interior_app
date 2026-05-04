@@ -1,16 +1,16 @@
 part of 'smart_replace_create_bloc.dart';
 
-abstract class SmartReplaceObjEvent extends Equatable {
-  const SmartReplaceObjEvent();
+abstract class SmartReplaceCreateEvent extends Equatable {
+  const SmartReplaceCreateEvent();
 
   @override
   List<Object> get props => [];
 }
 
-class SmartReplaceObjInitialEvent extends SmartReplaceObjEvent {}
+class SmartReplaceCreateInitialEvent extends SmartReplaceCreateEvent {}
 
-class SmartReplaceObjDataEvent extends SmartReplaceObjEvent {
+class SmartReplaceCreateDataEvent extends SmartReplaceCreateEvent {
   final Map<String, dynamic> login;
 
-  const SmartReplaceObjDataEvent({required this.login});
+  const SmartReplaceCreateDataEvent({required this.login});
 }

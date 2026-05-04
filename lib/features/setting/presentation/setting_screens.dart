@@ -563,8 +563,12 @@
 //     return sub?.isActive ?? false;
 //   }
 // }
+import 'package:ai_interior/features/setting/presentation/language_screen.dart';
+import 'package:ai_interior/widgets/custom_imageview.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
+import '../../subscription/presentation/subscription_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -655,7 +659,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         color: Color(0xFF1A1A1A),
                       ),
                       label: 'Change Language',
-                      onTap: () {},
+                      onTap: () {
+                        Navigator.of(context).pushNamed(LanguageScreen.routeName);
+                      },
                       isLast: true,
                     ),
                   ],
@@ -743,7 +749,9 @@ class _PremiumBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {},
+      onTap: () {
+        Navigator.of(context).pushNamed(SubscriptionScreen.routeName);
+      },
       child: Container(
         height: 92,
         decoration: BoxDecoration(
@@ -955,26 +963,10 @@ class _HouseDiamondPainter extends CustomPainter {
 class _CreditIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 28,
-      height: 28,
-      decoration: const BoxDecoration(
-        shape: BoxShape.circle,
-        color: Color(0xFFE08020),
-      ),
-      child: Center(
-        child: Container(
-          width: 14,
-          height: 14,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(color: Colors.white, width: 2),
-          ),
-          child: const Center(
-            child: Icon(Icons.diamond, size: 7, color: Colors.white),
-          ),
-        ),
-      ),
+    return CustomImageview(
+      imagePath: "assets/images/credit.png",
+      height: 30,
+      width: 30,
     );
   }
 }

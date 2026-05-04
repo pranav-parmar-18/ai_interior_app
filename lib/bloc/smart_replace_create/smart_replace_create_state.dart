@@ -1,40 +1,40 @@
 part of 'smart_replace_create_bloc.dart';
 
-abstract class SmartReplaceObjState extends Equatable {
-  SmartReplaceObjState();
+abstract class SmartReplaceCreateState extends Equatable {
+  SmartReplaceCreateState();
 
   @override
   List<Object> get props => [];
 }
 
-class SmartReplaceObjInitialState extends SmartReplaceObjState {}
+class SmartReplaceCreateInitialState extends SmartReplaceCreateState {}
 
-class SmartReplaceObjLoadingState extends SmartReplaceObjState {
-  SmartReplaceObjLoadingState();
+class SmartReplaceCreateLoadingState extends SmartReplaceCreateState {
+  SmartReplaceCreateLoadingState();
 }
 
-class SmartReplaceObjSuccessState extends SmartReplaceObjState {
+class SmartReplaceCreateSuccessState extends SmartReplaceCreateState {
   final CommonModelResponse? login;
   final String message;
 
-  SmartReplaceObjSuccessState({
+  SmartReplaceCreateSuccessState({
     required this.login,
     required this.message,
   });
 }
 
-class SmartReplaceObjFailureState extends SmartReplaceObjState {
+class SmartReplaceCreateFailureState extends SmartReplaceCreateState {
   final String message;
 
-  SmartReplaceObjFailureState({
+  SmartReplaceCreateFailureState({
     required this.message,
   });
 }
 
-class SmartReplaceObjExceptionState extends SmartReplaceObjState {
+class SmartReplaceCreateExceptionState extends SmartReplaceCreateState {
   final String message;
 
-  SmartReplaceObjExceptionState({
+  SmartReplaceCreateExceptionState({
     required this.message,
   });
 }

@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:ai_interior/features/replace/presentation/replace_edit_screen.dart';
 import 'package:ai_interior/features/snap_trip/presentation/snap_trip_screen.dart';
 import 'package:ai_interior/widgets/custom_imageview.dart';
 import 'package:file_picker/file_picker.dart';
@@ -501,9 +502,9 @@ class _ReplaceScreenState extends State<ReplaceScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
       child: GestureDetector(
         onTap: () {
-          // Navigator.of(
-          //   context,
-          // ).pushNamed(InteriorRoomSelectionScreen.routeName);
+          Navigator.of(
+            context,
+          ).pushNamed(ReplaceEditScreen.routeName);
         },
         child: Container(
           width: double.infinity,

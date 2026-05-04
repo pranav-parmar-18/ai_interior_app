@@ -1,6 +1,6 @@
 part of 'dream_space_bloc.dart';
 
-class CreateUserRepository {
+class DreamSpaceCreateRepository {
   CommonModelResponse? _makeSongResponse;
 
   CommonModelResponse? get makeSongResponse => _makeSongResponse;
@@ -14,7 +14,7 @@ class CreateUserRepository {
 
   Future<void> login(Map<String, dynamic> data) async {
     try {
-      const String url = '${ProjectConstant.baseUrl}login';
+      const String url = '${ProjectConstant.baseUrl}dream-space/create';
       String jsonPayload = jsonEncode(data);
 
       final response = await http.post(

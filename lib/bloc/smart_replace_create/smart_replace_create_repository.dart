@@ -1,6 +1,6 @@
 part of 'smart_replace_create_bloc.dart';
 
-class SmartReplaceObjRepository {
+class SmartReplaceCreateRepository {
   CommonModelResponse? _makeSongResponse;
 
   CommonModelResponse? get makeSongResponse => _makeSongResponse;

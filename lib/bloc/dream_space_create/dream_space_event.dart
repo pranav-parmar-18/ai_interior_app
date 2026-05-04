@@ -1,16 +1,16 @@
 part of 'dream_space_bloc.dart';
 
-abstract class CreateUserEvent extends Equatable {
-  const CreateUserEvent();
+abstract class DreamSpaceCreateEvent extends Equatable {
+  const DreamSpaceCreateEvent();
 
   @override
   List<Object> get props => [];
 }
 
-class CreateUserInitialEvent extends CreateUserEvent {}
+class DreamSpaceCreateInitialEvent extends DreamSpaceCreateEvent {}
 
-class CreateUserDataEvent extends CreateUserEvent {
+class DreamSpaceCreateDataEvent extends DreamSpaceCreateEvent {
   final Map<String, dynamic> login;
 
-  const CreateUserDataEvent({required this.login});
+  const DreamSpaceCreateDataEvent({required this.login});
 }

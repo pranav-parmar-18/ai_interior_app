@@ -1,35 +1,27 @@
 import 'dart:io';
 
-import 'package:ai_interior/bloc/create_style_transfer/create_style_transfer_bloc.dart';
+import 'package:ai_interior/features/replace/presentation/replace_describe_me.dart';
 import 'package:ai_interior/features/snap_trip/presentation/snap_trip_screen.dart';
-import 'package:ai_interior/features/style_transfer/presentation/style_output_screen.dart';
 import 'package:ai_interior/widgets/custom_imageview.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:image_picker/image_picker.dart';
 
-import '../../../models/create_style_transfer_model_response.dart';
-
 File? picked;
 
-class StyleTransferScreen extends StatefulWidget {
-  const StyleTransferScreen({super.key});
+class ReplaceEditScreen extends StatefulWidget {
+  const ReplaceEditScreen({super.key});
 
-  static const routeName = "/style-transfer-screen";
+  static const routeName = "/replace-edit-screen";
 
   @override
-  State<StyleTransferScreen> createState() => _StyleTransferScreenState();
+  State<ReplaceEditScreen> createState() => _ReplaceEditScreenState();
 }
 
-class _StyleTransferScreenState extends State<StyleTransferScreen> {
+class _ReplaceEditScreenState extends State<ReplaceEditScreen> {
   int _selectedTemplate = -1;
-
-  final CreateStyleTransferBloc _createStyleTransferBloc =
-      CreateStyleTransferBloc();
-  CreateStyleTransferResponse? createStyleTransferResponse;
 
   final List<String> _templateColors = [
     '#E8D5C4', // Living room warm
@@ -40,11 +32,23 @@ class _StyleTransferScreenState extends State<StyleTransferScreen> {
 
   // Template placeholder colors (replace with real AssetImage in a real project)
   final List<Color> _templateSwatches = [
-    const Color(0xFFE07B54),
-    const Color(0xFFB8C8D8),
-    const Color(0xFF6B9E8F),
-    const Color(0xFF4A5E3A),
+    const Color(0xFFE07B54), // warm orange living
+    const Color(0xFFB8C8D8), // cool blue bedroom
+    const Color(0xFF6B9E8F), // teal bathroom
+    const Color(0xFF4A5E3A), // dark green dining
   ];
+
+  double _eraserSize = 0.45;
+  double _brushSize  = 0.72;
+
+  int _selectedArea = 2; // 'Sofa' pre-selected
+  bool _canUndo = true;
+  bool _canRedo = false;
+
+  final List<String> _areas = [
+    'Mirror', 'Wall', 'Sofa', 'Table', 'Plant', 'Cabinet',
+  ];
+
 
   @override
   Widget build(BuildContext context) {
@@ -52,79 +56,267 @@ class _StyleTransferScreenState extends State<StyleTransferScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F3EF),
-      body: BlocConsumer<CreateStyleTransferBloc, CreateStyleTransferState>(
-        bloc: _createStyleTransferBloc,
-        listener: (context, state) {
-          if (state is CreateStyleTransferSuccessState) {
-            createStyleTransferResponse = state.login;
-            Navigator.of(context).pushNamed(StyleOutputScreen.routeName,arguments: {
-              "image":
-              createStyleTransferResponse?.data?.outputImage ?? "",
-            });
-          } else if (state is CreateStyleTransferFailureState ||
-              state is CreateStyleTransferExceptionState) {}
-        },
-        builder: (context, state) {
-          return Column(
-            children: [
-              // ── Status bar spacer + AppBar ──────────────────────────────
-              SizedBox(height: topPadding),
-              _buildAppBar(),
+      body: Column(
+        children: [
+          // ── Status bar spacer + AppBar ──────────────────────────────
+          SizedBox(height: topPadding),
+          _buildAppBar(),
 
-              _buildProgressBar(),
-              Expanded(
-                child: SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.only(bottom: 24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 22),
-                      _buildSectionTitle('Upload a photo of your room'),
-                      const SizedBox(height: 14),
-                      _buildUploadCard(),
-                      const SizedBox(height: 20),
-                      _buildOrDivider(),
-                      const SizedBox(height: 20),
-                      _buildSectionTitle('Choose from Template'),
-                      const SizedBox(height: 14),
-                      _buildTemplateGrid(),
-                      const SizedBox(height: 14),
-                      Container(
-                        width: double.maxFinite,
-                        margin: EdgeInsets.symmetric(horizontal: 15),
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 15,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Color.fromRGBO(255, 255, 255, 1),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Text(
-                          "Upload a style reference",
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                            color: Color.fromRGBO(46, 46, 46, 1),
-                            letterSpacing: -0.2,
-                          ),
-                        ),
-                      ),
-                    ],
+          // ── Progress bar ────────────────────────────────────────────
+          _buildProgressBar(),
+
+          // ── Scrollable content ──────────────────────────────────────
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 22),
+                _buildSectionTitle('Upload a photo of your room'),
+                const SizedBox(height: 14),
+                _buildUploadCard(),
+                const SizedBox(height: 20),
+                // ── Undo / redo + info ────────────────────────────────
+                _buildUndoRedoRow(),
+                const SizedBox(height: 16),
+
+                // ── Brush label ────────────────────────────────────────
+                _buildBrushLabel(),
+                const SizedBox(height: 10),
+
+                // ── Area chips ─────────────────────────────────────────
+                _buildAreaChips(),
+                const SizedBox(height: 14),
+
+                // ── Brush size slider ──────────────────────────────────
+                _buildBrushSlider(),
+
+                const Spacer(),
+              ],
+            ),
+          ),
+
+          // ── Next button ─────────────────────────────────────────────
+          _buildNextButton(),
+          SizedBox(height: MediaQuery.of(context).padding.bottom + 8),
+        ],
+      ),
+    );
+  }
+
+  // ── Undo / redo + info ───────────────────────────────────────────────────
+  Widget _buildUndoRedoRow() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Row(
+        children: [
+          // Undo + Redo pill
+          Container(
+            height: 42,
+            padding: const EdgeInsets.symmetric(horizontal: 14),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Undo
+                GestureDetector(
+                  onTap: _canUndo ? () => setState(() => _canUndo = false) : null,
+                  child: Icon(
+                    Icons.undo_rounded,
+                    size: 22,
+                    color: _canUndo
+                        ? const Color(0xFF5A5550)
+                        : const Color(0xFFBBB8B4),
                   ),
                 ),
-              ),
+                const SizedBox(width: 10),
+                // Divider
+                Container(width: 1, height: 18, color: const Color(0xFFE0DDD8)),
+                const SizedBox(width: 10),
+                // Redo
+                GestureDetector(
+                  onTap: _canRedo ? () => setState(() => _canRedo = false) : null,
+                  child: Icon(
+                    Icons.redo_rounded,
+                    size: 22,
+                    color: _canRedo
+                        ? const Color(0xFF5A5550)
+                        : const Color(0xFFBBB8B4),
+                  ),
+                ),
+              ],
+            ),
+          ),
 
-              // ── Next button ─────────────────────────────────────────────
-              _buildNextButton(),
-              SizedBox(height: MediaQuery.of(context).padding.bottom + 8),
-            ],
+          const Spacer(),
+
+          // Info button
+          GestureDetector(
+            onTap: () {},
+            child: Container(
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: const Color(0xFFD4A870),
+                  width: 1.8,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: const Icon(
+                Icons.info_outline_rounded,
+                size: 20,
+                color: Color(0xFFD4A870),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── "Brush over or pick an area to edit" label ───────────────────────────
+  Widget _buildBrushLabel() {
+    return const Padding(
+      padding: EdgeInsets.symmetric(horizontal: 20),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Text(
+          'Brush over or pick an area to edit',
+          style: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w400,
+            color: Color(0xFF2A2520),
+            letterSpacing: 0.1,
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ── Area chips ────────────────────────────────────────────────────────────
+  Widget _buildAreaChips() {
+    return SizedBox(
+      height: 38,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        itemCount: _areas.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        itemBuilder: (_, i) {
+          final sel = _selectedArea == i;
+          return GestureDetector(
+            onTap: () => setState(() => _selectedArea = i),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 150),
+              padding: const EdgeInsets.symmetric(horizontal: 18),
+              decoration: BoxDecoration(
+                color: sel ? const Color(0xFFF5EDE0) : Colors.white,
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(
+                  color: sel
+                      ? const Color(0xFFD4A870)
+                      : const Color(0xFFE8E4DF),
+                  width: 1.2,
+                ),
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                _areas[i],
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: sel ? FontWeight.w600 : FontWeight.w400,
+                  color: sel
+                      ? const Color(0xFF8A5A20)
+                      : const Color(0xFF3A3530),
+                ),
+              ),
+            ),
           );
         },
       ),
     );
   }
+
+  // ── Brush size dual slider ────────────────────────────────────────────────
+  Widget _buildBrushSlider() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Row(
+        children: [
+          // Brush/erase icon
+          const _BrushEraseIcon(),
+          const SizedBox(width: 10),
+
+          // Left track (eraser)
+          Expanded(
+            child: SliderTheme(
+              data: _sliderTheme(context),
+              child: Slider(
+                value: _eraserSize,
+                onChanged: (v) => setState(() => _eraserSize = v),
+                activeColor: const Color(0xFF4A5A68),
+                inactiveColor: const Color(0xFFCCC8C2),
+              ),
+            ),
+          ),
+
+          // Centre divider pip
+          Container(
+            width: 3, height: 24,
+            margin: const EdgeInsets.symmetric(horizontal: 2),
+            decoration: BoxDecoration(
+              color: const Color(0xFF5A6570),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+
+          // Right track (brush)
+          Expanded(
+            child: SliderTheme(
+              data: _sliderTheme(context),
+              child: Slider(
+                value: _brushSize,
+                onChanged: (v) => setState(() => _brushSize = v),
+                activeColor: const Color(0xFF4A5A68),
+                inactiveColor: const Color(0xFFCCC8C2),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  SliderThemeData _sliderTheme(BuildContext context) {
+    return SliderTheme.of(context).copyWith(
+      trackHeight: 4,
+      thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
+      overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
+      thumbColor: const Color(0xFF4A5A68),
+      activeTrackColor: const Color(0xFF4A5A68),
+      inactiveTrackColor: const Color(0xFFCCC8C2),
+      overlayColor: const Color(0xFF4A5A68).withOpacity(0.15),
+    );
+  }
+
 
   // ─────────────────────────────────────────────
   // AppBar
@@ -151,7 +343,7 @@ class _StyleTransferScreenState extends State<StyleTransferScreen> {
           const Expanded(
             child: Center(
               child: Text(
-                'Style Transfer',
+                'Replace',
                 style: TextStyle(
                   fontSize: 36,
                   fontFamily: 'Georgia',
@@ -291,6 +483,7 @@ class _StyleTransferScreenState extends State<StyleTransferScreen> {
         ),
         child: Column(
           children: [
+            // Room preview area
             Stack(
               children: [
                 picked != null
@@ -305,11 +498,12 @@ class _StyleTransferScreenState extends State<StyleTransferScreen> {
                         color: const Color(0xFFF8F6F2),
 
                         child: CustomImageview(
-                          imagePath: "assets/images/interior/interior_home.png",
+                          imagePath: "assets/images/replace_home.png",
                           fit: BoxFit.contain,
                         ),
                       ),
                     ),
+
                 Positioned(
                   top: 14,
                   right: 14,
@@ -338,6 +532,8 @@ class _StyleTransferScreenState extends State<StyleTransferScreen> {
                 ),
               ],
             ),
+
+            // Add Photo button
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 18),
               child: GestureDetector(
@@ -427,6 +623,9 @@ class _StyleTransferScreenState extends State<StyleTransferScreen> {
     );
   }
 
+  // ─────────────────────────────────────────────
+  // Template horizontal list
+  // ─────────────────────────────────────────────
   Widget _buildTemplateGrid() {
     // Template data: label + accent color pairs
     final templates = [
@@ -529,18 +728,17 @@ class _StyleTransferScreenState extends State<StyleTransferScreen> {
     }
   }
 
+  // ─────────────────────────────────────────────
+  // Next button
+  // ─────────────────────────────────────────────
   Widget _buildNextButton() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
       child: GestureDetector(
         onTap: () {
-          _createStyleTransferBloc.add(
-            CreateStyleTransferDataEvent(
-              login: {"user_id": ""},
-              image: File(""),
-              refImage: File(""),
-            ),
-          );
+          Navigator.of(
+            context,
+          ).pushNamed(ReplaceDescribeVisionScreen.routeName);
         },
         child: Container(
           width: double.infinity,
@@ -571,7 +769,17 @@ class _StyleTransferScreenState extends State<StyleTransferScreen> {
     );
   }
 }
+class _BrushEraseIcon extends StatelessWidget {
+  const _BrushEraseIcon();
 
+  @override
+  Widget build(BuildContext context) {
+    return const Text(
+      '🖌️',
+      style: TextStyle(fontSize: 22),
+    );
+  }
+}
 // ─────────────────────────────────────────────────────────────────────────────
 // Data model
 // ─────────────────────────────────────────────────────────────────────────────

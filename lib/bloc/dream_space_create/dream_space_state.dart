@@ -1,40 +1,40 @@
 part of 'dream_space_bloc.dart';
 
-abstract class CreateUserState extends Equatable {
-  CreateUserState();
+abstract class DreamSpaceCreateState extends Equatable {
+  DreamSpaceCreateState();
 
   @override
   List<Object> get props => [];
 }
 
-class CreateUserInitialState extends CreateUserState {}
+class DreamSpaceCreateInitialState extends DreamSpaceCreateState {}
 
-class CreateUserLoadingState extends CreateUserState {
-  CreateUserLoadingState();
+class DreamSpaceCreateLoadingState extends DreamSpaceCreateState {
+  DreamSpaceCreateLoadingState();
 }
 
-class CreateUserSuccessState extends CreateUserState {
+class DreamSpaceCreateSuccessState extends DreamSpaceCreateState {
   final CommonModelResponse? login;
   final String message;
 
-  CreateUserSuccessState({
+  DreamSpaceCreateSuccessState({
     required this.login,
     required this.message,
   });
 }
 
-class CreateUserFailureState extends CreateUserState {
+class DreamSpaceCreateFailureState extends DreamSpaceCreateState {
   final String message;
 
-  CreateUserFailureState({
+  DreamSpaceCreateFailureState({
     required this.message,
   });
 }
 
-class CreateUserExceptionState extends CreateUserState {
+class DreamSpaceCreateExceptionState extends DreamSpaceCreateState {
   final String message;
 
-  CreateUserExceptionState({
+  DreamSpaceCreateExceptionState({
     required this.message,
   });
 }

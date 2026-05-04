@@ -33,7 +33,7 @@ class _MainScreenState extends State<MainScreen> {
     super.initState();
     selectedIndex.value = widget.initialIndex;
 
-    isSubscriptionActive();
+    // isSubscriptionActive();
     _screens.addAll([
       HomeScreen(),
       ExploreScreen(),
@@ -94,23 +94,23 @@ class _MainScreenState extends State<MainScreen> {
     super.dispose();
   }
 
-  Future<bool> isSubscriptionActive() async {
-    final prefs = await SharedPreferences.getInstance();
-    final data = prefs.getString('subscription_info');
-    if (data == null) {
-      setState(() {
-        isSubscribed = false;
-      });
-      return false;
-    }
-
-    final sub = SubscriptionInfo.fromJson(data);
-    setState(() {
-      isSubscribed = sub?.isActive ?? false;
-    });
-
-    return sub?.isActive ?? false;
-  }
+  // Future<bool> isSubscriptionActive() async {
+  //   final prefs = await SharedPreferences.getInstance();
+  //   final data = prefs.getString('subscription_info');
+  //   if (data == null) {
+  //     setState(() {
+  //       isSubscribed = false;
+  //     });
+  //     return false;
+  //   }
+  //
+  //   final sub = SubscriptionInfo.fromJson(data);
+  //   setState(() {
+  //     isSubscribed = sub?.isActive ?? false;
+  //   });
+  //
+  //   return sub?.isActive ?? false;
+  // }
 }
 
 

@@ -12,6 +12,7 @@ import '../../../models/get_all_interrior_design_model_response.dart';
 import '../../../widgets/custom_imageview.dart';
 import '../../credit/presentataion/credit_screen.dart';
 import '../../setting/presentation/setting_screens.dart';
+import 'dream_ash_list_screen.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Data model
@@ -158,7 +159,6 @@ class _DreamSpaceScreenState extends State<DreamSpaceScreen>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-
                       _buildAppBar(),
                       _buildProgressBar(),
                       _buildTitle(),
@@ -454,7 +454,7 @@ class _DreamSpaceScreenState extends State<DreamSpaceScreen>
           ),
           _NavBtn(
             icon: Icons.access_time_rounded,
-            label: 'Recents',
+            label: 'Resents',
             idx: 2,
             current: _navIdx,
             onTap: (v) => setState(() => _navIdx = v),
@@ -562,16 +562,7 @@ class _RoomCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        Navigator.of(context).pushNamed(
-          ExploreResultScreen.routeName,
-          arguments: {
-            "image": image,
-            "prompt": prompt,
-            "spaceType": spaceType,
-            "color": color,
-            "designAsth": designAsth,
-          },
-        );
+        Navigator.of(context).pushNamed(DreamAshSelectionScreen.routeName);
       },
       child: ClipRRect(
         borderRadius: BorderRadius.circular(18),

@@ -12,33 +12,33 @@ part 'smart_replace_create_event.dart';
 part 'smart_replace_create_repository.dart';
 part 'smart_replace_create_state.dart';
 
-class SmartReplaceObjBloc extends Bloc<SmartReplaceObjEvent, SmartReplaceObjState> {
-  SmartReplaceObjRepository adminKeySmartReplaceObjRepository = SmartReplaceObjRepository();
+class SmartReplaceCreateBloc extends Bloc<SmartReplaceCreateEvent, SmartReplaceCreateState> {
+  SmartReplaceCreateRepository adminKeySmartReplaceCreateRepository = SmartReplaceCreateRepository();
 
-  SmartReplaceObjBloc() : super(SmartReplaceObjInitialState()) {
-    on<SmartReplaceObjInitialEvent>((event, emit) => emit(SmartReplaceObjInitialState()));
-    on<SmartReplaceObjDataEvent>(_acceptOrderDataEvent);
+  SmartReplaceCreateBloc() : super(SmartReplaceCreateInitialState()) {
+    on<SmartReplaceCreateInitialEvent>((event, emit) => emit(SmartReplaceCreateInitialState()));
+    on<SmartReplaceCreateDataEvent>(_acceptOrderDataEvent);
   }
 
-  void _acceptOrderDataEvent(SmartReplaceObjDataEvent event, Emitter<SmartReplaceObjState> emit) async {
-    emit(SmartReplaceObjLoadingState());
+  void _acceptOrderDataEvent(SmartReplaceCreateDataEvent event, Emitter<SmartReplaceCreateState> emit) async {
+    emit(SmartReplaceCreateLoadingState());
     try {
-      await adminKeySmartReplaceObjRepository.login(event.login);
-      if (adminKeySmartReplaceObjRepository.success == true) {
-        emit(SmartReplaceObjSuccessState(
-            login: adminKeySmartReplaceObjRepository.makeSongResponse,
-            message: adminKeySmartReplaceObjRepository.message.toString().trim(),
+      await adminKeySmartReplaceCreateRepository.login(event.login);
+      if (adminKeySmartReplaceCreateRepository.success == true) {
+        emit(SmartReplaceCreateSuccessState(
+            login: adminKeySmartReplaceCreateRepository.makeSongResponse,
+            message: adminKeySmartReplaceCreateRepository.message.toString().trim(),
         )
         );
       } else {
-        emit(SmartReplaceObjFailureState(
-          message: adminKeySmartReplaceObjRepository.message.toString().trim(),
+        emit(SmartReplaceCreateFailureState(
+          message: adminKeySmartReplaceCreateRepository.message.toString().trim(),
         ));
       }
     } catch (error) {
       print(error);
-      emit(SmartReplaceObjExceptionState(
-        message: adminKeySmartReplaceObjRepository.message.toString().trim(),
+      emit(SmartReplaceCreateExceptionState(
+        message: adminKeySmartReplaceCreateRepository.message.toString().trim(),
       ));
     }
   }

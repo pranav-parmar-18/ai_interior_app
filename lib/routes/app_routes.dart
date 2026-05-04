@@ -4,6 +4,8 @@ import 'package:flutter/cupertino.dart';
 import '../features/chat/presentation/call_screen.dart';
 import '../features/chat/presentation/invite_screen.dart';
 import '../features/credit/presentataion/credit_screen.dart';
+import '../features/dream/presentation/dream_ash_list_screen.dart';
+import '../features/dream/presentation/dream_plaate.dart';
 import '../features/dream/presentation/dream_screen.dart';
 import '../features/explore/presentation/explore_detail_screen.dart';
 
@@ -22,7 +24,11 @@ import '../features/interior/presentation/interior_screen.dart';
 import '../features/main/presentaion/main_screen.dart';
 import '../features/onboarding/presentation/fourth_onboarding_screen.dart';
 
+import '../features/replace/presentation/replace_describe_me.dart';
+import '../features/replace/presentation/replace_edit_screen.dart';
+import '../features/replace/presentation/replace_output_screen.dart';
 import '../features/replace/presentation/replace_screen.dart';
+import '../features/setting/presentation/language_screen.dart';
 import '../features/setting/presentation/setting_screens.dart';
 import '../features/snap_trip/presentation/snap_trip_screen.dart';
 import '../features/staging/presentation/staging_ash_list_screen.dart';
@@ -33,6 +39,7 @@ import '../features/staging/presentation/staging_plaate.dart';
 import '../features/staging/presentation/staging_screen.dart';
 import '../features/style_transfer/presentation/style_output_screen.dart';
 import '../features/style_transfer/presentation/style_transfer_screeen.dart';
+import '../features/subscription/presentation/subscription_screen.dart';
 import '../features/subscription/presentation/subscription_screen_three.dart';
 
 class AppRouter {
@@ -105,10 +112,10 @@ class AppRouter {
           settings: settings,
           builder: (_) => InteriorRoomSelectionScreen(),
         );
-      case SubscriptionThreeScreen.routeName:
+      case SubscriptionScreen.routeName:
         return CupertinoPageRoute(
           settings: settings,
-          builder: (_) => SubscriptionThreeScreen(),
+          builder: (_) => SubscriptionScreen(),
         );
       case OnboardingFourScreen.routeName:
         return CupertinoPageRoute(
@@ -206,6 +213,36 @@ class AppRouter {
         return CupertinoPageRoute(
           settings: settings,
           builder: (_) => DreamSpaceScreen(),
+        );
+      case DreamAshSelectionScreen.routeName:
+        return CupertinoPageRoute(
+          settings: settings,
+          builder: (_) => DreamAshSelectionScreen(),
+        );
+      case DreamColorPaletteScreen.routeName:
+        return CupertinoPageRoute(
+          settings: settings,
+          builder: (_) => DreamColorPaletteScreen(),
+        );
+      case ReplaceEditScreen.routeName:
+        return CupertinoPageRoute(
+          settings: settings,
+          builder: (_) => ReplaceEditScreen(),
+        );
+      case ReplaceDescribeVisionScreen.routeName:
+        return CupertinoPageRoute(
+          settings: settings,
+          builder: (_) => ReplaceDescribeVisionScreen(),
+        );
+      case ReplaceOutputScreen.routeName:
+        return CupertinoPageRoute(
+          settings: settings,
+          builder: (_) => ReplaceOutputScreen(),
+        );
+      case LanguageScreen.routeName:
+        return CupertinoPageRoute(
+          settings: settings,
+          builder: (_) => LanguageScreen(),
         );
       default:
         return CupertinoPageRoute(
