@@ -50,16 +50,15 @@ class InteriorDeignCreateRepository {
       ) async {
     try {
       final uri = Uri.parse(
-        '${ProjectConstant.baseUrl}interior/create',
+        '${ProjectConstant.baseUrlV2}interior/create',
       );
 
       final verifyHeader = generateVerifyHeader('');
 
       final request = http.MultipartRequest('POST', uri);
 
-      // 🔹 Headers
       request.headers.addAll({
-        'verify': verifyHeader, // <-- IMPORTANT
+        'verify': verifyHeader,
       });
 
       // 🔹 Form fields

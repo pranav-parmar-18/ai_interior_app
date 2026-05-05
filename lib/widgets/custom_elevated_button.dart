@@ -59,10 +59,9 @@ class CustomElevatedButton extends StatelessWidget {
             borderRadius: BorderRadius.circular(30),
             gradient: LinearGradient(
               colors: [
-                Color.fromRGBO(138, 35, 135, 1),
-                Color.fromRGBO(233, 64, 87, 1),
-                Color.fromRGBO(242, 113, 33, 1),
-              ],
+                Color.fromRGBO(255, 218, 179, 1),
+                Color.fromRGBO(50, 116, 127, 1),
+                ],
             ),
           ),
       child: ElevatedButton(

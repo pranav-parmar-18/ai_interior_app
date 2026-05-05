@@ -92,7 +92,7 @@ class MyApp extends StatelessWidget {
       title: 'AI Interior',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        fontFamily: 'PlayfairDisplay',
+        fontFamily: 'Georgia',
       ),
       onGenerateRoute: (settings) => appRouter.onGenerateRoute(settings),
     );

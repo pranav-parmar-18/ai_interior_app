@@ -236,6 +236,7 @@ class _InteriorColorPaletteScreenState
       listener: (context, state) {
         if (state is InteriorDeignCreateSuccessState) {
           interiorDesignCreateModelResponse = state.login;
+          print("IMAGE ##: ${interiorDesignCreateModelResponse?.data?.outputImage ?? ""}");
           Navigator.of(context).pushNamed(
             InteriorOutputScreen.routeName,
             arguments: {
@@ -566,7 +567,7 @@ class _InteriorColorPaletteScreenState
           _interiorDeignCreateBloc.add(
             InteriorDeignCreateDataEvent(
               login: {
-                "user_id": 334,
+                "user_id": 342,
                 "colors": "retro",
                 "design_asthetic": "zen",
                 "space_type": "bed room",

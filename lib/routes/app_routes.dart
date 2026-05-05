@@ -41,6 +41,7 @@ import '../features/style_transfer/presentation/style_output_screen.dart';
 import '../features/style_transfer/presentation/style_transfer_screeen.dart';
 import '../features/subscription/presentation/subscription_screen.dart';
 import '../features/subscription/presentation/subscription_screen_three.dart';
+import '../features/subscription/presentation/subscription_screen_two.dart';
 
 class AppRouter {
   Route? onGenerateRoute(RouteSettings settings) {
@@ -243,6 +244,16 @@ class AppRouter {
         return CupertinoPageRoute(
           settings: settings,
           builder: (_) => LanguageScreen(),
+        );
+      case SubscriptionScreenTwo.routeName:
+        return CupertinoPageRoute(
+          settings: settings,
+          builder: (_) => SubscriptionScreenTwo(),
+        );
+      case SubscriptionScreenThree.routeName:
+        return CupertinoPageRoute(
+          settings: settings,
+          builder: (_) => SubscriptionScreenThree(),
         );
       default:
         return CupertinoPageRoute(

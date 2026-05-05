@@ -1589,7 +1589,6 @@
 //
 //
 
-
 import 'dart:io';
 import 'dart:ui';
 
@@ -1674,10 +1673,7 @@ class _SubscriptionScreenTwoState extends State<SubscriptionScreenTwo>
   @override
   void initState() {
     super.initState();
-    _pageController = PageController(
-      viewportFraction: 0.72,
-      initialPage: 1,
-    );
+    _pageController = PageController(viewportFraction: 0.72, initialPage: 1);
     _fadeController = AnimationController(
       duration: const Duration(milliseconds: 600),
       vsync: this,
@@ -1715,9 +1711,7 @@ class _SubscriptionScreenTwoState extends State<SubscriptionScreenTwo>
     if (_loading || _products.isEmpty) return _planFallbackPrices[index];
     try {
       final id = _productIds[index];
-      return _products
-          .firstWhere((p) => p.id == id)
-          .price;
+      return _products.firstWhere((p) => p.id == id).price;
     } catch (_) {
       return _planFallbackPrices[index];
     }
@@ -1735,21 +1729,17 @@ class _SubscriptionScreenTwoState extends State<SubscriptionScreenTwo>
     _fadeController.dispose();
     super.dispose();
   }
+
   // Pricing display data — order maps to _productIds: weekly, yearly, monthly
-  final List<String> _list1 = ['Weekly', 'Yearly', 'Monthly'];
-  final List<String> _list2 = ['\$9.99/week', '\$39.99/year', '\$12.99/month'];
+  final List<String> _list1 = ['Yearly Unlimited', 'Weekly Unlimited',];
+  final List<String> _list2 = ['\$3.99/year', '\$9.99/week',];
   final List<String> _list4 = ['\$9.99/week', '\$39.99/year', '\$12.99/month'];
 
   // ───────────────────────────── build ─────────────────────────────────────
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery
-        .of(context)
-        .size;
-    final top = MediaQuery
-        .of(context)
-        .padding
-        .top;
+    final size = MediaQuery.of(context).size;
+    final top = MediaQuery.of(context).padding.top;
 
     final height = size.height;
     return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -1778,41 +1768,31 @@ class _SubscriptionScreenTwoState extends State<SubscriptionScreenTwo>
                           _buildFeatureCard(),
                           const SizedBox(height: 18),
                           SizedBox(
-                            height: height * 0.3,
+                            height: height * 0.23,
                             child: ListView.separated(
                               shrinkWrap: true,
                               padding: EdgeInsets.zero,
                               physics: const NeverScrollableScrollPhysics(),
                               itemCount: _list1.length,
-                              separatorBuilder: (_, __) => SizedBox(height: height * 0.01),
+                              separatorBuilder:
+                                  (_, __) => SizedBox(height: height * 0.01),
                               itemBuilder: (context, index) {
-                                return _loading
-                                    ? _buildDummyPricingStack(
-                                  _list1[index],
-                                  _list4[index],
-                                  index == 0,
-                                  index,
-                                )
-                                    : _buildPricingStack(
-                                  _list1[index],
-                                  _list2[index],
-                                  index == 0,
-                                  index,
-                                );
+                                return _buildPricingStack(
+                                      _list1[index],
+                                      _list2[index],
+                                      index == 0,
+                                      index,
+                                    );
                               },
                             ),
                           ),
-                          const SizedBox(height: 14),
                           _buildFinePrint(),
                           const SizedBox(height: 18),
                           _buildContinueButton(size),
                           const SizedBox(height: 18),
                           _buildFooter(),
                           SizedBox(
-                            height: MediaQuery
-                                .of(context)
-                                .padding
-                                .bottom + 16,
+                            height: MediaQuery.of(context).padding.bottom + 16,
                           ),
                         ],
                       ),
@@ -1833,7 +1813,6 @@ class _SubscriptionScreenTwoState extends State<SubscriptionScreenTwo>
       ),
     );
   }
-
 
   // ── Carousel ───────────────────────────────────────────────────────────────
   Widget _buildCarousel(Size size, double top) {
@@ -1856,8 +1835,10 @@ class _SubscriptionScreenTwoState extends State<SubscriptionScreenTwo>
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(18),
                     child: CustomImageview(
-                      imagePath: index == 0 ? "assets/images/sub_${index +
-                          1}.jpg" : "assets/images/sub_${index + 1}.png",
+                      imagePath:
+                          index == 0
+                              ? "assets/images/sub_${index + 1}.jpg"
+                              : "assets/images/sub_${index + 1}.png",
                     ),
                   ),
                 );
@@ -1865,18 +1846,15 @@ class _SubscriptionScreenTwoState extends State<SubscriptionScreenTwo>
             ),
           ),
           // Close button
-          Positioned(
-            top: top + 10,
-            right: 14,
-            child: _buildCloseButton(),
-          ),
+          Positioned(top: top + 10, right: 14, child: _buildCloseButton()),
         ],
       ),
     );
   }
+
   int _selectedIndex = 0;
 
-    Widget _buildPricingStack(
+  Widget _buildPricingStack(
     String title,
     String trallingText,
     bool isShow,
@@ -1907,20 +1885,23 @@ class _SubscriptionScreenTwoState extends State<SubscriptionScreenTwo>
                     border: Border.all(
                       color:
                           _selectedIndex == index
-                              ? Color.fromRGBO(233, 64, 87, 1)
-                              : Color.fromRGBO(255, 255, 255, 0.2),
+                              ? Color.fromRGBO(50, 116, 127, 1)
+                              : Color.fromRGBO(255, 255, 255, 0.8),
+                      width: 0.5
                     ),
                     gradient:
                         _selectedIndex == index
                             ? LinearGradient(
                               colors: [
-                                Color.fromRGBO(138, 35, 135, 1),
-                                Color.fromRGBO(233, 64, 87, 1),
-                                Color.fromRGBO(242, 113, 33, 1),
+                                Color.fromRGBO(255, 218, 179, 1),
+                                Color.fromRGBO(50, 116, 127, 1),
                               ],
                             )
                             : const LinearGradient(
-                              colors: [Colors.transparent, Colors.transparent],
+                              colors: [
+                                Color.fromRGBO(255, 255, 255, 0.8),
+                                Color.fromRGBO(255, 255, 255, 0.8),
+                              ],
                             ),
                   ),
                   width: double.infinity,
@@ -1946,7 +1927,7 @@ class _SubscriptionScreenTwoState extends State<SubscriptionScreenTwo>
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
-                                    color: appTheme.whiteA700,
+                                    color: Color.fromRGBO(46, 46, 46, 1),
                                     fontSize:
                                         isIPad(context)
                                             ? width * 0.025
@@ -1965,7 +1946,7 @@ class _SubscriptionScreenTwoState extends State<SubscriptionScreenTwo>
                                 child: Text(
                                   "(Less than \$0.77/week)",
                                   style: TextStyle(
-                                    color: appTheme.gray200,
+                                    color: Color.fromRGBO(46, 46, 46, 1),
                                     fontSize: width * 0.03,
                                     fontFamily: 'Lato',
                                     fontWeight: FontWeight.w400,
@@ -1977,7 +1958,7 @@ class _SubscriptionScreenTwoState extends State<SubscriptionScreenTwo>
                               child: Text(
                                 _loading ? "" : trallingText,
                                 style: TextStyle(
-                                  color: appTheme.whiteA700,
+                                  color: Color.fromRGBO(46, 46, 46, 1),
                                   fontSize: width * 0.032,
                                   fontFamily: 'Lato',
                                   fontWeight: FontWeight.w400,
@@ -2004,7 +1985,7 @@ class _SubscriptionScreenTwoState extends State<SubscriptionScreenTwo>
                   fontWeight: FontWeight.w800,
                 ),
                 buttonStyle: ElevatedButton.styleFrom(
-                  backgroundColor: appTheme.pinkA100,
+                  backgroundColor: Color.fromRGBO(255, 218, 179, 1),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(width * 0.015),
                   ),
@@ -2196,10 +2177,7 @@ class _SubscriptionScreenTwoState extends State<SubscriptionScreenTwo>
               height: 1.35,
             ),
           ),
-          TextSpan(
-            text: '✨',
-            style: TextStyle(fontSize: 22),
-          ),
+          TextSpan(text: '✨', style: TextStyle(fontSize: 22)),
         ],
       ),
     );
@@ -2283,10 +2261,7 @@ class _SubscriptionScreenTwoState extends State<SubscriptionScreenTwo>
 
   // ── Continue Button ───────────────────────────────────────────────────────
   Widget _buildContinueButton(Size size) {
-    return _ContinueButton(
-      onPressed: _onContinue,
-      isLoading: _isPurchasing,
-    );
+    return _ContinueButton(onPressed: _onContinue, isLoading: _isPurchasing);
   }
 
   // ── Footer ────────────────────────────────────────────────────────────────
@@ -2294,18 +2269,9 @@ class _SubscriptionScreenTwoState extends State<SubscriptionScreenTwo>
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        _FooterLink(
-          label: 'Terms Of Use',
-          onTap: () {},
-        ),
-        _FooterLink(
-          label: 'Restore',
-          onTap: () {},
-        ),
-        _FooterLink(
-          label: 'Privacy Policy',
-          onTap: () {},
-        ),
+        _FooterLink(label: 'Terms Of Use', onTap: () {}),
+        _FooterLink(label: 'Restore', onTap: () {}),
+        _FooterLink(label: 'Privacy Policy', onTap: () {}),
       ],
     );
   }
@@ -2340,30 +2306,31 @@ class _PricingCard extends StatelessWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
         decoration: BoxDecoration(
-            color: isSelected ? Colors.white : const Color(0xFFEEE8E1),
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: isSelected
-                  ? _AppColors.selectedBorder
-                  : Colors.transparent,
-              width: 1.5,
-            ),
-            boxShadow: isSelected
-                ? [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.08),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ]
-                : [],
-            gradient: isSelected ? LinearGradient(colors: [
-              Color.fromRGBO(255, 218, 179, 0.2),
-              Color.fromRGBO(50, 116, 127, 0.2),
-            ]):LinearGradient(colors: [
-              Colors.white,
-              Colors.white,
-            ])
+          color: isSelected ? Colors.white : const Color(0xFFEEE8E1),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: isSelected ? _AppColors.selectedBorder : Colors.transparent,
+            width: 1.5,
+          ),
+          boxShadow:
+              isSelected
+                  ? [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                  : [],
+          gradient:
+              isSelected
+                  ? LinearGradient(
+                    colors: [
+                      Color.fromRGBO(255, 218, 179, 0.2),
+                      Color.fromRGBO(50, 116, 127, 0.2),
+                    ],
+                  )
+                  : LinearGradient(colors: [Colors.white, Colors.white]),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -2380,9 +2347,7 @@ class _PricingCard extends StatelessWidget {
                       Color.fromRGBO(159, 170, 154, 1),
                     ],
                   ),
-                  borderRadius: BorderRadius.vertical(
-                    top: Radius.circular(12),
-                  ),
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
                 ),
                 child: const Text(
                   'Best Value',
@@ -2398,12 +2363,7 @@ class _PricingCard extends StatelessWidget {
               ),
 
             Padding(
-              padding: EdgeInsets.fromLTRB(
-                8,
-                isBestValue ? 10 : 14,
-                8,
-                12,
-              ),
+              padding: EdgeInsets.fromLTRB(8, isBestValue ? 10 : 14, 8, 12),
               child: Column(
                 children: [
                   // Plan label
@@ -2452,10 +2412,7 @@ class _PricingCard extends StatelessWidget {
                   const SizedBox(height: 8),
 
                   // Divider
-                  Container(
-                    height: 0.8,
-                    color: const Color(0xFFDDD5CC),
-                  ),
+                  Container(height: 0.8, color: const Color(0xFFDDD5CC)),
 
                   const SizedBox(height: 8),
 
@@ -2467,9 +2424,10 @@ class _PricingCard extends StatelessWidget {
                       fontFamily: 'Georgia',
                       fontSize: 11.5,
                       fontWeight: FontWeight.w500,
-                      color: isBestValue
-                          ? const Color(0xFF4A9EBA)
-                          : const Color(0xFF555555),
+                      color:
+                          isBestValue
+                              ? const Color(0xFF4A9EBA)
+                              : const Color(0xFF555555),
                       height: 1.4,
                     ),
                   ),
@@ -2497,7 +2455,7 @@ class _FeatureRow extends StatelessWidget {
     return Row(
       children: [
         CustomImageview(
-          imagePath:image ,
+          imagePath: image,
           height: 32,
           width: 32,
           fit: BoxFit.contain,
@@ -2545,8 +2503,7 @@ class _ContinueButtonState extends State<_ContinueButton>
       duration: const Duration(milliseconds: 90),
       lowerBound: 0.96,
       upperBound: 1.0,
-    )
-      ..value = 1.0;
+    )..value = 1.0;
     _scale = _ctrl;
   }
 
@@ -2574,38 +2531,39 @@ class _ContinueButtonState extends State<_ContinueButton>
             color: _AppColors.continueBtn,
             borderRadius: BorderRadius.circular(30),
           ),
-          child: widget.isLoading
-              ? const Center(
-            child: SizedBox(
-              width: 22,
-              height: 22,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: _AppColors.continueBtnText,
-              ),
-            ),
-          )
-              : const Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                'Continue',
-                style: TextStyle(
-                  fontFamily: 'Georgia',
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
-                  color: _AppColors.continueBtnText,
-                  letterSpacing: 0.2,
-                ),
-              ),
-              SizedBox(width: 8),
-              Icon(
-                Icons.chevron_right,
-                color: _AppColors.continueBtnText,
-                size: 22,
-              ),
-            ],
-          ),
+          child:
+              widget.isLoading
+                  ? const Center(
+                    child: SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: _AppColors.continueBtnText,
+                      ),
+                    ),
+                  )
+                  : const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Continue',
+                        style: TextStyle(
+                          fontFamily: 'Georgia',
+                          fontSize: 18,
+                          fontWeight: FontWeight.w500,
+                          color: _AppColors.continueBtnText,
+                          letterSpacing: 0.2,
+                        ),
+                      ),
+                      SizedBox(width: 8),
+                      Icon(
+                        Icons.chevron_right,
+                        color: _AppColors.continueBtnText,
+                        size: 22,
+                      ),
+                    ],
+                  ),
         ),
       ),
     );
@@ -2653,20 +2611,19 @@ class _RoomPainter extends CustomPainter {
     final h = size.height;
 
     // Background wall
-    final wallColor = scene == _RoomScene.kitchen
-        ? const Color(0xFFCFCFC4)
-        : scene == _RoomScene.living
-        ? const Color(0xFFE8DFD2)
-        : const Color(0xFFD8DDD4);
+    final wallColor =
+        scene == _RoomScene.kitchen
+            ? const Color(0xFFCFCFC4)
+            : scene == _RoomScene.living
+            ? const Color(0xFFE8DFD2)
+            : const Color(0xFFD8DDD4);
 
-    canvas.drawRect(Rect.fromLTWH(0, 0, w, h), Paint()
-      ..color = wallColor);
+    canvas.drawRect(Rect.fromLTWH(0, 0, w, h), Paint()..color = wallColor);
 
     // Floor
     canvas.drawRect(
       Rect.fromLTWH(0, h * 0.62, w, h * 0.38),
-      Paint()
-        ..color = const Color(0xFFC4A882),
+      Paint()..color = const Color(0xFFC4A882),
     );
 
     switch (scene) {
@@ -2687,14 +2644,14 @@ class _RoomPainter extends CustomPainter {
     final h = size.height;
 
     // Upper cabinets — blue-grey (matches screenshot)
-    final cabinetPaint = Paint()
-      ..color = const Color(0xFF4A7EA0);
+    final cabinetPaint = Paint()..color = const Color(0xFF4A7EA0);
     canvas.drawRect(Rect.fromLTWH(0, h * 0.04, w, h * 0.26), cabinetPaint);
 
     // Cabinet door lines
-    final linePaint = Paint()
-      ..color = const Color(0xFF3A6A88)
-      ..strokeWidth = 1.0;
+    final linePaint =
+        Paint()
+          ..color = const Color(0xFF3A6A88)
+          ..strokeWidth = 1.0;
     for (int i = 1; i <= 3; i++) {
       canvas.drawLine(
         Offset(w * i / 4, h * 0.04),
@@ -2710,13 +2667,11 @@ class _RoomPainter extends CustomPainter {
     }
 
     // Counter top — dark
-    final darkTop = Paint()
-      ..color = const Color(0xFF2A3540);
+    final darkTop = Paint()..color = const Color(0xFF2A3540);
     canvas.drawRect(Rect.fromLTWH(0, h * 0.50, w, h * 0.045), darkTop);
 
     // Lower cabinets — warm wood
-    final lowerCab = Paint()
-      ..color = const Color(0xFFD4B896);
+    final lowerCab = Paint()..color = const Color(0xFFD4B896);
     canvas.drawRect(Rect.fromLTWH(0, h * 0.545, w, h * 0.455), lowerCab);
 
     // Lower cabinet lines
@@ -2731,8 +2686,7 @@ class _RoomPainter extends CustomPainter {
     }
 
     // Island (centered, wood)
-    final islandPaint = Paint()
-      ..color = const Color(0xFFB8936A);
+    final islandPaint = Paint()..color = const Color(0xFFB8936A);
     canvas.drawRRect(
       RRect.fromRectAndRadius(
         Rect.fromLTWH(w * 0.15, h * 0.58, w * 0.70, h * 0.42),
@@ -2750,8 +2704,7 @@ class _RoomPainter extends CustomPainter {
     );
 
     // Pendant lights
-    final pendantPaint = Paint()
-      ..color = const Color(0xFFD4B860);
+    final pendantPaint = Paint()..color = const Color(0xFFD4B860);
     for (int i = 0; i < 3; i++) {
       final x = w * (0.30 + i * 0.20);
       canvas.drawLine(
@@ -2762,9 +2715,11 @@ class _RoomPainter extends CustomPainter {
           ..strokeWidth = 1.0,
       );
       canvas.drawCircle(Offset(x, h * 0.46), 9, pendantPaint);
-      canvas.drawCircle(Offset(x, h * 0.46), 9,
-          Paint()
-            ..color = const Color(0xFFFFE88A).withOpacity(0.4));
+      canvas.drawCircle(
+        Offset(x, h * 0.46),
+        9,
+        Paint()..color = const Color(0xFFFFE88A).withOpacity(0.4),
+      );
     }
   }
 
@@ -2778,8 +2733,7 @@ class _RoomPainter extends CustomPainter {
         Rect.fromLTWH(w * 0.04, h * 0.44, w * 0.92, h * 0.13),
         const Radius.circular(5),
       ),
-      Paint()
-        ..color = const Color(0xFFD4CBBA),
+      Paint()..color = const Color(0xFFD4CBBA),
     );
     // Sofa seat
     canvas.drawRRect(
@@ -2787,8 +2741,7 @@ class _RoomPainter extends CustomPainter {
         Rect.fromLTWH(w * 0.04, h * 0.52, w * 0.92, h * 0.30),
         const Radius.circular(5),
       ),
-      Paint()
-        ..color = const Color(0xFFE2D8C8),
+      Paint()..color = const Color(0xFFE2D8C8),
     );
     // Cushions
     canvas.drawRRect(
@@ -2796,16 +2749,14 @@ class _RoomPainter extends CustomPainter {
         Rect.fromLTWH(w * 0.10, h * 0.51, w * 0.27, h * 0.22),
         const Radius.circular(4),
       ),
-      Paint()
-        ..color = const Color(0xFFC8BFB0),
+      Paint()..color = const Color(0xFFC8BFB0),
     );
     canvas.drawRRect(
       RRect.fromRectAndRadius(
         Rect.fromLTWH(w * 0.63, h * 0.51, w * 0.27, h * 0.22),
         const Radius.circular(4),
       ),
-      Paint()
-        ..color = const Color(0xFFC8BFB0),
+      Paint()..color = const Color(0xFFC8BFB0),
     );
 
     // Side table
@@ -2814,32 +2765,27 @@ class _RoomPainter extends CustomPainter {
         Rect.fromLTWH(w * 0.72, h * 0.38, w * 0.18, h * 0.20),
         const Radius.circular(4),
       ),
-      Paint()
-        ..color = const Color(0xFFA07850),
+      Paint()..color = const Color(0xFFA07850),
     );
 
     // Wall art — left
     canvas.drawRect(
       Rect.fromLTWH(w * 0.08, h * 0.07, w * 0.28, h * 0.28),
-      Paint()
-        ..color = const Color(0xFFD0C8B8),
+      Paint()..color = const Color(0xFFD0C8B8),
     );
     canvas.drawRect(
       Rect.fromLTWH(w * 0.09, h * 0.08, w * 0.26, h * 0.26),
-      Paint()
-        ..color = const Color(0xFFB8D4B0),
+      Paint()..color = const Color(0xFFB8D4B0),
     );
 
     // Floor lamp
     canvas.drawRect(
       Rect.fromLTWH(w * 0.84, h * 0.08, 3, h * 0.42),
-      Paint()
-        ..color = const Color(0xFF999999),
+      Paint()..color = const Color(0xFF999999),
     );
     canvas.drawOval(
       Rect.fromLTWH(w * 0.77, h * 0.06, 26, 16),
-      Paint()
-        ..color = const Color(0xFFEED89A),
+      Paint()..color = const Color(0xFFEED89A),
     );
   }
 
@@ -2848,12 +2794,15 @@ class _RoomPainter extends CustomPainter {
     final h = size.height;
 
     // Two wall shelves
-    final shelfPaint = Paint()
-      ..color = const Color(0xFFB8956A);
+    final shelfPaint = Paint()..color = const Color(0xFFB8956A);
     canvas.drawRect(
-        Rect.fromLTWH(w * 0.04, h * 0.14, w * 0.92, h * 0.04), shelfPaint);
+      Rect.fromLTWH(w * 0.04, h * 0.14, w * 0.92, h * 0.04),
+      shelfPaint,
+    );
     canvas.drawRect(
-        Rect.fromLTWH(w * 0.04, h * 0.30, w * 0.92, h * 0.04), shelfPaint);
+      Rect.fromLTWH(w * 0.04, h * 0.30, w * 0.92, h * 0.04),
+      shelfPaint,
+    );
 
     // Books
     final bookColors = [
@@ -2868,10 +2817,8 @@ class _RoomPainter extends CustomPainter {
       final top = h * (shelf == 0 ? 0.02 : 0.18);
       for (int b = 0; b < 6; b++) {
         canvas.drawRect(
-          Rect.fromLTWH(
-              w * 0.06 + b * (w * 0.145), top, w * 0.115, h * 0.13),
-          Paint()
-            ..color = bookColors[b % bookColors.length],
+          Rect.fromLTWH(w * 0.06 + b * (w * 0.145), top, w * 0.115, h * 0.13),
+          Paint()..color = bookColors[b % bookColors.length],
         );
       }
     }
@@ -2879,37 +2826,31 @@ class _RoomPainter extends CustomPainter {
     // Desk
     canvas.drawRect(
       Rect.fromLTWH(0, h * 0.60, w, h * 0.055),
-      Paint()
-        ..color = const Color(0xFFB8956A),
+      Paint()..color = const Color(0xFFB8956A),
     );
     canvas.drawRect(
       Rect.fromLTWH(w * 0.04, h * 0.635, w * 0.05, h * 0.37),
-      Paint()
-        ..color = const Color(0xFF9A7A52),
+      Paint()..color = const Color(0xFF9A7A52),
     );
     canvas.drawRect(
       Rect.fromLTWH(w * 0.90, h * 0.635, w * 0.05, h * 0.37),
-      Paint()
-        ..color = const Color(0xFF9A7A52),
+      Paint()..color = const Color(0xFF9A7A52),
     );
 
     // Plant
     canvas.drawRect(
       Rect.fromLTWH(w * 0.70, h * 0.52, w * 0.14, h * 0.10),
-      Paint()
-        ..color = const Color(0xFF8B6914),
+      Paint()..color = const Color(0xFF8B6914),
     );
     canvas.drawCircle(
       Offset(w * 0.775, h * 0.46),
       w * 0.10,
-      Paint()
-        ..color = const Color(0xFF5A8A5A),
+      Paint()..color = const Color(0xFF5A8A5A),
     );
     canvas.drawCircle(
       Offset(w * 0.73, h * 0.44),
       w * 0.07,
-      Paint()
-        ..color = const Color(0xFF4A7A4A),
+      Paint()..color = const Color(0xFF4A7A4A),
     );
 
     // Monitor on desk
@@ -2918,13 +2859,11 @@ class _RoomPainter extends CustomPainter {
         Rect.fromLTWH(w * 0.15, h * 0.44, w * 0.36, h * 0.20),
         const Radius.circular(3),
       ),
-      Paint()
-        ..color = const Color(0xFF2A3035),
+      Paint()..color = const Color(0xFF2A3035),
     );
     canvas.drawRect(
       Rect.fromLTWH(w * 0.29, h * 0.62, w * 0.08, h * 0.04),
-      Paint()
-        ..color = const Color(0xFF444444),
+      Paint()..color = const Color(0xFF444444),
     );
   }
 

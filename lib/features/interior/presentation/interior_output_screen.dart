@@ -1,5 +1,8 @@
+import 'package:ai_interior/widgets/custom_imageview.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:share_plus/share_plus.dart';
 
 class InteriorOutputScreen extends StatefulWidget {
   const InteriorOutputScreen({super.key});
@@ -17,8 +20,8 @@ class _InteriorOutputScreenState extends State<InteriorOutputScreen> {
   void didChangeDependencies() {
     // TODO: implement didChangeDependencies
     super.didChangeDependencies();
-
     data = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>;
+    print("IMAGE : ${data["image"]}");
   }
 
   @override
@@ -28,15 +31,12 @@ class _InteriorOutputScreenState extends State<InteriorOutputScreen> {
     final botPad = mq.padding.bottom;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle.light, // white status bar icons over photo
+      value: SystemUiOverlayStyle.light,
       child: Scaffold(
         backgroundColor: const Color(0xFFF2EFEA),
         body: Column(
           children: [
-            // ── Full-bleed photo section ───────────────────────────
             _PhotoSection(topPad: topPad, img: data["image"]),
-
-            // ── Scrollable info cards ──────────────────────────────
             Expanded(
               child: SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
@@ -81,14 +81,299 @@ class _InteriorOutputScreenState extends State<InteriorOutputScreen> {
                 ),
               ),
             ),
-
-            // ── Apply Style button ─────────────────────────────────
-            _ApplyButton(botPad: botPad),
           ],
+        ),
+        bottomNavigationBar: SizedBox(
+          height: 100,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              GestureDetector(
+                onTap: () {
+                  _showRegenerateAlert(context);
+                },
+                child: Column(
+                  children: [
+                    CustomImageview(
+                      imagePath: "assets/images/output_1.png",
+                      height: 45,
+                      width: 45,
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      "Regenerate",
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: Color.fromRGBO(46, 46, 46, 1),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Column(
+                children: [
+                  CustomImageview(
+                    imagePath: "assets/images/output_2.png",
+                    height: 45,
+                    width: 45,
+                  ),
+                  SizedBox(height: 10),
+                  Text(
+                    "Save",
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: Color.fromRGBO(46, 46, 46, 1),
+                    ),
+                  ),
+                ],
+              ),
+              GestureDetector(
+                onTap: () {
+                  showPublishSheet(context);
+                },
+                child: Column(
+                  children: [
+                    CustomImageview(
+                      imagePath: "assets/images/output_3.png",
+                      height: 45,
+                      width: 45,
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      "Publish",
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: Color.fromRGBO(46, 46, 46, 1),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              GestureDetector(
+                onTap: () {
+                  Share.share("text");
+                },
+                child: Column(
+                  children: [
+                    CustomImageview(
+                      imagePath: "assets/images/output_4.png",
+                      height: 45,
+                      width: 45,
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      "Share",
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: Color.fromRGBO(46, 46, 46, 1),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              GestureDetector(
+                onTap: () {
+                  _showDeleteAlert(context);
+                },
+                child: Column(
+                  children: [
+                    CustomImageview(
+                      imagePath: "assets/images/output_5.png",
+                      height: 45,
+                      width: 45,
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      "Delete",
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: Color.fromRGBO(46, 46, 46, 1),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
+
+  void showPublishSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (_) => const PublishBottomSheet(),
+    );
+  }
+
+  void _showDeleteAlert(BuildContext context) {
+    showCupertinoDialog<void>(
+      context: context,
+      builder: (BuildContext context) => CupertinoAlertDialog(
+        title: const Text('Delete This Design?'),
+        content: const Text(
+          'This action cannot be undone. Are you sure you want to permanently remove this design?',
+        ),
+        actions: <CupertinoDialogAction>[
+          CupertinoDialogAction(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          CupertinoDialogAction(
+            isDestructiveAction: true,
+            onPressed: () {
+              Navigator.pop(context);
+              // TODO: handle delete
+            },
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showRegenerateAlert(BuildContext context) {
+    showCupertinoDialog<void>(
+      context: context,
+      builder: (BuildContext context) => CupertinoAlertDialog(
+        title: const Text('Regenerate Design?'),
+        content: const Text(
+          'This action will use 10 credits to generate a new design. Do you want to proceed?',
+        ),
+        actions: <CupertinoDialogAction>[
+          CupertinoDialogAction(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          CupertinoDialogAction(
+            isDefaultAction: true,
+            onPressed: () {
+              Navigator.pop(context);
+              // TODO: handle regenerate
+            },
+            child: const Text('Regenerate'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class PublishBottomSheet extends StatelessWidget {
+  const PublishBottomSheet({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(24, 12, 24, 36),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Drag handle
+          Container(
+            width: 40,
+            height: 5,
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.circular(3),
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // Avatar circle
+          Container(
+            width: 72,
+            height: 72,
+            decoration: const BoxDecoration(
+              color: Color(0xFFE8D5BC),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.group, size: 36, color: Color(0xFF3D3229)),
+          ),
+          const SizedBox(height: 16),
+
+          // Title
+          const Text(
+            'Publish Your Design',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF1A1A1A),
+            ),
+          ),
+          const SizedBox(height: 10),
+
+          // Subtitle
+          const Text(
+            'Share your design on the Explore page for\nothers to discover',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 15,
+              color: Color(0xFF8A8A8A),
+              height: 1.5,
+            ),
+          ),
+          const SizedBox(height: 28),
+
+          // Publish button
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () => Navigator.pop(context),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFE8D5BC),
+                foregroundColor: const Color(0xFF3D3229),
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: const StadiumBorder(),
+                textStyle: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              child: const Text('Publish'),
+            ),
+          ),
+          const SizedBox(height: 4),
+
+          // Cancel button
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            style: TextButton.styleFrom(
+              foregroundColor: const Color(0xFF1A1A1A),
+              padding: const EdgeInsets.symmetric(vertical: 14),
+            ),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void showPublishSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (_) => const PublishBottomSheet(),
+    );
+  }
+
+
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -124,8 +409,6 @@ class _PhotoSection extends StatelessWidget {
                   ),
                 ),
           ),
-
-          // Top gradient for back button legibility
           Positioned(
             top: 0,
             left: 0,
@@ -194,7 +477,6 @@ class _InfoTile extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Icon container
           Container(
             width: 46,
             height: 46,
@@ -205,8 +487,6 @@ class _InfoTile extends StatelessWidget {
             child: Center(child: iconWidget),
           ),
           const SizedBox(width: 13),
-
-          // Label + value
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

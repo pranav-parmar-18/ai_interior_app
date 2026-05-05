@@ -567,7 +567,7 @@ class _ExteriorColorPaletteScreenState
           _interiorDeignCreateBloc.add(
             ExteriorDeignCreateDataEvent(
               login: {
-                "user_id": 334,
+                "user_id": 342,
                 "colors": "retro",
                 "design_asthetic": "zen",
                 "space_type": "bed room",

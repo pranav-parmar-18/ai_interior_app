@@ -51,7 +51,7 @@ class ExteriorDeignCreateRepository {
     File image,
   ) async {
     try {
-      final uri = Uri.parse('${ProjectConstant.baseUrl}exterior/create');
+      final uri = Uri.parse('${ProjectConstant.baseUrlV2}exterior/create');
 
       final verifyHeader = generateVerifyHeader('');
 
@@ -59,7 +59,7 @@ class ExteriorDeignCreateRepository {
 
       // 🔹 Headers
       request.headers.addAll({
-        'verify': verifyHeader, // <-- IMPORTANT
+        'verify': verifyHeader,
       });
 
       // 🔹 Form fields

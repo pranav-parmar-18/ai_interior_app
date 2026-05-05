@@ -1,24 +1,20 @@
 class InteriorDesignCreateModelResponse {
   final Data? data;
   final String? message;
-  final int? status;
 
   InteriorDesignCreateModelResponse({
     this.data,
     this.message,
-    this.status,
   });
 
   factory InteriorDesignCreateModelResponse.fromJson(Map<String, dynamic> json) => InteriorDesignCreateModelResponse(
     data: json["data"] == null ? null : Data.fromJson(json["data"]),
     message: json["message"],
-    status: json["status"],
   );
 
   Map<String, dynamic> toJson() => {
     "data": data?.toJson(),
     "message": message,
-    "status": status,
   };
 }
 

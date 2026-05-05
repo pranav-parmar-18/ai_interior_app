@@ -569,6 +569,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../subscription/presentation/subscription_screen.dart';
+import '../../subscription/presentation/subscription_screen_three.dart';
+import '../../subscription/presentation/subscription_screen_two.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -750,7 +752,7 @@ class _PremiumBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        Navigator.of(context).pushNamed(SubscriptionScreen.routeName);
+        Navigator.of(context).pushNamed(SubscriptionScreenThree.routeName);
       },
       child: Container(
         height: 92,
