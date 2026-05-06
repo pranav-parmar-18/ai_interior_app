@@ -1,6 +1,8 @@
 import 'dart:io';
 
 import 'package:ai_interior/bloc/interoir_design_create/interior_design_create_bloc.dart';
+import 'package:ai_interior/features/interior/presentation/interior_ash_list_screen.dart';
+import 'package:ai_interior/features/interior/presentation/interior_list_screen.dart';
 import 'package:ai_interior/features/main/presentaion/main_screen.dart';
 import 'package:ai_interior/widgets/custom_imageview.dart';
 import 'package:flutter/material.dart';
@@ -248,6 +250,8 @@ class _InteriorColorPaletteScreenState
               "color": interiorDesignCreateModelResponse?.data?.colors ?? "",
               "designAsth":
                   interiorDesignCreateModelResponse?.data?.designAsthetic ?? "",
+              "id":
+                  interiorDesignCreateModelResponse?.data?.id ?? "",
             },
           );
         } else if (state is InteriorDeignCreateFailureState) {
@@ -568,11 +572,11 @@ class _InteriorColorPaletteScreenState
             InteriorDeignCreateDataEvent(
               login: {
                 "user_id": 342,
-                "colors": "retro",
-                "design_asthetic": "zen",
-                "space_type": "bed room",
+                "colors": _selectedPalette?.toLowerCase(),
+                "design_asthetic": intAshType,
+                "space_type": intSpaceType,
               },
-              image: picked != null ? picked ?? File("") : imageFile,
+              image: picked != null ? picked ??  File("") : imageFile,
             ),
           );
         },

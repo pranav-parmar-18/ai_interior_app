@@ -5,6 +5,7 @@ import '../../../widgets/custom_imageview.dart';
 import 'exterior_describe_me.dart';
 import 'exterior_plaate.dart';
 
+String extAsh = "";
 class RoomItem {
   final String name;
   final String imageUrl;

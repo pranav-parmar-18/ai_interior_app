@@ -14,7 +14,7 @@ class PublishRecordRepository {
 
   Future<void> login(Map<String, dynamic> data) async {
     try {
-      const String url = '${ProjectConstant.baseUrl}login';
+      const String url = '${ProjectConstant.baseUrl}publish';
       String jsonPayload = jsonEncode(data);
 
       final response = await http.post(

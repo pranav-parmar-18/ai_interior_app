@@ -14,6 +14,7 @@ import 'package:flutter/foundation.dart'
 ///   options: DefaultFirebaseOptions.currentPlatform,
 /// );
 /// ```
+
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
@@ -50,18 +51,18 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyA4OoQ7ZyV2xqPsIW3W20HsYpqM5USNPJg',
-    appId: '1:210195078902:android:214e1049c0c97285c5d6d7',
-    messagingSenderId: '210195078902',
-    projectId: 'ai-girlfriend-cda5a',
-    storageBucket: 'ai-girlfriend-cda5a.firebasestorage.app',
+    apiKey: 'AIzaSyDBD34wd20cF6o7OJL9beIZbb_KBmxVseo',
+    appId: '1:395765505791:android:62e1007971b9d2b2bbb6ca',
+    messagingSenderId: '395765505791',
+    projectId: 'bloomnest---ai-interior-design',
+    storageBucket: 'bloomnest---ai-interior-design.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyBlPj8pU2yJkKUqEZEWRl51kCcqwFRtRsw',
     appId: '1:210195078902:ios:412aae9378db13eec5d6d7',
     messagingSenderId: '210195078902',
-    projectId: 'ai-girlfriend-cda5a',
+    projectId: 'bloomnest---ai-interior-design',
     storageBucket: 'ai-girlfriend-cda5a.firebasestorage.app',
     iosBundleId: 'com.tripleit.aigirlfriendgf',
   );

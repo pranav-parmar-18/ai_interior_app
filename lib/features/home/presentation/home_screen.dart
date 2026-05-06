@@ -89,6 +89,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFFAF7F4),
+      appBar: TopBarAppBar(),
       body: Column(
         children: [
           // ── Main scrollable content ──
@@ -96,7 +97,7 @@ class _HomeScreenState extends State<HomeScreen> {
             child: CustomScrollView(
               slivers: [
                 // Top App Bar
-                SliverToBoxAdapter(child: _TopBar()),
+                // SliverToBoxAdapter(child: ()),
 
                 // Feature cards list
                 SliverList(
@@ -122,81 +123,87 @@ class _HomeScreenState extends State<HomeScreen> {
 // ─────────────────────────────────────────────
 // Top Bar
 // ─────────────────────────────────────────────
-class _TopBar extends StatelessWidget {
+class TopBarAppBar extends StatelessWidget implements PreferredSizeWidget {
+  const TopBarAppBar({super.key});
+
+  @override
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight + 12);
+
   @override
   Widget build(BuildContext context) {
-    final topPad = MediaQuery.of(context).padding.top;
-    return Padding(
-      padding: EdgeInsets.only(top: topPad + 6, left: 16, right: 16, bottom: 4),
-      child: Row(
-        children: [
-          // Title
-          const Text(
-            'AI Interior Design',
-            style: TextStyle(
-              fontSize: 30,
-              fontFamily: 'Georgia',
-              fontWeight: FontWeight.w500,
-              color: Color.fromRGBO(135, 63, 0, 1),
-              letterSpacing: -0.2,
+    return AppBar(
+      automaticallyImplyLeading: false,
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      titleSpacing: 16,
+      title: const Text(
+        'AI Interior Design',
+        style: TextStyle(
+          fontSize: 30,
+          fontFamily: 'Georgia',
+          fontWeight: FontWeight.w500,
+          color: Color.fromRGBO(135, 63, 0, 1),
+          letterSpacing: -0.2,
+        ),
+      ),
+      actions: [
+        // Coin balance
+        GestureDetector(
+          onTap: () {
+            Navigator.of(context).pushNamed(CreditsScreen.routeName);
+          },
+          child: Container(
+            margin: const EdgeInsets.only(right: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFF3E8),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: const Color(0xFFE8873A).withOpacity(0.3),
+              ),
             ),
-          ),
-          const Spacer(),
-          // Coin balance
-          GestureDetector(
-            onTap: () {
-              Navigator.of(context).pushNamed(CreditsScreen.routeName);
-            },
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFFF3E8),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: const Color(0xFFE8873A).withOpacity(0.3),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  '200',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF1A1A1A),
+                    letterSpacing: -0.2,
+                  ),
                 ),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text(
-                    '200',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF1A1A1A),
-                      letterSpacing: -0.2,
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  CustomImageview(
-                    imagePath: "assets/images/credit.png",
-                    height: 25,
-                    width: 25,
-                    fit: BoxFit.contain,
-                  ),
-                ],
-              ),
+                const SizedBox(width: 4),
+                CustomImageview(
+                  imagePath: "assets/images/credit.png",
+                  height: 25,
+                  width: 25,
+                  fit: BoxFit.contain,
+                ),
+              ],
             ),
           ),
-          const SizedBox(width: 8),
-          // Settings
-          InkWell(
-            onTap: () {
-              Navigator.of(context).pushNamed(SettingsScreen.routeName);
-            },
+        ),
+
+        // Settings icon
+        InkWell(
+          onTap: () {
+            Navigator.of(context).pushNamed(SettingsScreen.routeName);
+          },
+          child: Padding(
+            padding: const EdgeInsets.only(right: 16),
             child: CustomImageview(
               imagePath: "assets/images/setting.png",
               height: 25,
               width: 25,
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
-
 // ─────────────────────────────────────────────
 // Feature Card
 // ─────────────────────────────────────────────

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "395765505791",
+    "project_id": "bloomnest---ai-interior-design",
+    "storage_bucket": "bloomnest---ai-interior-design.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:395765505791:android:62e1007971b9d2b2bbb6ca",
+        "android_client_info": {
+          "package_name": "com.app.interiordesignainest"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDBD34wd20cF6o7OJL9beIZbb_KBmxVseo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

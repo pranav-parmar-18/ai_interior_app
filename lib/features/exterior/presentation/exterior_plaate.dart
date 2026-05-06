@@ -1,6 +1,8 @@
 import 'dart:io';
 
 import 'package:ai_interior/bloc/interoir_design_create/interior_design_create_bloc.dart';
+import 'package:ai_interior/features/exterior/presentation/exterior_ash_list_screen.dart';
+import 'package:ai_interior/features/exterior/presentation/exterior_list_screen.dart';
 import 'package:ai_interior/features/main/presentaion/main_screen.dart';
 import 'package:ai_interior/widgets/custom_imageview.dart';
 import 'package:flutter/material.dart';
@@ -568,11 +570,11 @@ class _ExteriorColorPaletteScreenState
             ExteriorDeignCreateDataEvent(
               login: {
                 "user_id": 342,
-                "colors": "retro",
-                "design_asthetic": "zen",
-                "space_type": "bed room",
+                "colors": _selectedPalette,
+                "design_asthetic": extAsh,
+                "space_type": extSpaceType,
               },
-              image: picked != null ? picked ?? File("") : imageFile,
+              image: extpicked != null ? extpicked ?? File("") : imageFile,
             ),
           );
         },

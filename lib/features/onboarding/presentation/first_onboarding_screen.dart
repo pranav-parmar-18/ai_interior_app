@@ -3,12 +3,15 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:video_player/video_player.dart';
 
 import 'fourth_onboarding_screen.dart';
 
 class OnBoardingFirstScreen extends StatefulWidget {
   const OnBoardingFirstScreen({super.key});
+
   static const routeName = "";
+
   @override
   State<OnBoardingFirstScreen> createState() => _OnBoardingFirstScreenState();
 }
@@ -22,19 +25,19 @@ class _OnBoardingFirstScreenState extends State<OnBoardingFirstScreen> {
       imagePath: 'assets/images/room1.jpg',
       title: 'Effortless Home Redesign',
       subtitle:
-      'Upload a photo and let AI redesign your interiors and exteriors effortlessly.',
+          'Upload a photo and let AI redesign your interiors and exteriors effortlessly.',
     ),
     OnboardingData(
       imagePath: 'assets/images/on_board_2.png',
       title: 'Style It Your Way',
       subtitle:
-      'Choose from presets or create a custom design with AI-powered suggestions',
+          'Choose from presets or create a custom design with AI-powered suggestions',
     ),
     OnboardingData(
       imagePath: 'assets/images/on_board_3.png',
       title: 'Reimagine Any Space',
       subtitle:
-      'Select an area, describe your vision, and let AI bring it to life.',
+          'Select an area, describe your vision, and let AI bring it to life.',
     ),
   ];
 
@@ -57,14 +60,12 @@ class _OnBoardingFirstScreenState extends State<OnBoardingFirstScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Use status bar with dark icons (matches screenshot)
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F0EA),
       body: Column(
         children: [
-
           Expanded(
             flex: 60,
             child: PageView.builder(
@@ -74,10 +75,16 @@ class _OnBoardingFirstScreenState extends State<OnBoardingFirstScreen> {
                 setState(() => _currentPage = index);
               },
               itemBuilder: (context, index) {
-                return index==0?ShimmerSwitchImage(
-                  firstImage: 'assets/images/on_1.jpg',
-                  secondImage: 'assets/images/on_2.jpg',
-                ):_HeroImage(imagePath: _pages[index].imagePath);
+                return index == 0
+                    ? ShimmerSwitchImage(
+                      firstImage: 'assets/images/on_1.jpg',
+                      secondImage: 'assets/images/on_2.jpg',
+                    )
+                    : index == 1
+                    ? FullWidthVideo()
+                    : index == 2
+                    ? AutoImageSlider()
+                    : _HeroImage(imagePath: _pages[index].imagePath);
               },
             ),
           ),
@@ -137,7 +144,7 @@ class _OnBoardingFirstScreenState extends State<OnBoardingFirstScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: List.generate(
                         _pages.length,
-                            (index) => _PageDot(isActive: index == _currentPage),
+                        (index) => _PageDot(isActive: index == _currentPage),
                       ),
                     ),
 
@@ -178,9 +185,7 @@ class _HeroImage extends StatelessWidget {
             child: Stack(
               children: [
                 // Simulated room scene using gradients/shapes
-                Positioned.fill(
-                  child: CustomPaint(painter: _RoomPainter()),
-                ),
+                Positioned.fill(child: CustomPaint(painter: _RoomPainter())),
               ],
             ),
           );
@@ -189,8 +194,6 @@ class _HeroImage extends StatelessWidget {
     );
   }
 }
-
-
 
 class ShimmerSwitchImage extends StatefulWidget {
   const ShimmerSwitchImage({
@@ -215,7 +218,7 @@ class _ShimmerSwitchImageState extends State<ShimmerSwitchImage> {
     super.initState();
     _timer = Timer.periodic(
       const Duration(seconds: 2),
-          (_) => setState(() => _showFirst = !_showFirst),
+      (_) => setState(() => _showFirst = !_showFirst),
     );
   }
 
@@ -227,7 +230,8 @@ class _ShimmerSwitchImageState extends State<ShimmerSwitchImage> {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox.expand( // ✅ fill PageView (60%)
+    return SizedBox.expand(
+      // ✅ fill PageView (60%)
       child: Stack(
         fit: StackFit.expand,
         children: [
@@ -271,7 +275,6 @@ class _ShimmerSwitchImageState extends State<ShimmerSwitchImage> {
   }
 }
 
-
 // ─────────────────────────────────────────────
 // Room Painter (placeholder background)
 // ─────────────────────────────────────────────
@@ -280,7 +283,10 @@ class _RoomPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     // Wall — light grey
     final wallPaint = Paint()..color = const Color(0xFFEFEDEA);
-    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height * 0.72), wallPaint);
+    canvas.drawRect(
+      Rect.fromLTWH(0, 0, size.width, size.height * 0.72),
+      wallPaint,
+    );
 
     // Floor — warm wood tone
     final floorPaint = Paint()..color = const Color(0xFFD9C4A8);
@@ -290,9 +296,10 @@ class _RoomPainter extends CustomPainter {
     );
 
     // Floor planks
-    final plankPaint = Paint()
-      ..color = const Color(0xFFC4AE90)
-      ..strokeWidth = 1;
+    final plankPaint =
+        Paint()
+          ..color = const Color(0xFFC4AE90)
+          ..strokeWidth = 1;
     for (double y = size.height * 0.72; y < size.height; y += 18) {
       canvas.drawLine(Offset(0, y), Offset(size.width, y), plankPaint);
     }
@@ -300,7 +307,12 @@ class _RoomPainter extends CustomPainter {
     // Sofa body
     final sofaPaint = Paint()..color = const Color(0xFFB0A898);
     final sofaRect = RRect.fromRectAndRadius(
-      Rect.fromLTWH(size.width * 0.42, size.height * 0.52, size.width * 0.62, size.height * 0.26),
+      Rect.fromLTWH(
+        size.width * 0.42,
+        size.height * 0.52,
+        size.width * 0.62,
+        size.height * 0.26,
+      ),
       const Radius.circular(12),
     );
     canvas.drawRRect(sofaRect, sofaPaint);
@@ -309,7 +321,12 @@ class _RoomPainter extends CustomPainter {
     final cushionPaint = Paint()..color = const Color(0xFF9A9088);
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(size.width * 0.44, size.height * 0.45, size.width * 0.58, size.height * 0.12),
+        Rect.fromLTWH(
+          size.width * 0.44,
+          size.height * 0.45,
+          size.width * 0.58,
+          size.height * 0.12,
+        ),
         const Radius.circular(8),
       ),
       cushionPaint,
@@ -317,12 +334,13 @@ class _RoomPainter extends CustomPainter {
 
     // Throw blanket
     final throwPaint = Paint()..color = const Color(0xFFD9C9B2);
-    final throwPath = Path()
-      ..moveTo(size.width * 0.42, size.height * 0.56)
-      ..lineTo(size.width * 0.75, size.height * 0.50)
-      ..lineTo(size.width * 0.78, size.height * 0.72)
-      ..lineTo(size.width * 0.42, size.height * 0.72)
-      ..close();
+    final throwPath =
+        Path()
+          ..moveTo(size.width * 0.42, size.height * 0.56)
+          ..lineTo(size.width * 0.75, size.height * 0.50)
+          ..lineTo(size.width * 0.78, size.height * 0.72)
+          ..lineTo(size.width * 0.42, size.height * 0.72)
+          ..close();
     canvas.drawPath(throwPath, throwPaint);
 
     // Small side table
@@ -333,10 +351,11 @@ class _RoomPainter extends CustomPainter {
       tablePaint,
     );
     // Table legs
-    final legPaint = Paint()
-      ..color = const Color(0xFFD4A96A)
-      ..strokeWidth = 3
-      ..strokeCap = StrokeCap.round;
+    final legPaint =
+        Paint()
+          ..color = const Color(0xFFD4A96A)
+          ..strokeWidth = 3
+          ..strokeCap = StrokeCap.round;
     canvas.drawLine(
       Offset(size.width * 0.34, size.height * 0.68),
       Offset(size.width * 0.31, size.height * 0.76),
@@ -357,16 +376,22 @@ class _RoomPainter extends CustomPainter {
     final potPaint = Paint()..color = const Color(0xFFD4A96A);
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(size.width * 0.35, size.height * 0.61, size.width * 0.06, size.height * 0.07),
+        Rect.fromLTWH(
+          size.width * 0.35,
+          size.height * 0.61,
+          size.width * 0.06,
+          size.height * 0.07,
+        ),
         const Radius.circular(4),
       ),
       potPaint,
     );
 
     // Large plant (left side)
-    final stemPaint = Paint()
-      ..color = const Color(0xFF4A6741)
-      ..strokeWidth = 3;
+    final stemPaint =
+        Paint()
+          ..color = const Color(0xFF4A6741)
+          ..strokeWidth = 3;
     canvas.drawLine(
       Offset(size.width * 0.12, size.height * 0.72),
       Offset(size.width * 0.12, size.height * 0.2),
@@ -375,18 +400,38 @@ class _RoomPainter extends CustomPainter {
 
     // Large leaves
     final leafPaint = Paint()..color = const Color(0xFF5A8050);
-    _drawLeaf(canvas, leafPaint, Offset(size.width * 0.12, size.height * 0.22),
-        size.width * 0.18, -0.4);
-    _drawLeaf(canvas, leafPaint, Offset(size.width * 0.12, size.height * 0.3),
-        size.width * 0.16, 0.5);
-    _drawLeaf(canvas, leafPaint, Offset(size.width * 0.12, size.height * 0.38),
-        size.width * 0.15, -0.3);
+    _drawLeaf(
+      canvas,
+      leafPaint,
+      Offset(size.width * 0.12, size.height * 0.22),
+      size.width * 0.18,
+      -0.4,
+    );
+    _drawLeaf(
+      canvas,
+      leafPaint,
+      Offset(size.width * 0.12, size.height * 0.3),
+      size.width * 0.16,
+      0.5,
+    );
+    _drawLeaf(
+      canvas,
+      leafPaint,
+      Offset(size.width * 0.12, size.height * 0.38),
+      size.width * 0.15,
+      -0.3,
+    );
 
     // Plant pot (large, black/white)
     final largePotPaint = Paint()..color = const Color(0xFF2C2C2C);
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(size.width * 0.06, size.height * 0.67, size.width * 0.12, size.height * 0.08),
+        Rect.fromLTWH(
+          size.width * 0.06,
+          size.height * 0.67,
+          size.width * 0.12,
+          size.height * 0.08,
+        ),
         const Radius.circular(6),
       ),
       largePotPaint,
@@ -394,12 +439,23 @@ class _RoomPainter extends CustomPainter {
     // white band
     final bandPaint = Paint()..color = const Color(0xFFFFFFFF);
     canvas.drawRect(
-      Rect.fromLTWH(size.width * 0.06, size.height * 0.67, size.width * 0.12, size.height * 0.025),
+      Rect.fromLTWH(
+        size.width * 0.06,
+        size.height * 0.67,
+        size.width * 0.12,
+        size.height * 0.025,
+      ),
       bandPaint,
     );
   }
 
-  void _drawLeaf(Canvas canvas, Paint paint, Offset start, double length, double angle) {
+  void _drawLeaf(
+    Canvas canvas,
+    Paint paint,
+    Offset start,
+    double length,
+    double angle,
+  ) {
     final path = Path();
     final endX = start.dx + length * (-0.6 + angle);
     final endY = start.dy - length * 0.3;
@@ -440,9 +496,12 @@ class _PageDot extends StatelessWidget {
       height: isActive ? 10 : 8,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: isActive
-            ? const Color(0xFF4A5050) // dark filled — active (pentagon-like in screenshot)
-            : const Color(0xFFCDC9C3), // light grey — inactive
+        color:
+            isActive
+                ? const Color(
+                  0xFF4A5050,
+                ) // dark filled — active (pentagon-like in screenshot)
+                : const Color(0xFFCDC9C3), // light grey — inactive
       ),
     );
   }
@@ -517,4 +576,120 @@ class OnboardingData {
     required this.title,
     required this.subtitle,
   });
+}
+
+class AutoImageSlider extends StatefulWidget {
+  const AutoImageSlider({super.key});
+
+  @override
+  State<AutoImageSlider> createState() => _AutoImageSliderState();
+}
+
+class _AutoImageSliderState extends State<AutoImageSlider> {
+  final List<String> images = [
+    'assets/images/photo_1.png',
+    'assets/images/photo_2.png',
+    'assets/images/photo_3.png',
+    'assets/images/photo_4.png',
+    'assets/images/photo_5.png',
+  ];
+
+  int _currentIndex = 0;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _startAutoSlide();
+  }
+
+  void _startAutoSlide() {
+    _timer = Timer.periodic(const Duration(milliseconds: 1000), (timer) {
+      setState(() {
+        _currentIndex = (_currentIndex + 1) % images.length;
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity, // ✅ FULL WIDTH
+      height: 220, // 🔹 set as needed
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 400),
+        transitionBuilder: (child, animation) {
+          return FadeTransition(
+            opacity: animation,
+            child: ScaleTransition(
+              scale: Tween(begin: 0.95, end: 1.0).animate(animation),
+              child: child,
+            ),
+          );
+        },
+        child: Image.asset(
+          images[_currentIndex],
+          key: ValueKey(_currentIndex),
+          fit: BoxFit.cover,
+          width: double.infinity, // ✅ IMPORTANT
+        ),
+      ),
+    );
+  }
+}
+
+class FullWidthVideo extends StatefulWidget {
+  const FullWidthVideo({super.key});
+
+  @override
+  State<FullWidthVideo> createState() => _FullWidthVideoState();
+}
+
+class _FullWidthVideoState extends State<FullWidthVideo> {
+  late VideoPlayerController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _controller =
+        VideoPlayerController.asset('assets/videos/on_board_two.mp4')
+          ..setLooping(true)
+          ..setVolume(0)
+          ..initialize().then((_) {
+            _controller.play();
+            setState(() {});
+          });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      height: 250,
+      child:
+          _controller.value.isInitialized
+              ? FittedBox(
+                fit: BoxFit.cover,
+                child: SizedBox(
+                  width: _controller.value.size.width,
+                  height: _controller.value.size.height,
+                  child: VideoPlayer(_controller),
+                ),
+              )
+              : const Center(child: CircularProgressIndicator()),
+    );
+  }
 }

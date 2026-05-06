@@ -13,6 +13,7 @@ import '../../../bloc/get_all_exterior_designs/get_all_exterior_designs_bloc.dar
 import '../../../models/get_all_interrior_design_model_response.dart';
 import '../../../widgets/custom_imageview.dart';
 import '../../credit/presentataion/credit_screen.dart';
+import '../../home/presentation/home_screen.dart';
 import '../../setting/presentation/setting_screens.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -152,13 +153,12 @@ class _ExploreScreenState extends State<ExploreScreen>
             return AnnotatedRegion<SystemUiOverlayStyle>(
               value: SystemUiOverlayStyle.dark,
               child: Scaffold(
+                appBar: TopBarAppBar(),
                 backgroundColor: const Color(0xFFF5F2EE),
                 body: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
 
-                    _TopBar(),
-                    const SizedBox(height: 18),
 
                     _buildTabBar(),
                     const SizedBox(height: 16),

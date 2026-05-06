@@ -1,40 +1,36 @@
 part of 'recent_list_bloc.dart';
 
-abstract class PartnerListState extends Equatable {
-  PartnerListState();
+abstract class RecentListState extends Equatable {
+  RecentListState();
 
   @override
   List<Object> get props => [];
 }
 
-class PartnerListInitialState extends PartnerListState {}
+class RecentListInitialState extends RecentListState {}
 
-class PartnerListLoadingState extends PartnerListState {
-  PartnerListLoadingState();
+class RecentListLoadingState extends RecentListState {
+  RecentListLoadingState();
 }
 
-class PartnerListSuccessState extends PartnerListState {
-  final CommonModelResponse? exploreSongResponse;
+class RecentListSuccessState extends RecentListState {
+  final RecentListModelResponse? exploreSongResponse;
   final String message;
 
-  PartnerListSuccessState({
+  RecentListSuccessState({
     required this.exploreSongResponse,
     required this.message,
   });
 }
 
-class PartnerListFailureState extends PartnerListState {
+class RecentListFailureState extends RecentListState {
   final String message;
 
-  PartnerListFailureState({
-    required this.message,
-  });
+  RecentListFailureState({required this.message});
 }
 
-class PartnerListExceptionState extends PartnerListState {
+class RecentListExceptionState extends RecentListState {
   final String message;
 
-  PartnerListExceptionState({
-    required this.message,
-  });
+  RecentListExceptionState({required this.message});
 }

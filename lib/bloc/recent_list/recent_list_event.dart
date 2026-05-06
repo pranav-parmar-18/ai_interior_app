@@ -1,16 +1,16 @@
 part of 'recent_list_bloc.dart';
 
-abstract class PartnerListEvent extends Equatable {
-  const PartnerListEvent();
+abstract class RecentListEvent extends Equatable {
+  const RecentListEvent();
 
   @override
   List<Object> get props => [];
 }
 
-class PartnerListInitialEvent extends PartnerListEvent {}
+class RecentListInitialEvent extends RecentListEvent {}
 
-class PartnerListDataEvent extends PartnerListEvent {
+class RecentListDataEvent extends RecentListEvent {
 
 final String genderId;
-  const PartnerListDataEvent({required this.genderId});
+  const RecentListDataEvent({required this.genderId});
 }

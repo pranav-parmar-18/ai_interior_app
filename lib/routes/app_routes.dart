@@ -5,6 +5,7 @@ import '../features/chat/presentation/call_screen.dart';
 import '../features/chat/presentation/invite_screen.dart';
 import '../features/credit/presentataion/credit_screen.dart';
 import '../features/dream/presentation/dream_ash_list_screen.dart';
+import '../features/dream/presentation/dream_output_screen.dart';
 import '../features/dream/presentation/dream_plaate.dart';
 import '../features/dream/presentation/dream_screen.dart';
 import '../features/explore/presentation/explore_detail_screen.dart';
@@ -49,7 +50,7 @@ class AppRouter {
       case '/':
         return CupertinoPageRoute(
           settings: settings,
-          builder: (_) => SplashScreen(),
+          builder: (_) => OnBoardingFirstScreen(),
         );
       case OnBoardingFirstScreen.routeName:
         return CupertinoPageRoute(
@@ -245,6 +246,12 @@ class AppRouter {
           settings: settings,
           builder: (_) => LanguageScreen(),
         );
+      case DreamOutputScreen.routeName:
+        return CupertinoPageRoute(
+          settings: settings,
+          builder: (_) => DreamOutputScreen(),
+        );
+
       case SubscriptionScreenTwo.routeName:
         return CupertinoPageRoute(
           settings: settings,

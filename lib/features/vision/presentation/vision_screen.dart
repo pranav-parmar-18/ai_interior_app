@@ -49,14 +49,10 @@ class _DescribeVisionScreenState extends State<DescribeVisionScreen> {
     final botPad = mq.padding.bottom;
 
     return Scaffold(
-      // No scaffold background — we paint our own gradient
       backgroundColor: Colors.transparent,
       body: Stack(
         children: [
-          // ── Full-screen warm blurred gradient bg ──────────────────
           Positioned.fill(child: _BackgroundGradient()),
-
-          // ── Content ───────────────────────────────────────────────
           SafeArea(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

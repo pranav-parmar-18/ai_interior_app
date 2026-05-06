@@ -1,8 +1,12 @@
+import 'package:ai_interior/bloc/delete_record/delete_record_bloc.dart';
+import 'package:ai_interior/bloc/publish_record/publish_record_bloc.dart';
 import 'package:ai_interior/widgets/custom_imageview.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class InteriorOutputScreen extends StatefulWidget {
   const InteriorOutputScreen({super.key});
@@ -14,6 +18,9 @@ class InteriorOutputScreen extends StatefulWidget {
 }
 
 class _InteriorOutputScreenState extends State<InteriorOutputScreen> {
+  final PublishRecordBloc _publishRecordBloc = PublishRecordBloc();
+  final DeleteRecordBloc _deleteRecordBloc = DeleteRecordBloc();
+
   Map<String, dynamic> data = {};
 
   @override
@@ -32,176 +39,208 @@ class _InteriorOutputScreenState extends State<InteriorOutputScreen> {
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light,
-      child: Scaffold(
-        backgroundColor: const Color(0xFFF2EFEA),
-        body: Column(
-          children: [
-            _PhotoSection(topPad: topPad, img: data["image"]),
-            Expanded(
-              child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                child: Column(
-                  children: [
-                    // Building Type
-                    _InfoTile(
-                      iconWidget: const _BuildingIcon(),
-                      label: 'Building Type',
-                      value: data["spaceType"].toString().toUpperCase(),
-                      trailing: null,
-                    ),
-                    const SizedBox(height: 10),
-
-                    // Design Aesthetic
-                    _InfoTile(
-                      iconWidget: const Icon(
-                        Icons.style_outlined,
-                        size: 26,
-                        color: Color(0xFF5A5550),
+      child: BlocConsumer<PublishRecordBloc, PublishRecordState>(
+        bloc: _publishRecordBloc,
+        listener: (context, state) {
+          if (state is PublishRecordSuccessState) {
+          } else if (state is PublishRecordFailureState ||
+              state is PublishRecordExceptionState) {}
+        },
+        builder: (context, state) {
+          return BlocConsumer<DeleteRecordBloc, DeleteRecordState>(
+            bloc: _deleteRecordBloc,
+            listener: (context, state) {
+              if (state is DeleteRecordSuccessState) {
+              } else if (state is DeleteRecordExceptionState ||
+                  state is DeleteRecordFailureState) {}
+            },
+            builder: (context, state) {
+              return Scaffold(
+                backgroundColor: const Color(0xFFF2EFEA),
+                body:
+                    state is PublishRecordLoadingState
+                        ? Center(child: CupertinoActivityIndicator())
+                        : Column(
+                          children: [
+                            _PhotoSection(topPad: topPad, img: data["image"]),
+                            Expanded(
+                              child: SingleChildScrollView(
+                                physics: const BouncingScrollPhysics(),
+                                padding: const EdgeInsets.fromLTRB(
+                                  16,
+                                  16,
+                                  16,
+                                  0,
+                                ),
+                                child: Column(
+                                  children: [
+                                    _InfoTile(
+                                      iconWidget: const _BuildingIcon(),
+                                      label: 'Building Type',
+                                      value:
+                                          data["spaceType"]
+                                              .toString()
+                                              .toUpperCase(),
+                                      trailing: null,
+                                    ),
+                                    const SizedBox(height: 10),
+                                    _InfoTile(
+                                      iconWidget: const Icon(
+                                        Icons.style_outlined,
+                                        size: 26,
+                                        color: Color(0xFF5A5550),
+                                      ),
+                                      label: 'Design Aesthetic',
+                                      value:
+                                          data["designAsth"]
+                                              .toString()
+                                              .toUpperCase(),
+                                      trailing: null,
+                                    ),
+                                    const SizedBox(height: 10),
+                                    _InfoTile(
+                                      iconWidget: const Icon(
+                                        Icons.palette_outlined,
+                                        size: 26,
+                                        color: Color(0xFF5A5550),
+                                      ),
+                                      label: 'Color Palette',
+                                      value:
+                                          data["color"]
+                                              .toString()
+                                              .toUpperCase(),
+                                      trailing: const _ColorSwatches(),
+                                    ),
+                                    const SizedBox(height: 16),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                bottomNavigationBar: SizedBox(
+                  height: 100,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          _showRegenerateAlert(context);
+                        },
+                        child: Column(
+                          children: [
+                            CustomImageview(
+                              imagePath: "assets/images/output_1.png",
+                              height: 45,
+                              width: 45,
+                            ),
+                            SizedBox(height: 10),
+                            Text(
+                              "Regenerate",
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: Color.fromRGBO(46, 46, 46, 1),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                      label: 'Design Aesthetic',
-                      value: data["designAsth"].toString().toUpperCase(),
-                      trailing: null,
-                    ),
-                    const SizedBox(height: 10),
-
-                    // Color Palette
-                    _InfoTile(
-                      iconWidget: const Icon(
-                        Icons.palette_outlined,
-                        size: 26,
-                        color: Color(0xFF5A5550),
+                      Column(
+                        children: [
+                          CustomImageview(
+                            imagePath: "assets/images/output_2.png",
+                            height: 45,
+                            width: 45,
+                          ),
+                          SizedBox(height: 10),
+                          Text(
+                            "Save",
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: Color.fromRGBO(46, 46, 46, 1),
+                            ),
+                          ),
+                        ],
                       ),
-                      label: 'Color Palette',
-                      value: data["color"].toString().toUpperCase(),
-                      trailing: const _ColorSwatches(),
-                    ),
-                    const SizedBox(height: 16),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-        bottomNavigationBar: SizedBox(
-          height: 100,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              GestureDetector(
-                onTap: () {
-                  _showRegenerateAlert(context);
-                },
-                child: Column(
-                  children: [
-                    CustomImageview(
-                      imagePath: "assets/images/output_1.png",
-                      height: 45,
-                      width: 45,
-                    ),
-                    SizedBox(height: 10),
-                    Text(
-                      "Regenerate",
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        color: Color.fromRGBO(46, 46, 46, 1),
+                      GestureDetector(
+                        onTap: () {
+                          showPublishSheet(context);
+                        },
+                        child: Column(
+                          children: [
+                            CustomImageview(
+                              imagePath: "assets/images/output_3.png",
+                              height: 45,
+                              width: 45,
+                            ),
+                            SizedBox(height: 10),
+                            Text(
+                              "Publish",
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: Color.fromRGBO(46, 46, 46, 1),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              ),
-              Column(
-                children: [
-                  CustomImageview(
-                    imagePath: "assets/images/output_2.png",
-                    height: 45,
-                    width: 45,
+                      GestureDetector(
+                        onTap: () {
+                          Share.share("text");
+                        },
+                        child: Column(
+                          children: [
+                            CustomImageview(
+                              imagePath: "assets/images/output_4.png",
+                              height: 45,
+                              width: 45,
+                            ),
+                            SizedBox(height: 10),
+                            Text(
+                              "Share",
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: Color.fromRGBO(46, 46, 46, 1),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          _showDeleteAlert(context);
+                        },
+                        child: Column(
+                          children: [
+                            CustomImageview(
+                              imagePath: "assets/images/output_5.png",
+                              height: 45,
+                              width: 45,
+                            ),
+                            SizedBox(height: 10),
+                            Text(
+                              "Delete",
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: Color.fromRGBO(46, 46, 46, 1),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                  SizedBox(height: 10),
-                  Text(
-                    "Save",
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                      color: Color.fromRGBO(46, 46, 46, 1),
-                    ),
-                  ),
-                ],
-              ),
-              GestureDetector(
-                onTap: () {
-                  showPublishSheet(context);
-                },
-                child: Column(
-                  children: [
-                    CustomImageview(
-                      imagePath: "assets/images/output_3.png",
-                      height: 45,
-                      width: 45,
-                    ),
-                    SizedBox(height: 10),
-                    Text(
-                      "Publish",
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        color: Color.fromRGBO(46, 46, 46, 1),
-                      ),
-                    ),
-                  ],
                 ),
-              ),
-              GestureDetector(
-                onTap: () {
-                  Share.share("text");
-                },
-                child: Column(
-                  children: [
-                    CustomImageview(
-                      imagePath: "assets/images/output_4.png",
-                      height: 45,
-                      width: 45,
-                    ),
-                    SizedBox(height: 10),
-                    Text(
-                      "Share",
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        color: Color.fromRGBO(46, 46, 46, 1),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              GestureDetector(
-                onTap: () {
-                  _showDeleteAlert(context);
-                },
-                child: Column(
-                  children: [
-                    CustomImageview(
-                      imagePath: "assets/images/output_5.png",
-                      height: 45,
-                      width: 45,
-                    ),
-                    SizedBox(height: 10),
-                    Text(
-                      "Delete",
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        color: Color.fromRGBO(46, 46, 46, 1),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
+              );
+            },
+          );
+        },
       ),
     );
   }
@@ -210,68 +249,84 @@ class _InteriorOutputScreenState extends State<InteriorOutputScreen> {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (_) => const PublishBottomSheet(),
+      builder: (_) => publishBottomSheet(context),
     );
   }
 
   void _showDeleteAlert(BuildContext context) {
     showCupertinoDialog<void>(
       context: context,
-      builder: (BuildContext context) => CupertinoAlertDialog(
-        title: const Text('Delete This Design?'),
-        content: const Text(
-          'This action cannot be undone. Are you sure you want to permanently remove this design?',
-        ),
-        actions: <CupertinoDialogAction>[
-          CupertinoDialogAction(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+      builder:
+          (BuildContext context) => CupertinoAlertDialog(
+            title: const Text('Delete This Design?'),
+            content: const Text(
+              'This action cannot be undone. Are you sure you want to permanently remove this design?',
+            ),
+            actions: <CupertinoDialogAction>[
+              CupertinoDialogAction(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel'),
+              ),
+              CupertinoDialogAction(
+                isDestructiveAction: true,
+                onPressed: () async {
+
+                  Navigator.of(context).pop();
+                  SharedPreferences preferences =
+                      await SharedPreferences.getInstance();
+                  String userId = preferences.getString('user_id') ?? "";
+
+                  final publishData = {
+                    "user_id": userId,
+                    "module_id": 1,
+                    "id": data["id"],
+                  };
+
+                  debugPrint("Publish Record DataEvent payload: $publishData");
+
+                  debugPrint("user_id: $userId");
+                  debugPrint("module_id: 1");
+                  debugPrint("id: ${data["id"]}");
+
+                  _publishRecordBloc.add(
+                    PublishRecordDataEvent(login: publishData),
+                  );
+                },
+                child: const Text('Delete'),
+              ),
+            ],
           ),
-          CupertinoDialogAction(
-            isDestructiveAction: true,
-            onPressed: () {
-              Navigator.pop(context);
-              // TODO: handle delete
-            },
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
     );
   }
 
   void _showRegenerateAlert(BuildContext context) {
     showCupertinoDialog<void>(
       context: context,
-      builder: (BuildContext context) => CupertinoAlertDialog(
-        title: const Text('Regenerate Design?'),
-        content: const Text(
-          'This action will use 10 credits to generate a new design. Do you want to proceed?',
-        ),
-        actions: <CupertinoDialogAction>[
-          CupertinoDialogAction(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+      builder:
+          (BuildContext context) => CupertinoAlertDialog(
+            title: const Text('Regenerate Design?'),
+            content: const Text(
+              'This action will use 10 credits to generate a new design. Do you want to proceed?',
+            ),
+            actions: <CupertinoDialogAction>[
+              CupertinoDialogAction(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel'),
+              ),
+              CupertinoDialogAction(
+                isDefaultAction: true,
+                onPressed: () {
+                  Navigator.pop(context);
+                  // TODO: handle regenerate
+                },
+                child: const Text('Regenerate'),
+              ),
+            ],
           ),
-          CupertinoDialogAction(
-            isDefaultAction: true,
-            onPressed: () {
-              Navigator.pop(context);
-              // TODO: handle regenerate
-            },
-            child: const Text('Regenerate'),
-          ),
-        ],
-      ),
     );
   }
-}
 
-class PublishBottomSheet extends StatelessWidget {
-  const PublishBottomSheet({super.key});
-
-  @override
-  Widget build(BuildContext context) {
+  Widget publishBottomSheet(BuildContext context) {
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 12, 24, 36),
       decoration: const BoxDecoration(
@@ -331,7 +386,28 @@ class PublishBottomSheet extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () async {
+                Navigator.of(context).pop();
+                SharedPreferences preferences =
+                    await SharedPreferences.getInstance();
+                String userId = preferences.getString('user_id') ?? "";
+
+                final publishData = {
+                  "user_id": userId,
+                  "module_id": 1,
+                  "id": data["id"],
+                };
+
+                debugPrint("PublishRecordDataEvent payload: $publishData");
+
+                debugPrint("user_id: $userId");
+                debugPrint("module_id: 1");
+                debugPrint("id: ${data["id"]}");
+
+                _publishRecordBloc.add(
+                  PublishRecordDataEvent(login: publishData),
+                );
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFE8D5BC),
                 foregroundColor: const Color(0xFF3D3229),
@@ -364,21 +440,8 @@ class PublishBottomSheet extends StatelessWidget {
       ),
     );
   }
-
-  void showPublishSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (_) => const PublishBottomSheet(),
-    );
-  }
-
-
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Photo section — full bleed with back button
-// ─────────────────────────────────────────────────────────────────────────────
 class _PhotoSection extends StatelessWidget {
   final double topPad;
   final String img;
@@ -388,12 +451,11 @@ class _PhotoSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 300,
+      height: 350,
       width: double.infinity,
       child: Stack(
         fit: StackFit.expand,
         children: [
-          // Photo (replace with Image.asset or Image.network)
           Image.network(
             img,
             fit: BoxFit.cover,
@@ -444,9 +506,6 @@ class _PhotoSection extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Info tile — white card with icon, label, value, optional trailing
-// ─────────────────────────────────────────────────────────────────────────────
 class _InfoTile extends StatelessWidget {
   final Widget iconWidget;
   final String label;

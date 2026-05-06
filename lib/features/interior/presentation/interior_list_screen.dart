@@ -4,6 +4,8 @@ import 'package:flutter/services.dart';
 import '../../../widgets/custom_imageview.dart';
 import 'interior_ash_list_screen.dart';
 
+String intSpaceType = "";
+
 class RoomItem {
   final String name;
   final String imageUrl;
@@ -271,6 +273,7 @@ class _InteriorRoomSelectionScreenState
       onTap: () {
         setState(() {
           _selectedRoom = room.name;
+          intSpaceType= room.name.toLowerCase();
         });
         HapticFeedback.lightImpact();
       },

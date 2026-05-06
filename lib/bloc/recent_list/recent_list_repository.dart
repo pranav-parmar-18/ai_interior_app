@@ -1,9 +1,9 @@
 part of 'recent_list_bloc.dart';
 
-class PartnerListRepository {
-  CommonModelResponse? _makeSongResponse;
+class RecentListRepository {
+  RecentListModelResponse? _makeSongResponse;
 
-  CommonModelResponse? get makeSongResponse => _makeSongResponse;
+  RecentListModelResponse? get makeSongResponse => _makeSongResponse;
 
   String _message = '';
 
@@ -17,17 +17,17 @@ class PartnerListRepository {
       SharedPreferences preferences = await SharedPreferences.getInstance();
       String accessToken = preferences.getString('access_token') ?? "";
        String url = '${ProjectConstant.baseUrl}partners?gender=$id';
-      print("URL : $url");
+
       final response = await http.get(Uri.parse(url),headers: {
         'Authorization': 'Bearer $accessToken'
-
       });
+
       print("STATUS: ${response.statusCode}");
       print("BODY: ${response.body}");
       if (response.statusCode == 200) {
         final responseJsonMap =
             jsonDecode(response.body) as Map<String, dynamic>;
-        final responseData = CommonModelResponse.fromJson(responseJsonMap);
+        final responseData = RecentListModelResponse.fromJson(responseJsonMap);
         _makeSongResponse = responseData;
         _message = "Success";
         _success = true;
@@ -37,7 +37,7 @@ class PartnerListRepository {
         }
         final responseJsonMap =
             jsonDecode(response.body) as Map<String, dynamic>;
-        final responseData = CommonModelResponse.fromJson(responseJsonMap);
+        final responseData = RecentListModelResponse.fromJson(responseJsonMap);
         _makeSongResponse = responseData;
         _message = "Fail";
         _success = false;

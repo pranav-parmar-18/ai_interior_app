@@ -571,7 +571,7 @@ class _DreamColorPaletteScreenState
                 "design_asthetic": "zen",
                 "space_type": "bed room",
               },
-              image: picked != null ? picked ?? File("") : imageFile,
+              image: extpicked != null ? extpicked ?? File("") : imageFile,
             ),
           );
         },

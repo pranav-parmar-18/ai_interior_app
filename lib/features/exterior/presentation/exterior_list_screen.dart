@@ -4,6 +4,8 @@ import 'package:flutter/services.dart';
 import '../../../widgets/custom_imageview.dart';
 import 'exterior_ash_list_screen.dart';
 
+String extSpaceType = "";
+
 class RoomItem {
   final String name;
   final String imageUrl;

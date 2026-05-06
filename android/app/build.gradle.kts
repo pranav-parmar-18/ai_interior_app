@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.app.ai_interior.ai_interior"
+    namespace = "com.app.interiordesignainest"
     compileSdk = 36
     ndkVersion = "27.0.12077973"
 
@@ -22,7 +22,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.app.ai_interior.ai_interior"
+        applicationId = "com.app.interiordesignainest"
         minSdk = 26
         targetSdk = 35
         versionCode = 1

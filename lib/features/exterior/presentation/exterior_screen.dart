@@ -9,7 +9,7 @@ import 'package:flutter/material.dart';
 import 'exterior_list_screen.dart';
 
 import 'package:image_picker/image_picker.dart';
-File? picked;
+File? extpicked;
 
 class ExteriorDesignScreen extends StatefulWidget {
   const ExteriorDesignScreen({super.key});
@@ -84,9 +84,6 @@ class _ExteriorDesignScreenState extends State<ExteriorDesignScreen> {
     );
   }
 
-  // ─────────────────────────────────────────────
-  // AppBar
-  // ─────────────────────────────────────────────
   Widget _buildAppBar() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
@@ -210,9 +207,6 @@ class _ExteriorDesignScreenState extends State<ExteriorDesignScreen> {
     );
   }
 
-  // ─────────────────────────────────────────────
-  // Section title
-  // ─────────────────────────────────────────────
   Widget _buildSectionTitle(String text) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -228,9 +222,6 @@ class _ExteriorDesignScreenState extends State<ExteriorDesignScreen> {
     );
   }
 
-  // ─────────────────────────────────────────────
-  // Upload Card
-  // ─────────────────────────────────────────────
   Widget _buildUploadCard() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -252,8 +243,8 @@ class _ExteriorDesignScreenState extends State<ExteriorDesignScreen> {
             // Room preview area
             Stack(
               children: [
-                picked != null
-                    ? CustomImageview(imagePath: picked!.path)
+                extpicked != null
+                    ? CustomImageview(imagePath: extpicked!.path)
                     : ClipRRect(
                       borderRadius: const BorderRadius.vertical(
                         top: Radius.circular(20),
@@ -305,7 +296,7 @@ class _ExteriorDesignScreenState extends State<ExteriorDesignScreen> {
               child: GestureDetector(
                 onTap: () => showMediaSourcePicker(
                   context,
-                  onFilePicked: (file) => setState(() => picked = file),
+                  onFilePicked: (file) => setState(() => extpicked = file),
                 ),
                 child: Container(
                   height: 48,
@@ -353,7 +344,6 @@ class _ExteriorDesignScreenState extends State<ExteriorDesignScreen> {
     );
   }
 
-  /// A simple painter that mimics the isometric room illustration.
   Widget _buildIsometricRoomPlaceholder() {
     return CustomPaint(
       painter: _IsometricRoomPainter(),

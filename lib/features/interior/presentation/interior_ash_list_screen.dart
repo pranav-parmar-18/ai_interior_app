@@ -5,6 +5,7 @@ import '../../../widgets/custom_imageview.dart';
 import 'interior_describe_me.dart';
 import 'interior_plaate.dart';
 
+String intAshType = "";
 class RoomItem {
   final String name;
   final String imageUrl;
@@ -272,7 +273,9 @@ class _InteriorAshSelectionScreenState
     return GestureDetector(
       onTap: () {
         setState(() {
+
           _selectedRoom = room.name;
+          intAshType = room.name.toLowerCase();
         });
         HapticFeedback.lightImpact();
       },
