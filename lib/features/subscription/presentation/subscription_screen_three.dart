@@ -3029,9 +3029,9 @@ class _SubscriptionScreenThreeState extends State<SubscriptionScreenThree>
   List<ProductDetails> _products = [];
   final InAppPurchase _iap = InAppPurchase.instance;
   final List<String> _productIds = [
-    'com.app.weekly',
-    'com.app.yearly',
-    'com.app.monthly',
+    'com.ai_interior.weekly',
+    'com.ai_interior.yearly',
+    'com.ai_interior.monthly',
   ];
 
   final List<String> _planLabels = ['Weekly', 'Yearly', 'Monthly'];

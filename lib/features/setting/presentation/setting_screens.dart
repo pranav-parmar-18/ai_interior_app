@@ -563,11 +563,14 @@
 //     return sub?.isActive ?? false;
 //   }
 // }
+import 'package:ai_interior/features/credit/presentataion/credit_screen.dart';
 import 'package:ai_interior/features/setting/presentation/language_screen.dart';
 import 'package:ai_interior/widgets/custom_imageview.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../../services/subscription_manager.dart';
 import '../../subscription/presentation/subscription_screen.dart';
 import '../../subscription/presentation/subscription_screen_three.dart';
 import '../../subscription/presentation/subscription_screen_two.dart';
@@ -643,16 +646,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     _SettingsItem(
                       icon: _CreditIcon(),
                       label: '200 Credits',
-                      onTap: () {},
-                    ),
-                    _SettingsItem(
-                      icon: const Icon(
-                        Icons.recent_actors_outlined,
-                        size: 24,
-                        color: Color(0xFF1A1A1A),
-                      ),
-                      label: 'Manage Subscription',
-                      onTap: () {},
+                      onTap: () {
+                        Navigator.of(
+                          context,
+                        ).pushNamed(CreditsScreen.routeName);
+                      },
                     ),
                     _SettingsItem(
                       icon: const Icon(
@@ -662,15 +660,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                       label: 'Change Language',
                       onTap: () {
-                        Navigator.of(context).pushNamed(LanguageScreen.routeName);
+                        Navigator.of(
+                          context,
+                        ).pushNamed(LanguageScreen.routeName);
                       },
                       isLast: true,
                     ),
                   ],
                 ),
-
                 const SizedBox(height: 16),
-
                 // ── Group 2 ──────────────────────────────────────────
                 _SettingsGroup(
                   items: [
@@ -748,11 +746,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
 // Premium Banner
 // ─────────────────────────────────────────────────────────────────────────────
 class _PremiumBanner extends StatelessWidget {
+
+  void openSubscriptionScreen(BuildContext context) {
+    final nextIndex = SubscriptionScreenManager().getNextIndex();
+
+    final screens = [
+      SubscriptionScreen(),
+      SubscriptionScreenTwo(),
+      SubscriptionScreenThree(),
+    ];
+
+    Navigator.push(
+      context,
+      CupertinoPageRoute(builder: (_) => screens[nextIndex]),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        Navigator.of(context).pushNamed(SubscriptionScreenThree.routeName);
+        openSubscriptionScreen(context);
       },
       child: Container(
         height: 92,

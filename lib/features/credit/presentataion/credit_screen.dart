@@ -966,44 +966,59 @@
 //   }
 // }
 
+import 'dart:async';
+import 'dart:io';
+
+import 'package:ai_interior/bloc/add_credits/add_credits_bloc.dart';
 import 'package:ai_interior/widgets/custom_imageview.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'dart:math' as math;
+import 'package:flutter_bloc/flutter_bloc.dart';
 
-// ─── Color tokens ───────────────────────────────────────────────────────────
-const _bg = Color(0xFFF2EDE8);
-const _cardBg = Color(0xFFFFFFFF);
-const _balanceBg = Color(0xFFFFD9A8); // warm peach
-const _selectedBg = Color(0xFFFFF0E0);
-const _selectedBorder = Color(0xFF8B4513);
-const _orangeCoin = Color(0xFFD4762A);
-const _titleBrown = Color(0xFF3D1C08);
-const _priceBrown = Color(0xFF5C3317);
-const _amountBrown = Color(0xFF3D1C08);
-const _continueBg = Color(0xFFD4A87A);
-const _continueText = Color(0xFF4A2F18);
-const _sparkle = Color(0xFF6B1515);
+import 'package:in_app_purchase/in_app_purchase.dart';
+import 'package:in_app_purchase_android/in_app_purchase_android.dart';
 
-// ─── Credit package model ───────────────────────────────────────────────────
-class _CreditPackage {
-  final String price;
-  final int credits;
+import '../../../models/add_credit_model_response.dart';
 
-  const _CreditPackage(this.price, this.credits);
-}
+// ─── Color tokens ─────────────────────────────────────────────────────────────
+const _bg            = Color(0xFFF2EDE8);
+const _cardBg        = Color(0xFFFFFFFF);
+const _balanceBg     = Color(0xFFFFD9A8);
+const _selectedBg    = Color(0xFFFFF0E0);
+const _selectedBorder= Color(0xFF8B4513);
+const _titleBrown    = Color(0xFF3D1C08);
+const _priceBrown    = Color(0xFF5C3317);
+const _amountBrown   = Color(0xFF3D1C08);
+const _continueText  = Color(0xFF4A2F18);
 
-const _packages = [
-  _CreditPackage('\$0.99', 100),
-  _CreditPackage('\$2.99', 300),
-  _CreditPackage('\$4.99', 500),
-  _CreditPackage('\$6.99', 700),
-  _CreditPackage('\$9.99', 1000),
-  _CreditPackage('\$12.99', 1300),
-  _CreditPackage('\$14.99', 1500),
+// ─── Product IDs (must match Play Console / App Store Connect) ────────────────
+const _productIds = [
+  'com.ai_interior.credits_100',
+  'com.ai_interior.credits_300',
+  'com.ai_interior.credits_500',
+  'com.ai_interior.credits_700',
+  'com.ai_interior.credits_1000',
+  'com.ai_interior.credits_1300',
+  'com.ai_interior.credits_1500',
 ];
 
-// ─── Screen ──────────────────────────────────────────────────────────────────
+/// Fallback display data when IAP products haven't loaded yet.
+class _FallbackPackage {
+  final String price;
+  final int credits;
+  const _FallbackPackage(this.price, this.credits);
+}
+
+const _fallback = [
+  _FallbackPackage('\$0.99',  100),
+  _FallbackPackage('\$2.99',  300),
+  _FallbackPackage('\$4.99',  500),
+  _FallbackPackage('\$6.99',  700),
+  _FallbackPackage('\$9.99',  1000),
+  _FallbackPackage('\$12.99', 1300),
+  _FallbackPackage('\$14.99', 1500),
+];
+
+// ─── Screen ───────────────────────────────────────────────────────────────────
 class CreditsScreen extends StatefulWidget {
   const CreditsScreen({super.key});
 
@@ -1014,75 +1029,272 @@ class CreditsScreen extends StatefulWidget {
 }
 
 class _CreditsScreenState extends State<CreditsScreen> {
+  final AddCreditsBloc _addCreditsBloc = AddCreditsBloc();
+
   int _selectedIndex = 0;
+  late StreamSubscription<List<PurchaseDetails>> _subscription;
+  final InAppPurchase _iap = InAppPurchase.instance;
+  List<ProductDetails> _products = [];
+  AddCreditResponse? _addCreditResponse;
+
+  bool _loadingProducts = true;
+  bool _isPurchasing    = false;
+
+  // ── Balance (replace with your actual source) ─────────────────────────────
+  int _balance = 50;
 
   @override
+  void initState() {
+    super.initState();
+    _initialize();
+  }
+
+  @override
+  void dispose() {
+    _subscription.cancel();
+    super.dispose();
+  }
+
+  // ── IAP bootstrap ─────────────────────────────────────────────────────────
+  Future<void> _initialize() async {
+    final available = await _iap.isAvailable();
+    if (!available) {
+      if (mounted) {
+        setState(() => _loadingProducts = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('In-App Purchases not available')),
+        );
+      }
+      return;
+    }
+
+    _subscription = _iap.purchaseStream.listen(
+      _handlePurchaseUpdates,
+      onDone: () => _subscription.cancel(),
+      onError: (error) => debugPrint('Purchase Stream Error: $error'),
+    );
+
+    await _loadProducts();
+  }
+
+  Future<void> _loadProducts() async {
+    final response = await _iap.queryProductDetails(_productIds.toSet());
+
+    if (response.error != null) {
+      debugPrint('Product query error: ${response.error}');
+      if (mounted) setState(() => _loadingProducts = false);
+      return;
+    }
+
+    // Keep the same order as _productIds
+    final sorted = _productIds
+        .map((id) {
+      try {
+        return response.productDetails
+            .firstWhere((p) => p.id == id);
+      } catch (_) {
+        return null;
+      }
+    })
+        .whereType<ProductDetails>()
+        .toList();
+
+    if (mounted) setState(() { _products = sorted; _loadingProducts = false; });
+  }
+
+  // ── Purchase ──────────────────────────────────────────────────────────────
+  void _onContinue() {
+    if (_products.isEmpty || _isPurchasing) return;
+
+    final product = _products[_selectedIndex];
+    setState(() => _isPurchasing = true);
+
+    // Credits are consumable — use buyConsumable
+    final param = PurchaseParam(productDetails: product);
+    _iap.buyConsumable(purchaseParam: param);
+  }
+
+  void _handlePurchaseUpdates(List<PurchaseDetails> purchases) async {
+    for (final purchase in purchases) {
+      switch (purchase.status) {
+        case PurchaseStatus.purchased:
+        case PurchaseStatus.restored:
+          if (mounted) setState(() => _isPurchasing = false);
+          debugPrint('✅ Purchased: ${purchase.productID}');
+
+          if (Platform.isAndroid) {
+            _addCreditsBloc.add(
+              AddCreditsDataEvent(purchaseData: {
+                'transactionId': purchase.purchaseID.toString(),
+                'product_id'  : purchase.productID.toString(),
+              }),
+            );
+            try {
+              final androidAddition = InAppPurchase.instance
+                  .getPlatformAddition<InAppPurchaseAndroidPlatformAddition>();
+              final result = await androidAddition.consumePurchase(purchase);
+              debugPrint('✅ consume code: ${result.responseCode}');
+            } catch (e) {
+              debugPrint('❌ consume error: $e');
+            }
+          } else {
+            _addCreditsBloc.add(
+              AddCreditsDataEvent(purchaseData: {
+                'transection_id': purchase.purchaseID.toString(),
+              }),
+            );
+          }
+
+        case PurchaseStatus.error:
+        case PurchaseStatus.canceled:
+          debugPrint('❌ Purchase failed: ${purchase.error}');
+          if (mounted) setState(() => _isPurchasing = false);
+
+        case PurchaseStatus.pending:
+          break;
+      }
+
+      if (purchase.pendingCompletePurchase) {
+        await _iap.completePurchase(purchase);
+        debugPrint('✅ Completed: ${purchase.productID}');
+      }
+    }
+  }
+
+  // ── Helpers ───────────────────────────────────────────────────────────────
+  String _priceFor(int index) {
+    if (_products.isNotEmpty && index < _products.length) {
+      return _products[index].price;
+    }
+    return index < _fallback.length ? _fallback[index].price : '';
+  }
+
+  int _creditsFor(int index) {
+    // Parse credits from product id suffix, e.g. "…credits_300" → 300
+    if (_products.isNotEmpty && index < _products.length) {
+      final id = _products[index].id;
+      final suffix = id.split('_').last;
+      return int.tryParse(suffix) ?? _fallback[index].credits;
+    }
+    return index < _fallback.length ? _fallback[index].credits : 0;
+  }
+
+  // ── Build ─────────────────────────────────────────────────────────────────
+  @override
   Widget build(BuildContext context) {
-    final top = MediaQuery.of(context).padding.top;
-    final bottom = MediaQuery.of(context).padding.bottom;
+    final mq     = MediaQuery.of(context);
+    final top    = mq.padding.top;
+    final bottom = mq.padding.bottom;
+    final w      = mq.size.width;
+
+    // Responsive breakpoint
+    final isWide = w >= 600;
 
     return Scaffold(
       backgroundColor: _bg,
-      body: Column(
-        children: [
-          SizedBox(height: top),
-          // ── Header ──────────────────────────────────────────────────────
-          _Header(),
-          // ── Scrollable body ──────────────────────────────────────────────
-          Expanded(
-            child: SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Column(
-                children: [
-                  const SizedBox(height: 4),
-                  // Coin stack illustration
-                  CustomImageview(
-                    imagePath: "assets/images/coin_stack.png",
-                    height: 160,
-                    width: 160,
-                    fit: BoxFit.contain,
+      body: BlocConsumer<AddCreditsBloc, AddCreditsState>(
+        bloc: _addCreditsBloc,
+        listener: (context, state) {
+          if (state is AddCreditsSuccessState) {
+            _addCreditResponse = state.categoryModalResponse;
+            setState(() { _selectedIndex = 0; });
+            Navigator.of(context).pop();
+          }
+        },
+        builder: (context, state) {
+          final isProcessing = _isPurchasing || state is AddCreditsLoadingState;
+
+          return Column(
+            children: [
+              SizedBox(height: top),
+              _Header(),
+              Expanded(
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isWide ? w * 0.12 : 20,
                   ),
-                  const SizedBox(height: 20),
-                  // Title
-                  const Text(
-                    'Get Credits for\nAI Interior Design',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.w500,
-                      color: _titleBrown,
-                      height: 1.2,
-                      fontFamily: 'Georgia',
-                      letterSpacing: -0.5,
-                    ),
+                  child: Column(
+                    children: [
+                      SizedBox(height: isWide ? 12 : 4),
+
+                      // Coin illustration
+                      CustomImageview(
+                        imagePath: 'assets/images/coin_stack.png',
+                        height: isWide ? 200 : 150,
+                        width:  isWide ? 200 : 150,
+                        fit: BoxFit.contain,
+                      ),
+                      SizedBox(height: isWide ? 28 : 16),
+
+                      // Title
+                      Text(
+                        'Get Credits for\nAI Interior Design',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: isWide ? 38 : 30,
+                          fontWeight: FontWeight.w500,
+                          color: _titleBrown,
+                          height: 1.2,
+                          fontFamily: 'Georgia',
+                          letterSpacing: -0.5,
+                        ),
+                      ),
+                      SizedBox(height: isWide ? 28 : 18),
+
+                      // Balance bar
+                      _BalanceBar(balance: _balance),
+                      SizedBox(height: isWide ? 20 : 12),
+
+                      // Grid or loading
+                      _loadingProducts
+                          ? const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 40),
+                        child: CircularProgressIndicator(
+                          color: _selectedBorder,
+                        ),
+                      )
+                          : _CreditGrid(
+                        count: _productIds.length,
+                        selectedIndex: _selectedIndex,
+                        priceFor: _priceFor,
+                        creditsFor: _creditsFor,
+                        onSelect: (i) =>
+                            setState(() => _selectedIndex = i),
+                        isWide: isWide,
+                      ),
+
+                      const SizedBox(height: 10),
+                    ],
                   ),
-                  const SizedBox(height: 22),
-                  // Balance bar
-                  _BalanceBar(balance: 50),
-                  // Credit grid
-                  _CreditGrid(
-                    packages: _packages,
-                    selectedIndex: _selectedIndex,
-                    onSelect: (i) => setState(() => _selectedIndex = i),
-                  ),
-                  const SizedBox(height: 10),
-                ],
+                ),
               ),
-            ),
-          ),
-          // ── Continue button ──────────────────────────────────────────────
-          Padding(
-            padding: EdgeInsets.fromLTRB(20, 0, 20, bottom + 16),
-            child: _ContinueButton(onTap: () {}),
-          ),
-        ],
+
+              // Continue button
+              Padding(
+                padding: EdgeInsets.fromLTRB(
+                  isWide ? w * 0.12 : 20,
+                  0,
+                  isWide ? w * 0.12 : 20,
+                  bottom + 16,
+                ),
+                child: _ContinueButton(
+                  onTap: isProcessing ? null : _onContinue,
+                  isLoading: isProcessing,
+                  label: _loadingProducts
+                      ? 'Loading…'
+                      : 'Continue  •  ${_priceFor(_selectedIndex)}',
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
 }
 
-// ─── Header ──────────────────────────────────────────────────────────────────
+// ─── Header ───────────────────────────────────────────────────────────────────
 class _Header extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -1094,11 +1306,10 @@ class _Header extends StatelessWidget {
           const Text(
             'Add Credits',
             style: TextStyle(
-              fontSize: 28,
+              fontSize: 26,
               fontFamily: 'Lato',
-
               fontWeight: FontWeight.w600,
-              color: Color.fromRGBO(46, 46, 46, 1),
+              color: Color(0xFF2E2E2E),
               letterSpacing: -0.3,
             ),
           ),
@@ -1127,11 +1338,9 @@ class _Header extends StatelessWidget {
   }
 }
 
-
-// ─── Balance bar ─────────────────────────────────────────────────────────────
+// ─── Balance bar ──────────────────────────────────────────────────────────────
 class _BalanceBar extends StatelessWidget {
   final int balance;
-
   const _BalanceBar({required this.balance});
 
   @override
@@ -1149,10 +1358,9 @@ class _BalanceBar extends StatelessWidget {
           const Text(
             'Balance',
             style: TextStyle(
-              fontSize: 18,
+              fontSize: 17,
               fontWeight: FontWeight.w500,
               color: _titleBrown,
-              letterSpacing: -0.2,
             ),
           ),
           Row(
@@ -1179,62 +1387,69 @@ class _BalanceBar extends StatelessWidget {
 // ─── Coin icon ────────────────────────────────────────────────────────────────
 class _CoinIcon extends StatelessWidget {
   final double size;
-
   const _CoinIcon({required this.size});
 
   @override
-  Widget build(BuildContext context) {
-    return CustomImageview(
-      imagePath: "assets/images/credit.png",
-      width: 25,
-      height: 25,
-    );
-  }
+  Widget build(BuildContext context) => CustomImageview(
+    imagePath: 'assets/images/credit.png',
+    width: size,
+    height: size,
+  );
 }
 
-// ─── Credit grid ─────────────────────────────────────────────────────────────
+// ─── Credit grid ──────────────────────────────────────────────────────────────
 class _CreditGrid extends StatelessWidget {
-  final List<_CreditPackage> packages;
+  final int count;
   final int selectedIndex;
+  final String Function(int) priceFor;
+  final int Function(int) creditsFor;
   final ValueChanged<int> onSelect;
+  final bool isWide;
 
   const _CreditGrid({
-    required this.packages,
+    required this.count,
     required this.selectedIndex,
+    required this.priceFor,
+    required this.creditsFor,
     required this.onSelect,
+    required this.isWide,
   });
 
   @override
   Widget build(BuildContext context) {
-    // Separate grid items (first 6) from the last centered one
-    final gridItems = packages.sublist(0, 6);
-    final lastItem = packages[6];
+    final gridCount = count - 1;
 
     return Column(
       children: [
-        // 3-column grid
-        GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 3,
-            crossAxisSpacing: 10,
-            mainAxisSpacing: 10,
-            childAspectRatio: 1.4,
-          ),
-          itemCount: gridItems.length,
-          itemBuilder:
-              (ctx, i) => _CreditCard(
-                package: gridItems[i],
+        LayoutBuilder(
+          builder: (ctx, constraints) {
+            final cols = isWide ? 4 : 3;
+            return GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: cols,
+                crossAxisSpacing: 10,
+                mainAxisSpacing: 10,
+                childAspectRatio: isWide ? 1.6 : 1.4,
+              ),
+              itemCount: gridCount,
+              itemBuilder: (ctx, i) => _CreditCard(
+                price: priceFor(i),
+                credits: creditsFor(i),
                 isSelected: selectedIndex == i,
                 onTap: () => onSelect(i),
               ),
+            );
+          },
         ),
+        const SizedBox(height: 10),
         // Last item — full width
         _CreditCard(
-          package: lastItem,
-          isSelected: selectedIndex == 6,
-          onTap: () => onSelect(6),
+          price: priceFor(count - 1),
+          credits: creditsFor(count - 1),
+          isSelected: selectedIndex == count - 1,
+          onTap: () => onSelect(count - 1),
           fullWidth: true,
         ),
       ],
@@ -1244,13 +1459,15 @@ class _CreditGrid extends StatelessWidget {
 
 // ─── Single credit card ───────────────────────────────────────────────────────
 class _CreditCard extends StatelessWidget {
-  final _CreditPackage package;
+  final String price;
+  final int credits;
   final bool isSelected;
   final VoidCallback onTap;
   final bool fullWidth;
 
   const _CreditCard({
-    required this.package,
+    required this.price,
+    required this.credits,
     required this.isSelected,
     required this.onTap,
     this.fullWidth = false,
@@ -1258,6 +1475,9 @@ class _CreditCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenW = MediaQuery.of(context).size.width;
+    final isWide  = screenW >= 600;
+
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -1265,71 +1485,76 @@ class _CreditCard extends StatelessWidget {
         curve: Curves.easeInOut,
         width: fullWidth ? double.infinity : null,
         padding: EdgeInsets.symmetric(
-          horizontal: fullWidth ? 20 : 12,
-          vertical: 14,
+          horizontal: fullWidth ? 20 : (isWide ? 14 : 10),
+          vertical: isWide ? 16 : 12,
         ),
         decoration: BoxDecoration(
           color: isSelected ? _selectedBg : _cardBg,
-          borderRadius: BorderRadius.circular(30),
-          border:
-              isSelected
-                  ? Border.all(color: _selectedBorder, width: 1.8)
-                  : Border.all(color: Colors.transparent, width: 1.8),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? _selectedBorder : Colors.transparent,
+            width: 1.8,
+          ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withOpacity(0.05),
               blurRadius: 6,
-              offset: const Offset(0, 1),
+              offset: const Offset(0, 2),
             ),
           ],
         ),
-        child:
-            fullWidth
-                ? Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: _content(large: true),
-                )
-                : Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: _content(),
-                ),
+        child: fullWidth
+            ? Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: _buildContent(large: true, isWide: isWide),
+        )
+            : Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: _buildContent(large: false, isWide: isWide),
+        ),
       ),
     );
   }
 
-  List<Widget> _content({bool large = false}) {
+  List<Widget> _buildContent({required bool large, required bool isWide}) {
     final priceStyle = TextStyle(
-      fontSize: large ? 15 : 13,
+      fontSize: large ? 14 : (isWide ? 13 : 12),
       fontWeight: FontWeight.w400,
       color: isSelected ? _priceBrown : const Color(0xFF8A7060),
-      letterSpacing: -0.1,
     );
     final amountStyle = TextStyle(
-      fontSize: large ? 28 : 24,
+      fontSize: large ? (isWide ? 30 : 26) : (isWide ? 26 : 22),
       fontWeight: FontWeight.w700,
       color: isSelected ? _amountBrown : const Color(0xFF2C2C2C),
       letterSpacing: -0.5,
     );
+    final coinSize = large ? 22.0 : (isWide ? 20.0 : 17.0);
 
     if (large) {
       return [
-        Text(package.price, style: priceStyle),
+        Text(price, style: priceStyle),
         const SizedBox(width: 10),
-        _CoinIcon(size: 22),
+        _CoinIcon(size: coinSize),
         const SizedBox(width: 6),
-        Text('${package.credits}', style: amountStyle),
+        Text('$credits', style: amountStyle),
       ];
     }
 
     return [
-      Text(package.price, style: priceStyle),
+      Text(price, style: priceStyle),
       const SizedBox(height: 4),
       Row(
         children: [
-          _CoinIcon(size: 18),
-          const SizedBox(width: 5),
-          Text('${package.credits}', style: amountStyle),
+          _CoinIcon(size: coinSize),
+          const SizedBox(width: 4),
+          Flexible(
+            child: Text(
+              '$credits',
+              style: amountStyle,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
         ],
       ),
     ];
@@ -1338,29 +1563,50 @@ class _CreditCard extends StatelessWidget {
 
 // ─── Continue button ──────────────────────────────────────────────────────────
 class _ContinueButton extends StatelessWidget {
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
+  final bool isLoading;
+  final String label;
 
-  const _ContinueButton({required this.onTap});
+  const _ContinueButton({
+    required this.onTap,
+    required this.isLoading,
+    required this.label,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final isWide = MediaQuery.of(context).size.width >= 600;
+
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        width: double.infinity,
-        height: 58,
-        decoration: BoxDecoration(
-          color: Color.fromRGBO(230, 203, 168, 1),
-          borderRadius: BorderRadius.circular(30),
-        ),
-        child: const Center(
-          child: Text(
-            'Continue',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-              color: _continueText,
-              letterSpacing: 0.1,
+      child: AnimatedOpacity(
+        opacity: onTap == null ? 0.5 : 1.0,
+        duration: const Duration(milliseconds: 200),
+        child: Container(
+          width: double.infinity,
+          height: isWide ? 64 : 56,
+          decoration: BoxDecoration(
+            color: const Color.fromRGBO(230, 203, 168, 1),
+            borderRadius: BorderRadius.circular(30),
+          ),
+          child: Center(
+            child: isLoading
+                ? const SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(
+                color: _continueText,
+                strokeWidth: 2.5,
+              ),
+            )
+                : Text(
+              label,
+              style: TextStyle(
+                fontSize: isWide ? 20 : 18,
+                fontWeight: FontWeight.w600,
+                color: _continueText,
+                letterSpacing: 0.1,
+              ),
             ),
           ),
         ),

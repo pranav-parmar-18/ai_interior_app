@@ -105,8 +105,6 @@ class _OnboardingFourScreenState extends State<OnboardingFourScreen> {
                   ],
                 ),
               ),
-
-              // ── Bottom content ──
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 28),

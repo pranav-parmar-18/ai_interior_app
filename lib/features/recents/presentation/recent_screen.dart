@@ -1,7 +1,9 @@
 import 'dart:math' as math;
 import 'package:ai_interior/bloc/recent_list/recent_list_bloc.dart';
+import 'package:ai_interior/models/recents_model_response.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../widgets/custom_imageview.dart';
 import '../../credit/presentataion/credit_screen.dart';
 import '../../home/presentation/home_screen.dart';
@@ -16,7 +18,14 @@ class RecentsScreen extends StatefulWidget {
 
 class _RecentsScreenState extends State<RecentsScreen> {
   final RecentListBloc _recentListBloc = RecentListBloc();
+  RecentListModelResponse? recentListModelResponse;
   int _navIdx = 2;
+
+  @override
+  void initState() {
+    super.initState();
+    _recentListBloc.add(RecentListDataEvent(data: {}));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,15 +35,77 @@ class _RecentsScreenState extends State<RecentsScreen> {
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.dark,
-      child: Scaffold(
-        appBar: TopBarAppBar(),
-        backgroundColor: const Color(0xFFF2EFEA),
-        body: Column(
-          children: [
-            Expanded(child: Center(child: _buildEmptyState())),
-          ],
-        ),
+      child: BlocConsumer<RecentListBloc, RecentListState>(
+        bloc: _recentListBloc,
+        listener: (context, state) {
+          if (state is RecentListSuccessState) {
+            recentListModelResponse = state.exploreSongResponse;
+          } else if (state is RecentListExceptionState ||
+              state is RecentListFailureState) {}
+        },
+        builder: (context, state) {
+          return Scaffold(
+            appBar: TopBarAppBar(),
+            backgroundColor: const Color(0xFFF2EFEA),
+            body: Column(
+              children: [
+                Expanded(
+                  child: Center(
+                    child:
+                        recentListModelResponse?.data?.data != null
+                            ? _buildGrid()
+                            : _buildEmptyState(),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
       ),
+    );
+  }
+
+  Widget _buildGrid() {
+    return GridView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      physics: const BouncingScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2, // 2 columns
+        crossAxisSpacing: 10,
+        mainAxisSpacing: 10,
+        childAspectRatio: 0.75, // adjust based on card height
+      ),
+      itemCount: recentListModelResponse?.data?.data?.length ?? 0,
+      itemBuilder: (context, index) {
+        return Stack(
+          children: [
+            CustomImageview(
+              imagePath:
+                  recentListModelResponse?.data?.data?[index].outputImage,
+              fit: BoxFit.cover,
+            ),
+            Positioned(
+              bottom: 10,
+              right: 10,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
+                child: Text(
+                  recentListModelResponse?.data?.data?[index].spaceType ?? "",
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                    letterSpacing: -0.2,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 

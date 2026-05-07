@@ -12,11 +12,11 @@ class RecentListRepository {
 
   bool? get success => _success;
 
-  Future<void> partnerList(String id) async {
+  Future<void> recentList(Map<String,dynamic> data) async {
     try {
       SharedPreferences preferences = await SharedPreferences.getInstance();
       String accessToken = preferences.getString('access_token') ?? "";
-       String url = '${ProjectConstant.baseUrl}partners?gender=$id';
+       String url = '${ProjectConstant.baseUrl}recent-list';
 
       final response = await http.get(Uri.parse(url),headers: {
         'Authorization': 'Bearer $accessToken'

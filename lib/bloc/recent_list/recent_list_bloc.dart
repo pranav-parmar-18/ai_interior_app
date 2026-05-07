@@ -5,9 +5,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-
-import '../../models/common_model_response.dart';
-import '../../models/explore_model_response.dart';
 import '../../models/recents_model_response.dart';
 
 part 'recent_list_event.dart';
@@ -25,7 +22,7 @@ class RecentListBloc extends Bloc<RecentListEvent, RecentListState> {
   void _acceptOrderDataEvent(RecentListDataEvent event, Emitter<RecentListState> emit) async {
     emit(RecentListLoadingState());
     try {
-      await adminKeyLoginRepository.partnerList(event.genderId);
+      await adminKeyLoginRepository.recentList(event.data);
       if (adminKeyLoginRepository.success == true) {
         emit(RecentListSuccessState(
             exploreSongResponse: adminKeyLoginRepository.makeSongResponse,

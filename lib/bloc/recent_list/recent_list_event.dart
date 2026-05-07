@@ -10,7 +10,6 @@ abstract class RecentListEvent extends Equatable {
 class RecentListInitialEvent extends RecentListEvent {}
 
 class RecentListDataEvent extends RecentListEvent {
-
-final String genderId;
-  const RecentListDataEvent({required this.genderId});
+  final Map<String,dynamic> data;
+  const RecentListDataEvent({required this.data});
 }
