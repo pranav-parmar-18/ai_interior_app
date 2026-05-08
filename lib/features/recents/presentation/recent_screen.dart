@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:ai_interior/bloc/recent_list/recent_list_bloc.dart';
+import 'package:ai_interior/features/recents/presentation/recents_output_screen.dart';
 import 'package:ai_interior/models/recents_model_response.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -24,7 +25,7 @@ class _RecentsScreenState extends State<RecentsScreen> {
   @override
   void initState() {
     super.initState();
-    _recentListBloc.add(RecentListDataEvent(data: {}));
+    _recentListBloc.add(RecentListDataEvent(data: {"user_id": 2}));
   }
 
   @override
@@ -66,44 +67,79 @@ class _RecentsScreenState extends State<RecentsScreen> {
   }
 
   Widget _buildGrid() {
+    final items = recentListModelResponse?.data?.data ?? [];
+
+    if (items.isEmpty) {
+      return const Center(
+        child: Text(
+          "No recent items found",
+          style: TextStyle(color: Colors.grey),
+        ),
+      );
+    }
+
     return GridView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       physics: const BouncingScrollPhysics(),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2, // 2 columns
+        crossAxisCount: 2,
         crossAxisSpacing: 10,
         mainAxisSpacing: 10,
-        childAspectRatio: 0.75, // adjust based on card height
+        childAspectRatio: 0.75,
       ),
-      itemCount: recentListModelResponse?.data?.data?.length ?? 0,
+      itemCount: items.length,
       itemBuilder: (context, index) {
-        return Stack(
-          children: [
-            CustomImageview(
-              imagePath:
-                  recentListModelResponse?.data?.data?[index].outputImage,
-              fit: BoxFit.cover,
-            ),
-            Positioned(
-              bottom: 10,
-              right: 10,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 5,
-                ),
-                child: Text(
-                  recentListModelResponse?.data?.data?[index].spaceType ?? "",
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
-                    letterSpacing: -0.2,
+        final item = items[index];
+
+        return InkWell(
+          borderRadius: BorderRadius.circular(15),
+          onTap: () {
+            Navigator.of(context).pushNamed(RecentOutputScreen.routeName);
+          },
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(15),
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                /// Image
+                CustomImageview(imagePath: item.outputImage, fit: BoxFit.cover),
+
+                /// Gradient overlay for text readability
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: Container(
+                    height: 60,
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.bottomCenter,
+                        end: Alignment.topCenter,
+                        colors: [Colors.black54, Colors.transparent],
+                      ),
+                    ),
                   ),
                 ),
-              ),
+
+                /// Space Type Label
+                Positioned(
+                  bottom: 10,
+                  right: 10,
+                  child: Text(
+                    item.spaceType ?? "",
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                      letterSpacing: -0.2,
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         );
       },
     );

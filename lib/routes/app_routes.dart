@@ -25,6 +25,7 @@ import '../features/interior/presentation/interior_screen.dart';
 import '../features/main/presentaion/main_screen.dart';
 import '../features/onboarding/presentation/fourth_onboarding_screen.dart';
 
+import '../features/recents/presentation/recents_output_screen.dart';
 import '../features/replace/presentation/replace_describe_me.dart';
 import '../features/replace/presentation/replace_edit_screen.dart';
 import '../features/replace/presentation/replace_output_screen.dart';
@@ -261,6 +262,11 @@ class AppRouter {
         return CupertinoPageRoute(
           settings: settings,
           builder: (_) => SubscriptionScreenThree(),
+        );
+      case RecentOutputScreen.routeName:
+        return CupertinoPageRoute(
+          settings: settings,
+          builder: (_) => RecentOutputScreen(),
         );
       default:
         return CupertinoPageRoute(

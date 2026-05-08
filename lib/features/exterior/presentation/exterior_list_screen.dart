@@ -33,97 +33,81 @@ class _ExteriorRoomSelectionScreenState
   String? _selectedRoom;
 
   final List<RoomItem> rooms = const [
+
     RoomItem(
-      name: 'Living Room',
-      imageUrl:
-          'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=400&q=80',
-      fallbackIcon: Icons.weekend_rounded,
-    ),
-    RoomItem(
-      name: 'Bedroom',
-      imageUrl:
-          'https://images.unsplash.com/photo-1616594039964-ae9021a400a0?w=400&q=80',
-      fallbackIcon: Icons.bed_rounded,
-    ),
-    RoomItem(
-      name: 'Kitchen',
-      imageUrl:
-          'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&q=80',
-      fallbackIcon: Icons.kitchen_rounded,
-    ),
-    RoomItem(
-      name: 'Dining Room',
-      imageUrl:
-          'https://images.unsplash.com/photo-1617104678098-de229db51175?w=400&q=80',
-      fallbackIcon: Icons.dining_rounded,
-    ),
-    RoomItem(
-      name: 'Bathroom',
-      imageUrl:
-          'https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=400&q=80',
-      fallbackIcon: Icons.bathtub_rounded,
-    ),
-    RoomItem(
-      name: 'Laundry Room',
-      imageUrl:
-          'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80',
-      fallbackIcon: Icons.local_laundry_service_rounded,
-    ),
-    RoomItem(
-      name: 'Home Office',
-      imageUrl:
-          'https://images.unsplash.com/photo-1593642632559-0c6d3fc62b89?w=400&q=80',
-      fallbackIcon: Icons.computer_rounded,
-    ),
-    RoomItem(
-      name: 'Study Room',
+      name: 'House',
       imageUrl:
           'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80',
       fallbackIcon: Icons.menu_book_rounded,
     ),
     RoomItem(
-      name: 'Dorm Room',
+      name: 'Villa',
       imageUrl:
           'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=400&q=80',
       fallbackIcon: Icons.hotel_rounded,
     ),
     RoomItem(
-      name: 'Gaming Room',
+      name: 'Backyard',
       imageUrl:
           'https://images.unsplash.com/photo-1616588589676-62b3bd4ff6d2?w=400&q=80',
       fallbackIcon: Icons.sports_esports_rounded,
     ),
     RoomItem(
-      name: 'Attic',
+      name: 'Courtyard',
       imageUrl:
           'https://images.unsplash.com/photo-1595846519845-68e298c2edd8?w=400&q=80',
       fallbackIcon: Icons.roofing_rounded,
     ),
     RoomItem(
-      name: 'Toilet',
+      name: 'Ranch',
       imageUrl:
           'https://images.unsplash.com/photo-1564540586988-aa4e53c3d799?w=400&q=80',
       fallbackIcon: Icons.wc_rounded,
     ),
     RoomItem(
-      name: 'Coffee Shop',
+      name: 'Office',
       imageUrl:
           'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=400&q=80',
       fallbackIcon: Icons.coffee_rounded,
     ),
     RoomItem(
-      name: 'Restaurant',
+      name: 'School',
       imageUrl:
           'https://images.unsplash.com/photo-1514190051997-0f6f39ca5cde?w=400&q=80',
       fallbackIcon: Icons.restaurant_rounded,
     ),
     RoomItem(
-      name: 'Office',
+      name: 'Retail',
       imageUrl:
           'https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&q=80',
       fallbackIcon: Icons.business_rounded,
     ),
     RoomItem(
+      name: 'Tower',
+      imageUrl:
+          'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=400&q=80',
+      fallbackIcon: Icons.add_home_rounded,
+    ),RoomItem(
+      name: 'Museum',
+      imageUrl:
+          'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=400&q=80',
+      fallbackIcon: Icons.add_home_rounded,
+    ),RoomItem(
+      name: 'Apartment',
+      imageUrl:
+          'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=400&q=80',
+      fallbackIcon: Icons.add_home_rounded,
+    ),RoomItem(
+      name: 'Commercial',
+      imageUrl:
+          'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=400&q=80',
+      fallbackIcon: Icons.add_home_rounded,
+    ),RoomItem(
+      name: 'Residential',
+      imageUrl:
+          'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=400&q=80',
+      fallbackIcon: Icons.add_home_rounded,
+    ),RoomItem(
       name: 'Other',
       imageUrl:
           'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=400&q=80',
@@ -258,7 +242,7 @@ class _ExteriorRoomSelectionScreenState
           mainAxisSpacing: 10,
           childAspectRatio: 1.05,
         ),
-        itemCount: 6,
+        itemCount: rooms.length,
         itemBuilder: (context, index) {
           return _buildRoomCard(rooms[index], index);
         },
@@ -304,7 +288,7 @@ class _ExteriorRoomSelectionScreenState
             children: [
               // Room image
               Image.asset(
-                "assets/images/exterior/room_type_${index + 1}.png",
+                "assets/images/exterior/ext_${index + 1}.png",
                 fit: BoxFit.cover,
                 // loadingBuilder: (context, child, loadingProgress) {
                 //   if (loadingProgress == null) return child;

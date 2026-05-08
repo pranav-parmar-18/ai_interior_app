@@ -1,121 +1,492 @@
 import 'dart:io';
+import 'dart:math' as math;
 
-import 'package:ai_interior/features/replace/presentation/replace_describe_me.dart';
-import 'package:ai_interior/features/snap_trip/presentation/snap_trip_screen.dart';
-import 'package:ai_interior/widgets/custom_imageview.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
 import 'package:image_picker/image_picker.dart';
 
-File? picked;
+import '../../../widgets/custom_imageview.dart';
+import '../../interior/presentation/interior_screen.dart';
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Responsive helpers
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum _DeviceClass { phone, tablet, desktop }
+
+class _Responsive {
+  final BuildContext context;
+  final double width;
+  final double height;
+
+  _Responsive(this.context)
+      : width = MediaQuery.of(context).size.width,
+        height = MediaQuery.of(context).size.height;
+
+  _DeviceClass get deviceClass {
+    if (width >= 1024) return _DeviceClass.desktop;
+    if (width >= 600) return _DeviceClass.tablet;
+    return _DeviceClass.phone;
+  }
+
+  bool get isPhone => deviceClass == _DeviceClass.phone;
+  bool get isTablet => deviceClass == _DeviceClass.tablet;
+  bool get isDesktop => deviceClass == _DeviceClass.desktop;
+
+  // Horizontal content padding
+  double get hPad {
+    if (isDesktop) return width * 0.1;
+    if (isTablet) return 32.0;
+    return 20.0;
+  }
+
+  // Max content width on desktop
+  double get contentMaxWidth {
+    if (isDesktop) return 900.0;
+    return double.infinity;
+  }
+
+  // Upload card image height
+  double get imageHeight {
+    if (isDesktop) return 440.0;
+    if (isTablet) return 380.0;
+    return 300.0;
+  }
+
+  // Font scaling factor
+  double get fontScale {
+    if (isDesktop) return 1.2;
+    if (isTablet) return 1.1;
+    return 1.0;
+  }
+
+  double sp(double size) => size * fontScale;
+
+  // Next button height
+  double get btnHeight {
+    if (isDesktop) return 64.0;
+    if (isTablet) return 60.0;
+    return 54.0;
+  }
+
+  // Whether to show content in two-column layout
+  bool get isTwoCols => isDesktop;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Screen
+// ─────────────────────────────────────────────────────────────────────────────
+
+File? _pickedGlobal;
 
 class ReplaceEditScreen extends StatefulWidget {
   const ReplaceEditScreen({super.key});
 
-  static const routeName = "/replace-edit-screen";
+  static const routeName = '/replace-edit-screen';
 
   @override
   State<ReplaceEditScreen> createState() => _ReplaceEditScreenState();
 }
 
-class _ReplaceEditScreenState extends State<ReplaceEditScreen> {
-  int _selectedTemplate = -1;
-
-  final List<String> _templateColors = [
-    '#E8D5C4', // Living room warm
-    '#C8D8E8', // Bedroom cool
-    '#8FB5A8', // Bathroom green
-    '#5C6B4E', // Dark dining
-  ];
-
-  // Template placeholder colors (replace with real AssetImage in a real project)
-  final List<Color> _templateSwatches = [
-    const Color(0xFFE07B54), // warm orange living
-    const Color(0xFFB8C8D8), // cool blue bedroom
-    const Color(0xFF6B9E8F), // teal bathroom
-    const Color(0xFF4A5E3A), // dark green dining
-  ];
-
+class _ReplaceEditScreenState extends State<ReplaceEditScreen>
+    with SingleTickerProviderStateMixin {
+  int _selectedArea = 2;
   double _eraserSize = 0.45;
-  double _brushSize  = 0.72;
-
-  int _selectedArea = 2; // 'Sofa' pre-selected
+  double _brushSize = 0.72;
   bool _canUndo = true;
   bool _canRedo = false;
+  File? _picked;
 
-  final List<String> _areas = [
+  late final AnimationController _fadeCtrl;
+  late final Animation<double> _fadeAnim;
+
+  static const _areas = [
     'Mirror', 'Wall', 'Sofa', 'Table', 'Plant', 'Cabinet',
   ];
 
+  @override
+  void initState() {
+    super.initState();
+    _fadeCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 420),
+    )..forward();
+    _fadeAnim = CurvedAnimation(parent: _fadeCtrl, curve: Curves.easeOut);
+  }
 
   @override
+  void dispose() {
+    _fadeCtrl.dispose();
+    super.dispose();
+  }
+
+  // ── Build ──────────────────────────────────────────────────────────────────
+  @override
   Widget build(BuildContext context) {
-    final topPadding = MediaQuery.of(context).padding.top;
+    final r = _Responsive(context);
+    final topPad = MediaQuery.of(context).padding.top;
+    final botPad = MediaQuery.of(context).padding.bottom;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F3EF),
-      body: Column(
-        children: [
-          // ── Status bar spacer + AppBar ──────────────────────────────
-          SizedBox(height: topPadding),
-          _buildAppBar(),
+      body: SafeArea(
+        bottom: false,
+        child: FadeTransition(
+          opacity: _fadeAnim,
+          child: r.isTwoCols
+              ? _buildDesktopLayout(r, botPad)
+              : _buildMobileLayout(r, topPad, botPad),
+        ),
+      ),
+    );
+  }
 
-          // ── Progress bar ────────────────────────────────────────────
-          _buildProgressBar(),
-
-          // ── Scrollable content ──────────────────────────────────────
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 22),
-                _buildSectionTitle('Upload a photo of your room'),
-                const SizedBox(height: 14),
-                _buildUploadCard(),
-                const SizedBox(height: 20),
-                // ── Undo / redo + info ────────────────────────────────
-                _buildUndoRedoRow(),
-                const SizedBox(height: 16),
-
-                // ── Brush label ────────────────────────────────────────
-                _buildBrushLabel(),
-                const SizedBox(height: 10),
-
-                // ── Area chips ─────────────────────────────────────────
-                _buildAreaChips(),
-                const SizedBox(height: 14),
-
-                // ── Brush size slider ──────────────────────────────────
-                _buildBrushSlider(),
-
-                const Spacer(),
-              ],
+  // ── Desktop two-column layout ──────────────────────────────────────────────
+  Widget _buildDesktopLayout(_Responsive r, double botPad) {
+    return Column(
+      children: [
+        _buildAppBar(r),
+        _buildProgressBar(),
+        Expanded(
+          child: Center(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: r.contentMaxWidth),
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: r.hPad),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Left: upload card
+                    Expanded(
+                      flex: 6,
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.only(top: 28, bottom: 24),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildSectionTitle('Upload a photo of your room', r),
+                            const SizedBox(height: 16),
+                            _buildUploadCard(r),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 32),
+                    // Right: tools
+                    Expanded(
+                      flex: 4,
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 28),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildUndoRedoRow(r),
+                            const SizedBox(height: 20),
+                            _buildBrushLabel(r),
+                            const SizedBox(height: 12),
+                            _buildAreaChips(r),
+                            const SizedBox(height: 16),
+                            _buildBrushSlider(r),
+                            const SizedBox(height: 32),
+                            _buildNextButton(r, botPad),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
+        ),
+      ],
+    );
+  }
 
-          // ── Next button ─────────────────────────────────────────────
-          _buildNextButton(),
-          SizedBox(height: MediaQuery.of(context).padding.bottom + 8),
+  // ── Mobile / tablet single-column layout ──────────────────────────────────
+  Widget _buildMobileLayout(_Responsive r, double topPad, double botPad) {
+    return Column(
+      children: [
+        _buildAppBar(r),
+        _buildProgressBar(),
+        Expanded(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: EdgeInsets.only(
+                left: r.hPad,
+                right: r.hPad,
+                top: 22,
+                bottom: botPad + 80,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildSectionTitle('Upload a photo of your room', r),
+                  const SizedBox(height: 14),
+                  _buildUploadCard(r),
+                  const SizedBox(height: 20),
+                  _buildUndoRedoRow(r),
+                  const SizedBox(height: 16),
+                  _buildBrushLabel(r),
+                  const SizedBox(height: 10),
+                  _buildAreaChips(r),
+                  const SizedBox(height: 14),
+                  _buildBrushSlider(r),
+                ],
+              ),
+            ),
+          ),
+        ),
+        // Sticky bottom button
+        Container(
+          decoration: BoxDecoration(
+            color: const Color(0xFFF5F3EF),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.06),
+                blurRadius: 12,
+                offset: const Offset(0, -4),
+              ),
+            ],
+          ),
+          padding: EdgeInsets.fromLTRB(
+            r.hPad, 12, r.hPad, botPad + 12,
+          ),
+          child: _buildNextButton(r, 0),
+        ),
+      ],
+    );
+  }
+
+  // ─────────────────────────────────────────────
+  // AppBar
+  // ─────────────────────────────────────────────
+  Widget _buildAppBar(_Responsive r) {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(r.hPad, 10, r.hPad, 0),
+      child: Row(
+        children: [
+          // Back button
+          _CircleButton(
+            icon: Icons.arrow_back_ios_rounded,
+            iconSize: 18,
+            onTap: () => Navigator.of(context).pop(),
+          ),
+          const Expanded(
+            child: Center(
+              child: Text(
+                'Replace',
+                style: TextStyle(
+                  fontSize: 32,
+                  fontFamily: 'Georgia',
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xFF1A1A1A),
+                  letterSpacing: -0.5,
+                ),
+              ),
+            ),
+          ),
+          // Coin badge
+          _CoinBadge(amount: 200),
         ],
       ),
     );
   }
 
-  // ── Undo / redo + info ───────────────────────────────────────────────────
-  Widget _buildUndoRedoRow() {
+  // ─────────────────────────────────────────────
+  // Progress bar
+  // ─────────────────────────────────────────────
+  Widget _buildProgressBar() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Row(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(4),
+        child: LinearProgressIndicator(
+          value: 0.25,
+          minHeight: 3,
+          backgroundColor: const Color(0xFFE0DDD8),
+          valueColor:
+          const AlwaysStoppedAnimation<Color>(Color(0xFF3A7D7B)),
+        ),
+      ),
+    );
+  }
+
+  // ─────────────────────────────────────────────
+  // Section title
+  // ─────────────────────────────────────────────
+  Widget _buildSectionTitle(String text, _Responsive r) {
+    return Text(
+      text,
+      style: TextStyle(
+        fontSize: r.sp(18),
+        fontWeight: FontWeight.w500,
+        color: const Color(0xFF1C1C1C),
+        letterSpacing: -0.2,
+      ),
+    );
+  }
+
+  // ─────────────────────────────────────────────
+  // Upload card
+  // ─────────────────────────────────────────────
+  Widget _buildUploadCard(_Responsive r) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 14,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
         children: [
-          // Undo + Redo pill
-          Container(
+          // Image preview
+          Stack(
+            children: [
+              picked != null
+                  ? CustomImageview(imagePath: picked!.path)
+                  : ClipRRect(
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(20),
+                ),
+                child: Container(
+                  width: double.infinity,
+                  height: 330,
+                  color: const Color(0xFFF8F6F2),
+
+                  child: CustomImageview(
+                    imagePath: "assets/images/replace_home.png",
+                    fit: BoxFit.contain,
+                  ),
+                ),
+              ),
+              Positioned(
+                top: 14,
+                right: 14,
+                child: _CircleButton(
+                  icon: Icons.info_outline_rounded,
+                  iconColor: const Color(0xFF5A5754),
+                  borderColor: const Color(0xFFD0CEC9),
+                  onTap: () {},
+                ),
+              ),
+              if (_picked != null)
+                Positioned(
+                  top: 14,
+                  left: 14,
+                  child: _CircleButton(
+                    icon: Icons.close_rounded,
+                    iconColor: const Color(0xFF5A5754),
+                    borderColor: const Color(0xFFD0CEC9),
+                    onTap: () => setState(() => _picked = null),
+                  ),
+                ),
+            ],
+          ),
+          // Add photo button
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 18),
+            child: GestureDetector(
+              onTap: () => _showMediaSourcePicker(),
+              child: Container(
+                height: 48,
+                padding: const EdgeInsets.symmetric(horizontal: 32),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF2E8DA),
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: const [
+                    Icon(Icons.add_a_photo_outlined,
+                        size: 20, color: Color(0xFF5A4A3A)),
+                    SizedBox(width: 8),
+                    Text(
+                      'Add Photo',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF5A4A3A),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ─────────────────────────────────────────────
+  // Undo / Redo row
+  // ─────────────────────────────────────────────
+  Widget _buildUndoRedoRow(_Responsive r) {
+    return Row(
+      children: [
+        // Undo + redo pill
+        Container(
+          height: 42,
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 6,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              GestureDetector(
+                onTap:
+                _canUndo ? () => setState(() => _canUndo = false) : null,
+                child: Icon(Icons.undo_rounded,
+                    size: 22,
+                    color: _canUndo
+                        ? const Color(0xFF5A5550)
+                        : const Color(0xFFBBB8B4)),
+              ),
+              const SizedBox(width: 10),
+              Container(
+                  width: 1, height: 18, color: const Color(0xFFE0DDD8)),
+              const SizedBox(width: 10),
+              GestureDetector(
+                onTap:
+                _canRedo ? () => setState(() => _canRedo = false) : null,
+                child: Icon(Icons.redo_rounded,
+                    size: 22,
+                    color: _canRedo
+                        ? const Color(0xFF5A5550)
+                        : const Color(0xFFBBB8B4)),
+              ),
+            ],
+          ),
+        ),
+        const Spacer(),
+        // Info button
+        GestureDetector(
+          onTap: () {},
+          child: Container(
+            width: 42,
             height: 42,
-            padding: const EdgeInsets.symmetric(horizontal: 14),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(24),
+              shape: BoxShape.circle,
+              border: Border.all(
+                  color: const Color(0xFFD4A870), width: 1.8),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.05),
@@ -124,189 +495,69 @@ class _ReplaceEditScreenState extends State<ReplaceEditScreen> {
                 ),
               ],
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Undo
-                GestureDetector(
-                  onTap: _canUndo ? () => setState(() => _canUndo = false) : null,
-                  child: Icon(
-                    Icons.undo_rounded,
-                    size: 22,
-                    color: _canUndo
-                        ? const Color(0xFF5A5550)
-                        : const Color(0xFFBBB8B4),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                // Divider
-                Container(width: 1, height: 18, color: const Color(0xFFE0DDD8)),
-                const SizedBox(width: 10),
-                // Redo
-                GestureDetector(
-                  onTap: _canRedo ? () => setState(() => _canRedo = false) : null,
-                  child: Icon(
-                    Icons.redo_rounded,
-                    size: 22,
-                    color: _canRedo
-                        ? const Color(0xFF5A5550)
-                        : const Color(0xFFBBB8B4),
-                  ),
-                ),
-              ],
-            ),
+            child: const Icon(Icons.info_outline_rounded,
+                size: 20, color: Color(0xFFD4A870)),
           ),
+        ),
+      ],
+    );
+  }
 
-          const Spacer(),
-
-          // Info button
-          GestureDetector(
-            onTap: () {},
-            child: Container(
-              width: 42,
-              height: 42,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: const Color(0xFFD4A870),
-                  width: 1.8,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 6,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: const Icon(
-                Icons.info_outline_rounded,
-                size: 20,
-                color: Color(0xFFD4A870),
-              ),
-            ),
-          ),
-        ],
+  // ─────────────────────────────────────────────
+  // Brush label
+  // ─────────────────────────────────────────────
+  Widget _buildBrushLabel(_Responsive r) {
+    return Text(
+      'Brush over or pick an area to edit',
+      style: TextStyle(
+        fontSize: r.sp(15),
+        fontWeight: FontWeight.w400,
+        color: const Color(0xFF2A2520),
+        letterSpacing: 0.1,
       ),
     );
   }
 
-  // ── "Brush over or pick an area to edit" label ───────────────────────────
-  Widget _buildBrushLabel() {
-    return const Padding(
-      padding: EdgeInsets.symmetric(horizontal: 20),
-      child: Align(
-        alignment: Alignment.centerLeft,
-        child: Text(
-          'Brush over or pick an area to edit',
-          style: TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.w400,
-            color: Color(0xFF2A2520),
-            letterSpacing: 0.1,
+  // ─────────────────────────────────────────────
+  // Area chips (wraps on tablet/desktop)
+  // ─────────────────────────────────────────────
+  Widget _buildAreaChips(_Responsive r) {
+    if (r.isPhone) {
+      // Horizontal scroll on phones
+      return SizedBox(
+        height: 38,
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          itemCount: _areas.length,
+          separatorBuilder: (_, __) => const SizedBox(width: 8),
+          itemBuilder: (_, i) => _AreaChip(
+            label: _areas[i],
+            selected: _selectedArea == i,
+            onTap: () => setState(() => _selectedArea = i),
           ),
+        ),
+      );
+    }
+    // Wrap on tablet/desktop
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: List.generate(
+        _areas.length,
+            (i) => _AreaChip(
+          label: _areas[i],
+          selected: _selectedArea == i,
+          onTap: () => setState(() => _selectedArea = i),
         ),
       ),
     );
   }
 
-  // ── Area chips ────────────────────────────────────────────────────────────
-  Widget _buildAreaChips() {
-    return SizedBox(
-      height: 38,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        itemCount: _areas.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 8),
-        itemBuilder: (_, i) {
-          final sel = _selectedArea == i;
-          return GestureDetector(
-            onTap: () => setState(() => _selectedArea = i),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 150),
-              padding: const EdgeInsets.symmetric(horizontal: 18),
-              decoration: BoxDecoration(
-                color: sel ? const Color(0xFFF5EDE0) : Colors.white,
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(
-                  color: sel
-                      ? const Color(0xFFD4A870)
-                      : const Color(0xFFE8E4DF),
-                  width: 1.2,
-                ),
-              ),
-              alignment: Alignment.center,
-              child: Text(
-                _areas[i],
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: sel ? FontWeight.w600 : FontWeight.w400,
-                  color: sel
-                      ? const Color(0xFF8A5A20)
-                      : const Color(0xFF3A3530),
-                ),
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  // ── Brush size dual slider ────────────────────────────────────────────────
-  Widget _buildBrushSlider() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Row(
-        children: [
-          // Brush/erase icon
-          const _BrushEraseIcon(),
-          const SizedBox(width: 10),
-
-          // Left track (eraser)
-          Expanded(
-            child: SliderTheme(
-              data: _sliderTheme(context),
-              child: Slider(
-                value: _eraserSize,
-                onChanged: (v) => setState(() => _eraserSize = v),
-                activeColor: const Color(0xFF4A5A68),
-                inactiveColor: const Color(0xFFCCC8C2),
-              ),
-            ),
-          ),
-
-          // Centre divider pip
-          Container(
-            width: 3, height: 24,
-            margin: const EdgeInsets.symmetric(horizontal: 2),
-            decoration: BoxDecoration(
-              color: const Color(0xFF5A6570),
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-
-          // Right track (brush)
-          Expanded(
-            child: SliderTheme(
-              data: _sliderTheme(context),
-              child: Slider(
-                value: _brushSize,
-                onChanged: (v) => setState(() => _brushSize = v),
-                activeColor: const Color(0xFF4A5A68),
-                inactiveColor: const Color(0xFFCCC8C2),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  SliderThemeData _sliderTheme(BuildContext context) {
-    return SliderTheme.of(context).copyWith(
+  // ─────────────────────────────────────────────
+  // Dual brush slider
+  // ─────────────────────────────────────────────
+  Widget _buildBrushSlider(_Responsive r) {
+    final sliderTheme = SliderThemeData(
       trackHeight: 4,
       thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
       overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
@@ -315,105 +566,170 @@ class _ReplaceEditScreenState extends State<ReplaceEditScreen> {
       inactiveTrackColor: const Color(0xFFCCC8C2),
       overlayColor: const Color(0xFF4A5A68).withOpacity(0.15),
     );
+
+    return Row(
+      children: [
+        const Text('🖌️', style: TextStyle(fontSize: 22)),
+        const SizedBox(width: 8),
+        Expanded(
+          child: SliderTheme(
+            data: sliderTheme,
+            child: Slider(
+              value: _eraserSize,
+              onChanged: (v) => setState(() => _eraserSize = v),
+            ),
+          ),
+        ),
+        Container(
+          width: 3,
+          height: 24,
+          margin: const EdgeInsets.symmetric(horizontal: 2),
+          decoration: BoxDecoration(
+            color: const Color(0xFF5A6570),
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+        Expanded(
+          child: SliderTheme(
+            data: sliderTheme,
+            child: Slider(
+              value: _brushSize,
+              onChanged: (v) => setState(() => _brushSize = v),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
-
   // ─────────────────────────────────────────────
-  // AppBar
+  // Next button
   // ─────────────────────────────────────────────
-  Widget _buildAppBar() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-      child: Row(
-        children: [
-          GestureDetector(
-            onTap: () {
-              Navigator.of(context).pop();
-            },
-            child: const SizedBox(
-              width: 36,
-              height: 36,
-              child: Icon(
-                Icons.arrow_back_ios_rounded,
-                size: 20,
-                color: Color(0xFF1A1A1A),
+  Widget _buildNextButton(_Responsive r, double extraBottom) {
+    return SizedBox(
+      width: double.infinity,
+      height: r.btnHeight,
+      child: GestureDetector(
+        onTap: () {
+          // Navigate to next screen
+        },
+        child: Container(
+          decoration: BoxDecoration(
+            color: const Color(0xFFE8C9A0),
+            borderRadius: BorderRadius.circular(32),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFFE8C9A0).withOpacity(0.5),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
               ),
+            ],
+          ),
+          alignment: Alignment.center,
+          child: Text(
+            'Next',
+            style: TextStyle(
+              fontSize: r.sp(18),
+              fontWeight: FontWeight.w600,
+              color: const Color(0xFF5A3E1B),
+              letterSpacing: 0.3,
             ),
           ),
-          const Expanded(
-            child: Center(
-              child: Text(
-                'Replace',
-                style: TextStyle(
-                  fontSize: 36,
-                  fontFamily: 'Georgia',
-                  fontWeight: FontWeight.w500,
-                  color: Color(0xFF1A1A1A),
-                  letterSpacing: -0.3,
-                ),
-              ),
-            ),
-          ),
-          // Coin badge
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFFF3E8),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: const Color(0xFFE8873A).withOpacity(0.3),
-              ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  '200',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF1A1A1A),
-                    letterSpacing: -0.2,
-                  ),
-                ),
-                const SizedBox(width: 4),
-                CustomImageview(
-                  imagePath: "assets/images/credit.png",
-                  height: 25,
-                  width: 25,
-                  fit: BoxFit.contain,
-                ),
-              ],
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
 
-  Widget _buildCoinBadge() {
+  // ─────────────────────────────────────────────
+  // Media picker
+  // ─────────────────────────────────────────────
+  void _showMediaSourcePicker() {
+    showCupertinoModalPopup<void>(
+      context: context,
+      builder: (_) => _MediaSourceSheet(
+        onFilePicked: (file) => setState(() => _picked = file),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Reusable sub-widgets
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _CircleButton extends StatelessWidget {
+  const _CircleButton({
+    required this.icon,
+    required this.onTap,
+    this.iconSize = 18.0,
+    this.iconColor = const Color(0xFF1A1A1A),
+    this.borderColor = Colors.transparent,
+    this.bgColor = Colors.white,
+  });
+
+  final IconData icon;
+  final VoidCallback onTap;
+  final double iconSize;
+  final Color iconColor;
+  final Color borderColor;
+  final Color bgColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 36,
+        height: 36,
+        decoration: BoxDecoration(
+          color: bgColor,
+          shape: BoxShape.circle,
+          border: Border.all(color: borderColor, width: 1.5),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Icon(icon, size: iconSize, color: iconColor),
+      ),
+    );
+  }
+}
+
+class _CoinBadge extends StatelessWidget {
+  const _CoinBadge({required this.amount});
+  final int amount;
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
-      height: 34,
-      padding: const EdgeInsets.symmetric(horizontal: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: const Color(0xFFF5A05A),
+        color: const Color(0xFFFFF3E8),
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: const Color(0xFFE8873A).withOpacity(0.3),
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text(
-            '200',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 15,
+          Text(
+            '$amount',
+            style: const TextStyle(
+              fontSize: 14,
               fontWeight: FontWeight.w700,
+              color: Color(0xFF1A1A1A),
+              letterSpacing: -0.2,
             ),
           ),
           const SizedBox(width: 5),
           Container(
-            width: 20,
-            height: 20,
+            width: 22,
+            height: 22,
             decoration: const BoxDecoration(
               color: Color(0xFFD4721A),
               shape: BoxShape.circle,
@@ -428,679 +744,384 @@ class _ReplaceEditScreenState extends State<ReplaceEditScreen> {
       ),
     );
   }
-
-  // ─────────────────────────────────────────────
-  // Progress bar
-  // ─────────────────────────────────────────────
-  Widget _buildProgressBar() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      child: LinearProgressIndicator(
-        value: 0.25,
-        minHeight: 3,
-        backgroundColor: const Color(0xFFE0DDD8),
-        valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF3A7D7B)),
-      ),
-    );
-  }
-
-  // ─────────────────────────────────────────────
-  // Section title
-  // ─────────────────────────────────────────────
-  Widget _buildSectionTitle(String text) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Text(
-        text,
-        style: const TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.w500,
-          color: Color(0xFF1C1C1C),
-          letterSpacing: -0.2,
-        ),
-      ),
-    );
-  }
-
-  // ─────────────────────────────────────────────
-  // Upload Card
-  // ─────────────────────────────────────────────
-  Widget _buildUploadCard() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Container(
-        width: double.infinity,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          children: [
-            // Room preview area
-            Stack(
-              children: [
-                picked != null
-                    ? CustomImageview(imagePath: picked!.path)
-                    : ClipRRect(
-                      borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(20),
-                      ),
-                      child: Container(
-                        width: double.infinity,
-                        height: 330,
-                        color: const Color(0xFFF8F6F2),
-
-                        child: CustomImageview(
-                          imagePath: "assets/images/replace_home.png",
-                          fit: BoxFit.contain,
-                        ),
-                      ),
-                    ),
-
-                Positioned(
-                  top: 14,
-                  right: 14,
-                  child: GestureDetector(
-                    onTap: () {
-                      Navigator.of(context).pushNamed(SnapTipsScreen.routeName);
-                    },
-                    child: Container(
-                      width: 32,
-                      height: 32,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: const Color(0xFFD0CEC9),
-                          width: 1.5,
-                        ),
-                      ),
-                      child: const Icon(
-                        Icons.info_outline_rounded,
-                        size: 18,
-                        color: Color(0xFF5A5754),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-
-            // Add Photo button
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 18),
-              child: GestureDetector(
-                onTap:
-                    () => showMediaSourcePicker(
-                      context,
-                      onFilePicked: (file) => setState(() => picked = file),
-                    ),
-                child: Container(
-                  height: 48,
-                  padding: const EdgeInsets.symmetric(horizontal: 32),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF2E8DA),
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: const [
-                      Icon(
-                        Icons.add_a_photo_outlined,
-                        size: 20,
-                        color: Color(0xFF5A4A3A),
-                      ),
-                      SizedBox(width: 8),
-                      Text(
-                        'Add Photo',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF5A4A3A),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void showMediaSourcePicker(
-    BuildContext context, {
-    required void Function(File file) onFilePicked,
-  }) {
-    showCupertinoModalPopup<void>(
-      context: context,
-      builder:
-          (BuildContext ctx) => _MediaSourceSheet(onFilePicked: onFilePicked),
-    );
-  }
-
-  /// A simple painter that mimics the isometric room illustration.
-  Widget _buildIsometricRoomPlaceholder() {
-    return CustomPaint(
-      painter: _IsometricRoomPainter(),
-      child: const SizedBox.expand(),
-    );
-  }
-
-  // ─────────────────────────────────────────────
-  // OR Divider
-  // ─────────────────────────────────────────────
-  Widget _buildOrDivider() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Row(
-        children: [
-          Expanded(child: Container(height: 1, color: const Color(0xFFD8D4CE))),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 14),
-            child: Text(
-              'OR',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFFAEA9A3),
-                letterSpacing: 1.2,
-              ),
-            ),
-          ),
-          Expanded(child: Container(height: 1, color: const Color(0xFFD8D4CE))),
-        ],
-      ),
-    );
-  }
-
-  // ─────────────────────────────────────────────
-  // Template horizontal list
-  // ─────────────────────────────────────────────
-  Widget _buildTemplateGrid() {
-    // Template data: label + accent color pairs
-    final templates = [
-      _TemplateData(
-        'Living Room',
-        const Color(0xFFE07B54),
-        const Color(0xFFF5E8DF),
-      ),
-      _TemplateData(
-        'Bedroom',
-        const Color(0xFF7A9DBF),
-        const Color(0xFFE0EAF4),
-      ),
-      _TemplateData(
-        'Bathroom',
-        const Color(0xFF6B9E8F),
-        const Color(0xFFD5EAE5),
-      ),
-      _TemplateData('Dining', const Color(0xFF5C7A5A), const Color(0xFFD5E5D3)),
-    ];
-
-    return SizedBox(
-      height: 128,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        itemCount: 8,
-        separatorBuilder: (_, __) => const SizedBox(width: 12),
-        itemBuilder: (context, i) {
-          final selected = _selectedTemplate == i;
-          return GestureDetector(
-            onTap: () => setState(() => _selectedTemplate = i),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              width: 108,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color:
-                      selected ? const Color(0xFF3A7D7B) : Colors.transparent,
-                  width: 2.5,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(selected ? 0.12 : 0.06),
-                    blurRadius: selected ? 14 : 8,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(14),
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    // Gradient background mimicking photo
-                    CustomImageview(
-                      imagePath: "assets/images/interior/interior_${i + 1}.jpg",
-                    ),
-                    if (selected)
-                      Positioned(
-                        top: 8,
-                        right: 8,
-                        child: Container(
-                          width: 22,
-                          height: 22,
-                          decoration: const BoxDecoration(
-                            color: Color(0xFF3A7D7B),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.check_rounded,
-                            size: 14,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  IconData _roomIcon(int i) {
-    switch (i) {
-      case 0:
-        return Icons.weekend_outlined;
-      case 1:
-        return Icons.bed_outlined;
-      case 2:
-        return Icons.bathtub_outlined;
-      case 3:
-        return Icons.dinner_dining_outlined;
-      default:
-        return Icons.home_outlined;
-    }
-  }
-
-  // ─────────────────────────────────────────────
-  // Next button
-  // ─────────────────────────────────────────────
-  Widget _buildNextButton() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
-      child: GestureDetector(
-        onTap: () {
-          Navigator.of(
-            context,
-          ).pushNamed(ReplaceDescribeVisionScreen.routeName);
-        },
-        child: Container(
-          width: double.infinity,
-          height: 58,
-          decoration: BoxDecoration(
-            color: const Color(0xFFE8C9A0),
-            borderRadius: BorderRadius.circular(32),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFFE8C9A0).withOpacity(0.5),
-                blurRadius: 16,
-                offset: const Offset(0, 6),
-              ),
-            ],
-          ),
-          alignment: Alignment.center,
-          child: const Text(
-            'Next',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF5A3E1B),
-              letterSpacing: 0.3,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-class _BrushEraseIcon extends StatelessWidget {
-  const _BrushEraseIcon();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Text(
-      '🖌️',
-      style: TextStyle(fontSize: 22),
-    );
-  }
-}
-// ─────────────────────────────────────────────────────────────────────────────
-// Data model
-// ─────────────────────────────────────────────────────────────────────────────
-class _MediaSourceSheet extends StatelessWidget {
-  const _MediaSourceSheet({required this.onFilePicked});
-
-  final void Function(File file) onFilePicked;
-
-  Future<void> _takePhoto(BuildContext context) async {
-    Navigator.of(context).pop();
-    final picker = ImagePicker();
-    final XFile? photo = await picker.pickImage(source: ImageSource.camera);
-    if (photo != null) onFilePicked(File(photo.path));
-  }
-
-  Future<void> _chooseFromPhotos(BuildContext context) async {
-    Navigator.of(context).pop();
-    final picker = ImagePicker();
-    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
-    if (image != null) onFilePicked(File(image.path));
-  }
-
-  Future<void> _browseFiles(BuildContext context) async {
-    Navigator.of(context).pop();
-    final result = await FilePicker.pickFiles();
-    if (result != null && result.files.single.path != null) {
-      onFilePicked(File(result.files.single.path!));
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        // ── Action sheet ──────────────────────────────────────────────────
-        CupertinoActionSheet(
-          title: const Text(
-            'Choose a Media Source',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: CupertinoColors.secondaryLabel,
-            ),
-          ),
-          actions: [
-            // Take Photo
-            CupertinoActionSheetAction(
-              onPressed: () => _takePhoto(context),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
-                  Icon(CupertinoIcons.camera, size: 22),
-                  SizedBox(width: 10),
-                  Text('Take Photo', style: TextStyle(fontSize: 17)),
-                ],
-              ),
-            ),
-
-            // Choose From Photos
-            CupertinoActionSheetAction(
-              onPressed: () => _chooseFromPhotos(context),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Multicolor Photos-app icon approximation
-                  ShaderMask(
-                    shaderCallback:
-                        (bounds) => const LinearGradient(
-                          colors: [
-                            Color(0xFFFF2D55),
-                            Color(0xFFFF9500),
-                            Color(0xFFFFCC00),
-                            Color(0xFF34C759),
-                            Color(0xFF007AFF),
-                            Color(0xFF5856D6),
-                          ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ).createShader(bounds),
-                    child: const Icon(
-                      CupertinoIcons.photo,
-                      size: 22,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  const Text(
-                    'Choose From Photos',
-                    style: TextStyle(fontSize: 17),
-                  ),
-                ],
-              ),
-            ),
-
-            // Browse Files
-            CupertinoActionSheetAction(
-              onPressed: () => _browseFiles(context),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
-                  Icon(
-                    CupertinoIcons.folder,
-                    size: 22,
-                    color: Color(0xFF007AFF),
-                  ),
-                  SizedBox(width: 10),
-                  Text('Browse Files', style: TextStyle(fontSize: 17)),
-                ],
-              ),
-            ),
-          ],
-
-          // Cancel button
-          cancelButton: CupertinoActionSheetAction(
-            onPressed: () => Navigator.of(context).pop(),
-            isDefaultAction: true,
-            child: const Text(
-              'Cancel',
-              style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
 }
 
-class _TemplateData {
+class _AreaChip extends StatelessWidget {
+  const _AreaChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
   final String label;
-  final Color accentColor;
-  final Color lightColor;
+  final bool selected;
+  final VoidCallback onTap;
 
-  const _TemplateData(this.label, this.accentColor, this.lightColor);
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        height: 38,
+        padding: const EdgeInsets.symmetric(horizontal: 18),
+        decoration: BoxDecoration(
+          color: selected ? const Color(0xFFF5EDE0) : Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: selected
+                ? const Color(0xFFD4A870)
+                : const Color(0xFFE8E4DF),
+            width: 1.2,
+          ),
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight:
+            selected ? FontWeight.w600 : FontWeight.w400,
+            color: selected
+                ? const Color(0xFF8A5A20)
+                : const Color(0xFF3A3530),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Isometric room custom painter
-// Draws a simplified top-down isometric living room to match the screenshot.
+// Room placeholder using CustomPaint (no asset dependency)
 // ─────────────────────────────────────────────────────────────────────────────
+
+class _RoomPlaceholderPainter extends StatelessWidget {
+  const _RoomPlaceholderPainter({required this.height});
+  final double height;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      height: height,
+      child: CustomPaint(
+        painter: _IsometricRoomPainter(),
+      ),
+    );
+  }
+}
+
 class _IsometricRoomPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final cx = size.width / 2;
-    final cy = size.height / 2 + 10;
+    final cy = size.height / 2 + size.height * 0.05;
 
-    // ── Floor ──────────────────────────────────────────────────────────
-    final floorPath =
-        Path()
-          ..moveTo(cx, cy - 80)
-          ..lineTo(cx + 140, cy - 10)
-          ..lineTo(cx, cy + 70)
-          ..lineTo(cx - 140, cy - 10)
-          ..close();
-    canvas.drawPath(floorPath, Paint()..color = const Color(0xFFD4B896));
+    // Scale factor so it fills nicely
+    final s = math.min(size.width / 320, size.height / 300) * 0.95;
 
-    // Floor planks (subtle lines)
-    final plankPaint =
-        Paint()
-          ..color = const Color(0xFFC4A882)
-          ..strokeWidth = 0.8
-          ..style = PaintingStyle.stroke;
+    void drawPath(Path p, Color c) =>
+        canvas.drawPath(p, Paint()..color = c);
+
+    // Background
+    canvas.drawRect(
+      Rect.fromLTWH(0, 0, size.width, size.height),
+      Paint()..color = const Color(0xFFF8F6F2),
+    );
+
+    // Floor
+    drawPath(
+      Path()
+        ..moveTo(cx, cy - 80 * s)
+        ..lineTo(cx + 140 * s, cy - 10 * s)
+        ..lineTo(cx, cy + 70 * s)
+        ..lineTo(cx - 140 * s, cy - 10 * s)
+        ..close(),
+      const Color(0xFFD4B896),
+    );
+
+    // Floor planks
+    final plank = Paint()
+      ..color = const Color(0xFFC4A882)
+      ..strokeWidth = 0.8
+      ..style = PaintingStyle.stroke;
     for (int i = -3; i <= 3; i++) {
       canvas.drawLine(
-        Offset(cx + i * 35 - 10, cy - 70 + i * 5),
-        Offset(cx + i * 35 + 50, cy + 60 + i * 5),
-        plankPaint,
+        Offset(cx + i * 35 * s - 10 * s, cy - 70 * s + i * 5 * s),
+        Offset(cx + i * 35 * s + 50 * s, cy + 60 * s + i * 5 * s),
+        plank,
       );
     }
 
-    // ── Left wall ─────────────────────────────────────────────────────
-    final leftWall =
-        Path()
-          ..moveTo(cx - 140, cy - 10)
-          ..lineTo(cx, cy - 80)
-          ..lineTo(cx, cy - 160)
-          ..lineTo(cx - 140, cy - 90)
-          ..close();
-    canvas.drawPath(leftWall, Paint()..color = const Color(0xFFDDD5C8));
+    // Left wall
+    drawPath(
+      Path()
+        ..moveTo(cx - 140 * s, cy - 10 * s)
+        ..lineTo(cx, cy - 80 * s)
+        ..lineTo(cx, cy - 160 * s)
+        ..lineTo(cx - 140 * s, cy - 90 * s)
+        ..close(),
+      const Color(0xFFDDD5C8),
+    );
 
-    // ── Right wall ────────────────────────────────────────────────────
-    final rightWall =
-        Path()
-          ..moveTo(cx, cy - 80)
-          ..lineTo(cx + 140, cy - 10)
-          ..lineTo(cx + 140, cy - 90)
-          ..lineTo(cx, cy - 160)
-          ..close();
-    canvas.drawPath(rightWall, Paint()..color = const Color(0xFFC8BFB0));
+    // Right wall
+    drawPath(
+      Path()
+        ..moveTo(cx, cy - 80 * s)
+        ..lineTo(cx + 140 * s, cy - 10 * s)
+        ..lineTo(cx + 140 * s, cy - 90 * s)
+        ..lineTo(cx, cy - 160 * s)
+        ..close(),
+      const Color(0xFFC8BFB0),
+    );
 
-    // ── Dark slat panel on left wall ──────────────────────────────────
-    final slatPath =
-        Path()
-          ..moveTo(cx - 140, cy - 90)
-          ..lineTo(cx - 88, cy - 118)
-          ..lineTo(cx - 88, cy - 26)
-          ..lineTo(cx - 140, cy - 10)
-          ..close();
-    canvas.drawPath(slatPath, Paint()..color = const Color(0xFF3A2E24));
+    // Dark slat panel
+    drawPath(
+      Path()
+        ..moveTo(cx - 140 * s, cy - 90 * s)
+        ..lineTo(cx - 88 * s, cy - 118 * s)
+        ..lineTo(cx - 88 * s, cy - 26 * s)
+        ..lineTo(cx - 140 * s, cy - 10 * s)
+        ..close(),
+      const Color(0xFF3A2E24),
+    );
 
-    // ── Rug ───────────────────────────────────────────────────────────
-    final rugPath =
-        Path()
-          ..moveTo(cx, cy - 20)
-          ..lineTo(cx + 80, cy + 20)
-          ..lineTo(cx, cy + 55)
-          ..lineTo(cx - 80, cy + 20)
-          ..close();
-    canvas.drawPath(rugPath, Paint()..color = const Color(0xFFE8DFD0));
+    // Rug
+    drawPath(
+      Path()
+        ..moveTo(cx, cy - 20 * s)
+        ..lineTo(cx + 80 * s, cy + 20 * s)
+        ..lineTo(cx, cy + 55 * s)
+        ..lineTo(cx - 80 * s, cy + 20 * s)
+        ..close(),
+      const Color(0xFFE8DFD0),
+    );
 
-    // ── L-shaped sofa ─────────────────────────────────────────────────
-    // Main sofa body
-    final sofaBody =
-        Path()
-          ..moveTo(cx - 72, cy - 30)
-          ..lineTo(cx + 30, cy + 28)
-          ..lineTo(cx + 20, cy + 50)
-          ..lineTo(cx - 82, cy - 8)
-          ..close();
-    canvas.drawPath(sofaBody, Paint()..color = const Color(0xFFEFEAE2));
+    // Sofa body
+    drawPath(
+      Path()
+        ..moveTo(cx - 72 * s, cy - 30 * s)
+        ..lineTo(cx + 30 * s, cy + 28 * s)
+        ..lineTo(cx + 20 * s, cy + 50 * s)
+        ..lineTo(cx - 82 * s, cy - 8 * s)
+        ..close(),
+      const Color(0xFFEFEAE2),
+    );
 
     // Sofa back
-    final sofaBack =
-        Path()
-          ..moveTo(cx - 82, cy - 8)
-          ..lineTo(cx - 72, cy - 30)
-          ..lineTo(cx - 64, cy - 56)
-          ..lineTo(cx - 74, cy - 34)
-          ..close();
-    canvas.drawPath(sofaBack, Paint()..color = const Color(0xFFE0D8CC));
-
-    // Cushions (yellow)
-    final cushionPaint = Paint()..color = const Color(0xFFD4A830);
-    canvas.drawOval(
-      Rect.fromCenter(center: Offset(cx - 20, cy - 8), width: 28, height: 18),
-      cushionPaint,
-    );
-    canvas.drawOval(
-      Rect.fromCenter(center: Offset(cx + 5, cy + 8), width: 26, height: 16),
-      cushionPaint,
+    drawPath(
+      Path()
+        ..moveTo(cx - 82 * s, cy - 8 * s)
+        ..lineTo(cx - 72 * s, cy - 30 * s)
+        ..lineTo(cx - 64 * s, cy - 56 * s)
+        ..lineTo(cx - 74 * s, cy - 34 * s)
+        ..close(),
+      const Color(0xFFE0D8CC),
     );
 
-    // ── Coffee table ──────────────────────────────────────────────────
-    final tablePaint =
-        Paint()
-          ..color = const Color(0xFF8EAAA0)
-          ..style = PaintingStyle.fill;
+    // Cushions
+    final cushion = Paint()..color = const Color(0xFFD4A830);
     canvas.drawOval(
-      Rect.fromCenter(center: Offset(cx + 20, cy + 22), width: 46, height: 28),
-      tablePaint,
+      Rect.fromCenter(
+          center: Offset(cx - 20 * s, cy - 8 * s),
+          width: 28 * s,
+          height: 18 * s),
+      cushion,
     );
     canvas.drawOval(
-      Rect.fromCenter(center: Offset(cx + 20, cy + 22), width: 38, height: 22),
+      Rect.fromCenter(
+          center: Offset(cx + 5 * s, cy + 8 * s),
+          width: 26 * s,
+          height: 16 * s),
+      cushion,
+    );
+
+    // Coffee table
+    canvas.drawOval(
+      Rect.fromCenter(
+          center: Offset(cx + 20 * s, cy + 22 * s),
+          width: 46 * s,
+          height: 28 * s),
+      Paint()..color = const Color(0xFF8EAAA0),
+    );
+    canvas.drawOval(
+      Rect.fromCenter(
+          center: Offset(cx + 20 * s, cy + 22 * s),
+          width: 38 * s,
+          height: 22 * s),
       Paint()..color = const Color(0xFFA8C4BC),
     );
 
-    // ── Small sofa (front) ────────────────────────────────────────────
-    final sofaFront =
-        Path()
-          ..moveTo(cx - 30, cy + 52)
-          ..lineTo(cx + 60, cy + 10)
-          ..lineTo(cx + 68, cy + 28)
-          ..lineTo(cx - 22, cy + 70)
-          ..close();
-    canvas.drawPath(sofaFront, Paint()..color = const Color(0xFFEFEAE2));
-
-    // ── TV / dark console ─────────────────────────────────────────────
-    final consolePath =
-        Path()
-          ..moveTo(cx + 80, cy - 8)
-          ..lineTo(cx + 135, cy + 24)
-          ..lineTo(cx + 128, cy + 36)
-          ..lineTo(cx + 73, cy + 4)
-          ..close();
-    canvas.drawPath(consolePath, Paint()..color = const Color(0xFF2E2822));
-
-    // ── Wall art frames ───────────────────────────────────────────────
-    final framePaint = Paint()..color = const Color(0xFF2E2822);
-    // Frame 1
-    canvas.drawRect(Rect.fromLTWH(cx - 60, cy - 148, 28, 36), framePaint);
-    canvas.drawRect(
-      Rect.fromLTWH(cx - 58, cy - 146, 24, 32),
-      Paint()..color = const Color(0xFF4A7A40),
-    );
-    // Frame 2
-    canvas.drawRect(Rect.fromLTWH(cx - 26, cy - 152, 28, 38), framePaint);
-    canvas.drawRect(
-      Rect.fromLTWH(cx - 24, cy - 150, 24, 34),
-      Paint()..color = const Color(0xFF3D6A34),
-    );
-    // Frame 3
-    canvas.drawRect(Rect.fromLTWH(cx + 8, cy - 148, 26, 36), framePaint);
-    canvas.drawRect(
-      Rect.fromLTWH(cx + 10, cy - 146, 22, 32),
-      Paint()..color = const Color(0xFF4E8040),
+    // Front sofa
+    drawPath(
+      Path()
+        ..moveTo(cx - 30 * s, cy + 52 * s)
+        ..lineTo(cx + 60 * s, cy + 10 * s)
+        ..lineTo(cx + 68 * s, cy + 28 * s)
+        ..lineTo(cx - 22 * s, cy + 70 * s)
+        ..close(),
+      const Color(0xFFEFEAE2),
     );
 
-    // ── Right-wall curtain ────────────────────────────────────────────
-    final curtainPaint = Paint()..color = const Color(0xFFB8C4B0);
-    for (int i = 0; i < 4; i++) {
-      final x = cx + 60.0 + i * 16;
-      canvas.drawRect(Rect.fromLTWH(x, cy - 88, 12, 70), curtainPaint);
+    // TV console
+    drawPath(
+      Path()
+        ..moveTo(cx + 80 * s, cy - 8 * s)
+        ..lineTo(cx + 135 * s, cy + 24 * s)
+        ..lineTo(cx + 128 * s, cy + 36 * s)
+        ..lineTo(cx + 73 * s, cy + 4 * s)
+        ..close(),
+      const Color(0xFF2E2822),
+    );
+
+    // Wall art
+    final frame = Paint()..color = const Color(0xFF2E2822);
+    for (int i = 0; i < 3; i++) {
+      final fx = cx - 60 * s + i * 34 * s;
+      final fy = cy - 148 * s;
+      canvas.drawRect(
+          Rect.fromLTWH(fx, fy, 28 * s, 36 * s), frame);
+      canvas.drawRect(
+        Rect.fromLTWH(fx + 2 * s, fy + 2 * s, 24 * s, 32 * s),
+        Paint()
+          ..color = [
+            const Color(0xFF4A7A40),
+            const Color(0xFF3D6A34),
+            const Color(0xFF4E8040)
+          ][i],
+      );
     }
 
-    // ── Plant ─────────────────────────────────────────────────────────
+    // Curtain
+    final curtainPaint = Paint()..color = const Color(0xFFB8C4B0);
+    for (int i = 0; i < 4; i++) {
+      final x = cx + 60 * s + i * 16 * s;
+      canvas.drawRect(
+          Rect.fromLTWH(x, cy - 88 * s, 12 * s, 70 * s), curtainPaint);
+    }
+
+    // Plant
     canvas.drawRect(
-      Rect.fromLTWH(cx + 118, cy - 20, 14, 20),
+      Rect.fromLTWH(cx + 118 * s, cy - 20 * s, 14 * s, 20 * s),
       Paint()..color = const Color(0xFF5A3E24),
     );
     canvas.drawOval(
-      Rect.fromCenter(center: Offset(cx + 125, cy - 28), width: 24, height: 28),
+      Rect.fromCenter(
+          center: Offset(cx + 125 * s, cy - 28 * s),
+          width: 24 * s,
+          height: 28 * s),
       Paint()..color = const Color(0xFF5A8050),
     );
 
-    // ── Wall lamp ─────────────────────────────────────────────────────
+    // Wall lamp
     canvas.drawOval(
-      Rect.fromCenter(center: Offset(cx - 86, cy - 80), width: 16, height: 16),
+      Rect.fromCenter(
+          center: Offset(cx - 86 * s, cy - 80 * s),
+          width: 16 * s,
+          height: 16 * s),
       Paint()..color = const Color(0xFFE8D090),
     );
   }
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Media source picker
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _MediaSourceSheet extends StatelessWidget {
+  const _MediaSourceSheet({required this.onFilePicked});
+  final void Function(File) onFilePicked;
+
+  Future<void> _takePhoto(BuildContext ctx) async {
+    Navigator.of(ctx).pop();
+    final x = await ImagePicker().pickImage(source: ImageSource.camera);
+    if (x != null) onFilePicked(File(x.path));
+  }
+
+  Future<void> _fromGallery(BuildContext ctx) async {
+    Navigator.of(ctx).pop();
+    final x = await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (x != null) onFilePicked(File(x.path));
+  }
+
+  Future<void> _browseFiles(BuildContext ctx) async {
+    Navigator.of(ctx).pop();
+    final r = await FilePicker.pickFiles();
+    if (r != null && r.files.single.path != null) {
+      onFilePicked(File(r.files.single.path!));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoActionSheet(
+      title: const Text(
+        'Choose a Media Source',
+        style: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+          color: CupertinoColors.secondaryLabel,
+        ),
+      ),
+      actions: [
+        CupertinoActionSheetAction(
+          onPressed: () => _takePhoto(context),
+          child: const Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(CupertinoIcons.camera, size: 22),
+              SizedBox(width: 10),
+              Text('Take Photo', style: TextStyle(fontSize: 17)),
+            ],
+          ),
+        ),
+        CupertinoActionSheetAction(
+          onPressed: () => _fromGallery(context),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ShaderMask(
+                shaderCallback: (b) => const LinearGradient(
+                  colors: [
+                    Color(0xFFFF2D55), Color(0xFFFF9500),
+                    Color(0xFFFFCC00), Color(0xFF34C759),
+                    Color(0xFF007AFF), Color(0xFF5856D6),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ).createShader(b),
+                child: const Icon(CupertinoIcons.photo,
+                    size: 22, color: Colors.white),
+              ),
+              const SizedBox(width: 10),
+              const Text('Choose From Photos',
+                  style: TextStyle(fontSize: 17)),
+            ],
+          ),
+        ),
+        CupertinoActionSheetAction(
+          onPressed: () => _browseFiles(context),
+          child: const Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(CupertinoIcons.folder,
+                  size: 22, color: Color(0xFF007AFF)),
+              SizedBox(width: 10),
+              Text('Browse Files', style: TextStyle(fontSize: 17)),
+            ],
+          ),
+        ),
+      ],
+      cancelButton: CupertinoActionSheetAction(
+        isDefaultAction: true,
+        onPressed: () => Navigator.of(context).pop(),
+        child: const Text('Cancel',
+            style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
+      ),
+    );
+  }
 }

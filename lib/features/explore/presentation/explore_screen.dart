@@ -1,5 +1,3 @@
-
-
 import 'dart:math' as math;
 import 'package:ai_interior/bloc/get_all_designs/get_all_designs_bloc.dart';
 import 'package:ai_interior/features/explore/presentation/explore_detail_screen.dart';
@@ -8,7 +6,6 @@ import 'package:ai_interior/models/get_all_exterior_design_model_response.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
 import '../../../bloc/get_all_exterior_designs/get_all_exterior_designs_bloc.dart';
 import '../../../models/get_all_interrior_design_model_response.dart';
 import '../../../widgets/custom_imageview.dart';
@@ -16,17 +13,11 @@ import '../../credit/presentataion/credit_screen.dart';
 import '../../home/presentation/home_screen.dart';
 import '../../setting/presentation/setting_screens.dart';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Data model
-// Replace imagePath strings with your actual asset or network image paths.
-// ─────────────────────────────────────────────────────────────────────────────
 class RoomCardData {
   final String imagePath;
 
   const RoomCardData(this.imagePath);
 }
-
-// ── Interior cards ────────────────────────────────────────────────────────────
 const _interiorLeft = [
   RoomCardData('assets/rooms/minimal.jpg'),
   RoomCardData('assets/rooms/dark_living.jpg'),
@@ -38,8 +29,6 @@ const _interiorRight = [
   RoomCardData('assets/rooms/sage.jpg'),
   RoomCardData('assets/rooms/forest.jpg'),
 ];
-
-// ── Exterior cards ────────────────────────────────────────────────────────────
 const _exteriorLeft = [
   RoomCardData('assets/exterior/facade.jpg'),
   RoomCardData('assets/exterior/garden.jpg'),
@@ -56,9 +45,6 @@ const _exteriorRight = [
 const _leftH = [370.0, 390.0, 200.0];
 const _rightH = [244.0, 268.0, 290.0, 210.0];
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Screen
-// ─────────────────────────────────────────────────────────────────────────────
 class ExploreScreen extends StatefulWidget {
   const ExploreScreen({super.key});
 
@@ -158,8 +144,6 @@ class _ExploreScreenState extends State<ExploreScreen>
                 body: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-
-
                     _buildTabBar(),
                     const SizedBox(height: 16),
 
@@ -184,7 +168,6 @@ class _ExploreScreenState extends State<ExploreScreen>
       },
     );
   }
-
 
   // ── Flutter TabBar with pill-shaped sliding indicator ──────────────────
   Widget _buildTabBar() {
@@ -239,7 +222,6 @@ class _ExploreScreenState extends State<ExploreScreen>
     );
   }
 
-  // ── Category filter chips ───────────────────────────────────────────────
   Widget _buildCategoryChips() {
     return SizedBox(
       height: 38,
@@ -251,7 +233,35 @@ class _ExploreScreenState extends State<ExploreScreen>
         itemBuilder: (_, i) {
           final sel = _catIdx == i;
           return GestureDetector(
-            onTap: () => setState(() => _catIdx = i),
+            onTap: () {
+              setState(() {
+                _catIdx = i;
+              });
+              print("SPACE TYPE : ${_cats[i].toLowerCase()}");
+              if (_tabController.index == 0) {
+                _getAllInteriorDesignBloc.add(
+                  GetAllInteriorDesignDataEvent(
+                    data: {
+                      "space_type": _cats[i].toLowerCase().trim().replaceAll(
+                        RegExp(r'\s+'),
+                        '_',
+                      ),
+                    },
+                  ),
+                );
+              } else {
+                _getAllExteriorDesignBloc.add(
+                  GetAllExteriorDesignDataEvent(
+                    data: {
+                      "space_type": _cats[i].toLowerCase().trim().replaceAll(
+                        RegExp(r'\s+'),
+                        '_',
+                      ),
+                    },
+                  ),
+                );
+              }
+            },
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 180),
               padding: const EdgeInsets.symmetric(horizontal: 18),
@@ -285,7 +295,6 @@ class _ExploreScreenState extends State<ExploreScreen>
     );
   }
 
-  // ── Two-column masonry grid ─────────────────────────────────────────────
   Widget _buildGrid() {
     return GridView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -336,7 +345,6 @@ class _ExploreScreenState extends State<ExploreScreen>
     );
   }
 
-  // ── Bottom navigation bar ───────────────────────────────────────────────
   Widget _buildBottomNav(double botPad) {
     return Container(
       color: const Color(0xFFF5F2EE),
@@ -438,13 +446,12 @@ class _TopBar extends StatelessWidget {
               height: 25,
               width: 25,
             ),
-          )
+          ),
         ],
       ),
     );
   }
 }
-
 
 class _RoomCard extends StatelessWidget {
   final String data;
@@ -507,9 +514,6 @@ class _CardPlaceholder extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Bottom nav — standard icon button
-// ─────────────────────────────────────────────────────────────────────────────
 class _NavBtn extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -553,9 +557,6 @@ class _NavBtn extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Compass nav button for "Explore"
-// ─────────────────────────────────────────────────────────────────────────────
 class _CompassNavBtn extends StatelessWidget {
   final String label;
   final int idx, current;
@@ -600,9 +601,6 @@ class _CompassNavBtn extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Compass rose painter (8-point star)
-// ─────────────────────────────────────────────────────────────────────────────
 class _CompassPainter extends CustomPainter {
   final Color color;
 

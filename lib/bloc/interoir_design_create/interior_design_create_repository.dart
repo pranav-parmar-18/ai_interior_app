@@ -44,6 +44,7 @@ class InteriorDeignCreateRepository {
       "space_type": data['space_type'],
     });
   }
+
   Future<void> interiorDesignCreate(
       Map<String, dynamic> data,
       File image,
