@@ -1,4 +1,5 @@
 import 'package:ai_interior/bloc/delete_record/delete_record_bloc.dart';
+import 'package:ai_interior/bloc/image_enhance/image_enhance_bloc.dart';
 import 'package:ai_interior/bloc/publish_record/publish_record_bloc.dart';
 import 'package:ai_interior/widgets/custom_imageview.dart';
 import 'package:flutter/cupertino.dart';
@@ -18,6 +19,7 @@ class InteriorOutputScreen extends StatefulWidget {
 }
 
 class _InteriorOutputScreenState extends State<InteriorOutputScreen> {
+  final ImageEnhanceBloc _imageEnhanceBloc = ImageEnhanceBloc();
   final PublishRecordBloc _publishRecordBloc = PublishRecordBloc();
   final DeleteRecordBloc _deleteRecordBloc = DeleteRecordBloc();
 
@@ -55,188 +57,206 @@ class _InteriorOutputScreenState extends State<InteriorOutputScreen> {
                   state is DeleteRecordFailureState) {}
             },
             builder: (context, state) {
-              return Scaffold(
-                backgroundColor: const Color(0xFFF2EFEA),
-                body:
-                    state is PublishRecordLoadingState
-                        ? Center(child: CupertinoActivityIndicator())
-                        : Column(
-                          children: [
-                            _PhotoSection(topPad: topPad, img: data["image"]),
-                            Expanded(
-                              child: SingleChildScrollView(
-                                physics: const BouncingScrollPhysics(),
-                                padding: const EdgeInsets.fromLTRB(
-                                  16,
-                                  16,
-                                  16,
-                                  0,
+              return BlocConsumer<ImageEnhanceBloc, ImageEnhanceState>(
+                bloc: _imageEnhanceBloc,
+                listener: (context, state) {
+                  if (state is ImageEnhanceSuccessState) {
+                  } else if (state is ImageEnhanceExceptionState ||
+                      state is ImageEnhanceFailureState) {}
+                },
+                builder: (context, state) {
+                  return Scaffold(
+                    backgroundColor: const Color(0xFFF2EFEA),
+                    body:
+                        state is PublishRecordLoadingState
+                            ? Center(child: CupertinoActivityIndicator())
+                            : Column(
+                              children: [
+                                _PhotoSection(
+                                  onTap: () {
+                                    _imageEnhanceBloc.add(
+                                      ImageEnhanceDataEvent(login: {}),
+                                    );
+                                  },
+                                  topPad: topPad,
+                                  img: data["image"],
                                 ),
-                                child: Column(
-                                  children: [
-                                    _InfoTile(
-                                      iconWidget: const _BuildingIcon(),
-                                      label: 'Building Type',
-                                      value:
-                                          data["spaceType"]
-                                              .toString()
-                                              .toUpperCase(),
-                                      trailing: null,
+                                Expanded(
+                                  child: SingleChildScrollView(
+                                    physics: const BouncingScrollPhysics(),
+                                    padding: const EdgeInsets.fromLTRB(
+                                      16,
+                                      16,
+                                      16,
+                                      0,
                                     ),
-                                    const SizedBox(height: 10),
-                                    _InfoTile(
-                                      iconWidget: const Icon(
-                                        Icons.style_outlined,
-                                        size: 26,
-                                        color: Color(0xFF5A5550),
-                                      ),
-                                      label: 'Design Aesthetic',
-                                      value:
-                                          data["designAsth"]
-                                              .toString()
-                                              .toUpperCase(),
-                                      trailing: null,
+                                    child: Column(
+                                      children: [
+                                        _InfoTile(
+                                          iconWidget: const _BuildingIcon(),
+                                          label: 'Building Type',
+                                          value:
+                                              data["spaceType"]
+                                                  .toString()
+                                                  .toUpperCase(),
+                                          trailing: null,
+                                        ),
+                                        const SizedBox(height: 10),
+                                        _InfoTile(
+                                          iconWidget: const Icon(
+                                            Icons.style_outlined,
+                                            size: 26,
+                                            color: Color(0xFF5A5550),
+                                          ),
+                                          label: 'Design Aesthetic',
+                                          value:
+                                              data["designAsth"]
+                                                  .toString()
+                                                  .toUpperCase(),
+                                          trailing: null,
+                                        ),
+                                        const SizedBox(height: 10),
+                                        _InfoTile(
+                                          iconWidget: const Icon(
+                                            Icons.palette_outlined,
+                                            size: 26,
+                                            color: Color(0xFF5A5550),
+                                          ),
+                                          label: 'Color Palette',
+                                          value:
+                                              data["color"]
+                                                  .toString()
+                                                  .toUpperCase(),
+                                          trailing: const _ColorSwatches(),
+                                        ),
+                                        const SizedBox(height: 16),
+                                      ],
                                     ),
-                                    const SizedBox(height: 10),
-                                    _InfoTile(
-                                      iconWidget: const Icon(
-                                        Icons.palette_outlined,
-                                        size: 26,
-                                        color: Color(0xFF5A5550),
-                                      ),
-                                      label: 'Color Palette',
-                                      value:
-                                          data["color"]
-                                              .toString()
-                                              .toUpperCase(),
-                                      trailing: const _ColorSwatches(),
-                                    ),
-                                    const SizedBox(height: 16),
-                                  ],
+                                  ),
                                 ),
-                              ),
+                              ],
                             ),
-                          ],
-                        ),
-                bottomNavigationBar: SizedBox(
-                  height: 100,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      GestureDetector(
-                        onTap: () {
-                          _showRegenerateAlert(context);
-                        },
-                        child: Column(
-                          children: [
-                            CustomImageview(
-                              imagePath: "assets/images/output_1.png",
-                              height: 45,
-                              width: 45,
-                            ),
-                            SizedBox(height: 10),
-                            Text(
-                              "Regenerate",
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
-                                color: Color.fromRGBO(46, 46, 46, 1),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Column(
+                    bottomNavigationBar: SizedBox(
+                      height: 100,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
-                          CustomImageview(
-                            imagePath: "assets/images/output_2.png",
-                            height: 45,
-                            width: 45,
+                          GestureDetector(
+                            onTap: () {
+                              _showRegenerateAlert(context);
+                            },
+                            child: Column(
+                              children: [
+                                CustomImageview(
+                                  imagePath: "assets/images/output_1.png",
+                                  height: 45,
+                                  width: 45,
+                                ),
+                                SizedBox(height: 10),
+                                Text(
+                                  "Regenerate",
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                    color: Color.fromRGBO(46, 46, 46, 1),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                          SizedBox(height: 10),
-                          Text(
-                            "Save",
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                              color: Color.fromRGBO(46, 46, 46, 1),
+                          Column(
+                            children: [
+                              CustomImageview(
+                                imagePath: "assets/images/output_2.png",
+                                height: 45,
+                                width: 45,
+                              ),
+                              SizedBox(height: 10),
+                              Text(
+                                "Save",
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  color: Color.fromRGBO(46, 46, 46, 1),
+                                ),
+                              ),
+                            ],
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              showPublishSheet(context);
+                            },
+                            child: Column(
+                              children: [
+                                CustomImageview(
+                                  imagePath: "assets/images/output_3.png",
+                                  height: 45,
+                                  width: 45,
+                                ),
+                                SizedBox(height: 10),
+                                Text(
+                                  "Publish",
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                    color: Color.fromRGBO(46, 46, 46, 1),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              Share.share("text");
+                            },
+                            child: Column(
+                              children: [
+                                CustomImageview(
+                                  imagePath: "assets/images/output_4.png",
+                                  height: 45,
+                                  width: 45,
+                                ),
+                                SizedBox(height: 10),
+                                Text(
+                                  "Share",
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                    color: Color.fromRGBO(46, 46, 46, 1),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              _showDeleteAlert(context);
+                            },
+                            child: Column(
+                              children: [
+                                CustomImageview(
+                                  imagePath: "assets/images/output_5.png",
+                                  height: 45,
+                                  width: 45,
+                                ),
+                                SizedBox(height: 10),
+                                Text(
+                                  "Delete",
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                    color: Color.fromRGBO(46, 46, 46, 1),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ],
                       ),
-                      GestureDetector(
-                        onTap: () {
-                          showPublishSheet(context);
-                        },
-                        child: Column(
-                          children: [
-                            CustomImageview(
-                              imagePath: "assets/images/output_3.png",
-                              height: 45,
-                              width: 45,
-                            ),
-                            SizedBox(height: 10),
-                            Text(
-                              "Publish",
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
-                                color: Color.fromRGBO(46, 46, 46, 1),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      GestureDetector(
-                        onTap: () {
-                          Share.share("text");
-                        },
-                        child: Column(
-                          children: [
-                            CustomImageview(
-                              imagePath: "assets/images/output_4.png",
-                              height: 45,
-                              width: 45,
-                            ),
-                            SizedBox(height: 10),
-                            Text(
-                              "Share",
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
-                                color: Color.fromRGBO(46, 46, 46, 1),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      GestureDetector(
-                        onTap: () {
-                          _showDeleteAlert(context);
-                        },
-                        child: Column(
-                          children: [
-                            CustomImageview(
-                              imagePath: "assets/images/output_5.png",
-                              height: 45,
-                              width: 45,
-                            ),
-                            SizedBox(height: 10),
-                            Text(
-                              "Delete",
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
-                                color: Color.fromRGBO(46, 46, 46, 1),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                    ),
+                  );
+                },
               );
             },
           );
@@ -270,7 +290,6 @@ class _InteriorOutputScreenState extends State<InteriorOutputScreen> {
               CupertinoDialogAction(
                 isDestructiveAction: true,
                 onPressed: () async {
-
                   Navigator.of(context).pop();
                   SharedPreferences preferences =
                       await SharedPreferences.getInstance();
@@ -443,10 +462,15 @@ class _InteriorOutputScreenState extends State<InteriorOutputScreen> {
 }
 
 class _PhotoSection extends StatelessWidget {
+  final VoidCallback onTap;
   final double topPad;
   final String img;
 
-  const _PhotoSection({required this.topPad, required this.img});
+  const _PhotoSection({
+    required this.onTap,
+    required this.topPad,
+    required this.img,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -471,6 +495,55 @@ class _PhotoSection extends StatelessWidget {
                   ),
                 ),
           ),
+          Positioned(
+            left: 150,
+            bottom: 15,
+            child: GestureDetector(
+              onTap: () {
+                onTap();
+              },
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(50),
+                  gradient: LinearGradient(
+                    colors: [
+                      Color.fromRGBO(230, 203, 168, 1),
+                      Color.fromRGBO(167, 196, 188, 1),
+                    ],
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Text(
+                      "Enhance",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: Color.fromRGBO(46, 46, 46, 1),
+                      ),
+                    ),
+                    SizedBox(width: 3),
+                    CustomImageview(
+                      imagePath: "assets/images/credit.png",
+                      height: 25,
+                      width: 25,
+                    ),
+                    SizedBox(width: 3),
+                    Text(
+                      "1",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: Color.fromRGBO(46, 46, 46, 1),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
           Positioned(
             top: 0,
             left: 0,

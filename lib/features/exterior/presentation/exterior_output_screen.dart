@@ -1,3 +1,4 @@
+import 'package:ai_interior/widgets/custom_imageview.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -17,7 +18,6 @@ class _ExteriorOutputScreenState extends State<ExteriorOutputScreen> {
   void didChangeDependencies() {
     // TODO: implement didChangeDependencies
     super.didChangeDependencies();
-
     data = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>;
   }
 
@@ -33,10 +33,7 @@ class _ExteriorOutputScreenState extends State<ExteriorOutputScreen> {
         backgroundColor: const Color(0xFFF2EFEA),
         body: Column(
           children: [
-            // ── Full-bleed photo section ───────────────────────────
             _PhotoSection(topPad: topPad, img: data["image"]),
-
-            // ── Scrollable info cards ──────────────────────────────
             Expanded(
               child: SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
@@ -81,8 +78,6 @@ class _ExteriorOutputScreenState extends State<ExteriorOutputScreen> {
                 ),
               ),
             ),
-
-            // ── Apply Style button ─────────────────────────────────
             _ApplyButton(botPad: botPad),
           ],
         ),
@@ -108,7 +103,6 @@ class _PhotoSection extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          // Photo (replace with Image.asset or Image.network)
           Image.network(
             img,
             fit: BoxFit.cover,
@@ -125,7 +119,39 @@ class _PhotoSection extends StatelessWidget {
                 ),
           ),
 
-          // Top gradient for back button legibility
+          Positioned(
+            left: 100,
+            bottom: 10,
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(colors: [
+                  Color.fromRGBO(230, 203, 168, 1),
+                  Color.fromRGBO(167, 196, 188, 1),
+                ])
+              ),
+              child: Row(
+                children: [
+                  Text(
+                    "Enhance",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: Color.fromRGBO(46, 46, 46, 1),
+                    ),
+                  ),
+                  SizedBox(width: 3),
+                  CustomImageview(imagePath: "assets/images/credit.png"),
+                  SizedBox(width: 3),
+                  Text("1", style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: Color.fromRGBO(46, 46, 46, 1),
+                  )),
+                ],
+              ),
+            ),
+          ),
           Positioned(
             top: 0,
             left: 0,
@@ -141,8 +167,6 @@ class _PhotoSection extends StatelessWidget {
               ),
             ),
           ),
-
-          // Back button
           Positioned(
             top: topPad + 10,
             left: 16,

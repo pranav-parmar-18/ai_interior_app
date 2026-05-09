@@ -3,15 +3,21 @@ import 'dart:io';
 import 'package:ai_interior/bloc/interoir_design_create/interior_design_create_bloc.dart';
 import 'package:ai_interior/features/main/presentaion/main_screen.dart';
 import 'package:ai_interior/widgets/custom_imageview.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../bloc/smart_staging_create/smart_staging_create_bloc.dart';
 import '../../../models/interior_design_create_model_response.dart';
 import '../../../models/smart_staging_create_model_response.dart';
+import '../../../services/subscription_manager.dart';
 import '../../../theme/app_colors.dart';
+import '../../subscription/presentation/subscription_screen.dart';
+import '../../subscription/presentation/subscription_screen_three.dart';
+import '../../subscription/presentation/subscription_screen_two.dart';
 import 'staging_output_screen.dart';
 import 'staging_screen.dart';
 
@@ -231,6 +237,48 @@ class _StagingColorPaletteScreenState extends State<StagingColorPaletteScreen> {
   String? _selectedPalette;
 
   @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    isSubscriptionActive();
+  }
+
+  bool? isSubscribed;
+
+  void openSubscriptionScreen(BuildContext context) {
+    final nextIndex = SubscriptionScreenManager().getNextIndex();
+
+    final screens = [
+      SubscriptionScreen(),
+      SubscriptionScreenTwo(),
+      SubscriptionScreenThree(),
+    ];
+
+    Navigator.push(
+      context,
+      CupertinoPageRoute(builder: (_) => screens[nextIndex]),
+    );
+  }
+
+  Future<bool> isSubscriptionActive() async {
+    final prefs = await SharedPreferences.getInstance();
+    final data = prefs.getString('subscription_info');
+    if (data == null) {
+      setState(() {
+        isSubscribed = false;
+      });
+      return false;
+    }
+
+    final sub = SubscriptionInfo.fromJson(data);
+    setState(() {
+      isSubscribed = sub?.isActive ?? false;
+    });
+
+    return sub?.isActive ?? false;
+  }
+
+  @override
   Widget build(BuildContext context) {
     return BlocConsumer<SmartStagingCreateBloc, SmartStagingCreateState>(
       bloc: _interiorDeignCreateBloc,
@@ -310,7 +358,6 @@ class _StagingColorPaletteScreenState extends State<StagingColorPaletteScreen> {
     );
   }
 
-  // ── AppBar ────────────────────────────────────────────────────────────────
 
   Widget _buildProgressBar() {
     return Padding(
@@ -559,7 +606,9 @@ class _StagingColorPaletteScreenState extends State<StagingColorPaletteScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       child: GestureDetector(
         onTap: () async {
-          final imageFile = await assetToFile(
+      if (isSubscribed == true) {
+
+        final imageFile = await assetToFile(
             'assets/images/interior/interior_home.png',
           );
 
@@ -573,7 +622,9 @@ class _StagingColorPaletteScreenState extends State<StagingColorPaletteScreen> {
               },
               image: picked != null ? picked ?? File("") : imageFile,
             ),
-          );
+          );}else{
+        openSubscriptionScreen(context);
+      }
         },
         child: Container(
           width: double.infinity,

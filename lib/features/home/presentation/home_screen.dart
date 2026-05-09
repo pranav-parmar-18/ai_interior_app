@@ -1,20 +1,25 @@
+import 'package:ai_interior/bloc/create_user/create_user_bloc.dart';
 import 'package:ai_interior/features/style_transfer/presentation/style_transfer_screeen.dart';
+import 'package:ai_interior/models/create_user_model_response.dart';
 import 'package:ai_interior/widgets/custom_imageview.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:math' as math;
 
+import '../../../services/device_indentification_service.dart';
 import '../../credit/presentataion/credit_screen.dart';
 import '../../dream/presentation/dream_screen.dart';
 import '../../exterior/presentation/exterior_screen.dart';
 import '../../interior/presentation/interior_screen.dart';
+import '../../main/presentaion/main_screen.dart';
 import '../../replace/presentation/replace_screen.dart';
 import '../../setting/presentation/setting_screens.dart';
 import '../../staging/presentation/staging_screen.dart';
 
-// ─────────────────────────────────────────────
-// Data Model
-// ─────────────────────────────────────────────
+final ValueNotifier<String> creditsNotifier = ValueNotifier<String>("0");
+
 class FeatureItem {
   final String title;
   final String subtitle;
@@ -44,6 +49,33 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final CreateUserBloc _createUserBloc = CreateUserBloc();
+  CreateUserModelResponse? createUserModelResponse;
+
+  String? deviceId;
+
+  Future<void> getDeviceId() async {
+    deviceId = await DeviceIdManager.getDeviceId();
+    print('Persistent Device ID: $deviceId');
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+
+    getDeviceId().then((value) {
+      _createUserBloc.add(
+        CreateUserDataEvent(login: {"uuid": deviceId.toString()}),
+      );
+    });
+  }
+
+  Future<void> setCredits(String userId) async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    preferences.setString('credits', userId);
+  }
+
   @override
   Widget build(BuildContext context) {
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
@@ -90,31 +122,45 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFFAF7F4),
       appBar: TopBarAppBar(),
-      body: Column(
-        children: [
-          // ── Main scrollable content ──
-          Expanded(
-            child: CustomScrollView(
-              slivers: [
-                // Top App Bar
-                // SliverToBoxAdapter(child: ()),
+      body: BlocConsumer<CreateUserBloc, CreateUserState>(
+        bloc: _createUserBloc,
+        listener: (context, state) {
+          if (state is CreateUserSuccessState) {
+            createUserModelResponse = state.login;
+            setCredits(createUserModelResponse?.credits.toString() ?? "");
+            creditsNotifier.value =
+                createUserModelResponse?.credits.toString() ?? "";
+          } else if (state is CreateUserExceptionState ||
+              state is CreateUserExceptionState) {}
+        },
+        builder: (context, state) {
+          return Column(
+            children: [
+              // ── Main scrollable content ──
+              Expanded(
+                child: CustomScrollView(
+                  slivers: [
+                    // Top App Bar
+                    // SliverToBoxAdapter(child: ()),
 
-                // Feature cards list
-                SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) =>
-                        _FeatureCard(item: features[index], index: index),
-                    childCount: features.length,
-                  ),
+                    // Feature cards list
+                    SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) =>
+                            _FeatureCard(item: features[index], index: index),
+                        childCount: features.length,
+                      ),
+                    ),
+
+                    const SliverToBoxAdapter(child: SizedBox(height: 12)),
+                  ],
                 ),
+              ),
 
-                const SliverToBoxAdapter(child: SizedBox(height: 12)),
-              ],
-            ),
-          ),
-
-          // ── Bottom Navigation Bar ──
-        ],
+              // ── Bottom Navigation Bar ──
+            ],
+          );
+        },
       ),
     );
   }
@@ -165,14 +211,19 @@ class TopBarAppBar extends StatelessWidget implements PreferredSizeWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text(
-                  '200',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF1A1A1A),
-                    letterSpacing: -0.2,
-                  ),
+                ValueListenableBuilder<String>(
+                  valueListenable: creditsNotifier,
+                  builder: (context, credits, _) {
+                    return Text(
+                      creditsNotifier.value.toString(),
+                      style: TextStyle(
+                        fontSize: isIPad(context) ? 50 : 35,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF1A1A1A),
+                        letterSpacing: -0.2,
+                      ),
+                    );
+                  },
                 ),
                 const SizedBox(width: 4),
                 CustomImageview(
@@ -204,6 +255,7 @@ class TopBarAppBar extends StatelessWidget implements PreferredSizeWidget {
     );
   }
 }
+
 // ─────────────────────────────────────────────
 // Feature Card
 // ─────────────────────────────────────────────
@@ -236,7 +288,8 @@ class _FeatureCard extends StatelessWidget {
               }
               if (index == 4) {
                 Navigator.of(context).pushNamed(ReplaceScreen.routeName);
-              } if (index == 5) {
+              }
+              if (index == 5) {
                 Navigator.of(context).pushNamed(DreamSpaceScreen.routeName);
               }
             },

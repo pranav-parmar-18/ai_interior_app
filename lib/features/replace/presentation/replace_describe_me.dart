@@ -1,9 +1,15 @@
 import 'package:ai_interior/bloc/smart_replace_create/smart_replace_create_bloc.dart';
-import 'package:ai_interior/bloc/smart_replace_create/smart_replace_create_bloc.dart';
 import 'package:ai_interior/features/replace/presentation/replace_output_screen.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../../services/subscription_manager.dart';
+import '../../subscription/presentation/subscription_screen.dart';
+import '../../subscription/presentation/subscription_screen_three.dart';
+import '../../subscription/presentation/subscription_screen_two.dart';
 
 class ReplaceDescribeVisionScreen extends StatefulWidget {
   const ReplaceDescribeVisionScreen({super.key});
@@ -22,6 +28,48 @@ class _ReplaceDescribeVisionScreenState
   final TextEditingController _controller = TextEditingController(
     text: 'Transform my living room into a cozy aesthetic.',
   );
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    isSubscriptionActive();
+  }
+
+  bool? isSubscribed;
+
+  void openSubscriptionScreen(BuildContext context) {
+    final nextIndex = SubscriptionScreenManager().getNextIndex();
+
+    final screens = [
+      SubscriptionScreen(),
+      SubscriptionScreenTwo(),
+      SubscriptionScreenThree(),
+    ];
+
+    Navigator.push(
+      context,
+      CupertinoPageRoute(builder: (_) => screens[nextIndex]),
+    );
+  }
+
+  Future<bool> isSubscriptionActive() async {
+    final prefs = await SharedPreferences.getInstance();
+    final data = prefs.getString('subscription_info');
+    if (data == null) {
+      setState(() {
+        isSubscribed = false;
+      });
+      return false;
+    }
+
+    final sub = SubscriptionInfo.fromJson(data);
+    setState(() {
+      isSubscribed = sub?.isActive ?? false;
+    });
+
+    return sub?.isActive ?? false;
+  }
 
   final Set<int> _selected = {};
 
@@ -348,7 +396,11 @@ class _ReplaceDescribeVisionScreenState
       padding: EdgeInsets.fromLTRB(22, 8, 22, botPad > 0 ? botPad : 22),
       child: GestureDetector(
         onTap: () async {
-          _smartReplaceCreateBloc.add(SmartReplaceCreateDataEvent(login: {}));
+          if (isSubscribed == true) {
+            _smartReplaceCreateBloc.add(SmartReplaceCreateDataEvent(login: {}));
+          } else {
+            openSubscriptionScreen(context);
+          }
         },
         child: Container(
           width: double.infinity,

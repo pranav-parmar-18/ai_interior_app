@@ -17,26 +17,37 @@
 // import 'package:url_launcher/url_launcher.dart';
 // import 'package:video_player/video_player.dart';
 //
-// enum SubscriptionType { weekly, monthly, yearly }
-//
-// class SubscriptionInfo {
-//   final SubscriptionType type;
-//   final DateTime expiryDate;
-//
-//   SubscriptionInfo({required this.type, required this.expiryDate});
-//
-//   bool get isActive => DateTime.now().isBefore(expiryDate);
-//
-//   static SubscriptionInfo? fromJson(String data) {
-//     final map = jsonDecode(data);
-//     final type = SubscriptionType.values.firstWhere(
-//       (e) => e.name == map['type'],
-//     );
-//     final expiry = DateTime.tryParse(map['expiry']);
-//     if (expiry == null) return null;
-//     return SubscriptionInfo(type: type, expiryDate: expiry);
-//   }
-// }
+
+import 'dart:convert';
+import 'dart:io';
+import 'dart:ui';
+
+import 'package:ai_interior/widgets/custom_imageview.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:in_app_purchase/in_app_purchase.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+enum SubscriptionType { weekly, monthly, yearly }
+
+class SubscriptionInfo {
+  final SubscriptionType type;
+  final DateTime expiryDate;
+
+  SubscriptionInfo({required this.type, required this.expiryDate});
+
+  bool get isActive => DateTime.now().isBefore(expiryDate);
+
+  static SubscriptionInfo? fromJson(String data) {
+    final map = jsonDecode(data);
+    final type = SubscriptionType.values.firstWhere(
+      (e) => e.name == map['type'],
+    );
+    final expiry = DateTime.tryParse(map['expiry']);
+    if (expiry == null) return null;
+    return SubscriptionInfo(type: type, expiryDate: expiry);
+  }
+}
 //
 // class SubscriptionScreen extends StatefulWidget {
 //   const SubscriptionScreen({super.key});
@@ -2370,14 +2381,7 @@
 //   }
 // }
 
-import 'dart:io';
-import 'dart:ui';
 
-import 'package:ai_interior/widgets/custom_imageview.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:in_app_purchase/in_app_purchase.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Color Palette (matches screenshot exactly)
@@ -2437,7 +2441,6 @@ class _SubscriptionScreenState extends State<SubscriptionScreen>
     'com.ai_interior.monthly',
   ];
 
-  // Pricing display data — order: Weekly, Yearly, Monthly
   final List<String> _planLabels = ['Weekly', 'Yearly', 'Monthly'];
   final List<String> _planFallbackPrices = ['\$9.99', '\$39.99', '\$12.99'];
   final List<String> _planSubLabels = [
@@ -2446,6 +2449,44 @@ class _SubscriptionScreenState extends State<SubscriptionScreen>
     'Less than\n\$3.25/week',
   ];
   final List<String> _strikethrough = ['', '\$79.99', ''];
+
+
+  Future<void> _saveSubscription(String productId) async {
+    final prefs = await SharedPreferences.getInstance();
+
+    final SubscriptionType type;
+    final Duration duration;
+
+    switch (productId) {
+      case 'com.aigirlfriend.weekly':
+        type = SubscriptionType.weekly;
+        duration = const Duration(days: 7);
+        break;
+      case 'com.aigirlfriend.monthly':
+        type = SubscriptionType.monthly;
+        duration = const Duration(days: 30);
+        break;
+      case 'com.aigirlfriend.yearly':
+        type = SubscriptionType.yearly;
+        duration = const Duration(days: 365);
+        break;
+      case 'com.aigirlfriend.weekly':
+        type = SubscriptionType.weekly;
+        duration = const Duration(days: 7);
+        break;
+      default:
+        return;
+    }
+
+    final expiryDate = DateTime.now().add(duration);
+    await prefs.setString(
+      'subscription_info',
+      jsonEncode({'type': type.name, 'expiry': expiryDate.toIso8601String()}),
+    );
+
+    // ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Subscribed to ${type.name}")));
+    setState(() {});
+  }
 
   @override
   void initState() {

@@ -120,20 +120,25 @@ class _RecentsScreenState extends State<RecentsScreen> {
                     ),
                   ),
                 ),
-
-                /// Space Type Label
-                Positioned(
+                item.spaceType ==null? SizedBox.shrink(): Positioned(
                   bottom: 10,
-                  right: 10,
-                  child: Text(
-                    item.spaceType ?? "",
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                      letterSpacing: -0.2,
+                  left: 10,
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 10,vertical: 5),
+                    decoration: BoxDecoration(
+                      color: Color.fromRGBO(255, 255, 255, 0.5),
+                      borderRadius: BorderRadius.circular(50),
+                    ),
+                    child: Text(
+                      item.spaceType ?? "",
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: Color.fromRGBO(0, 0, 0, 1),
+                        letterSpacing: -0.2,
+                      ),
                     ),
                   ),
                 ),

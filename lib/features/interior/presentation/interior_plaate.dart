@@ -5,13 +5,19 @@ import 'package:ai_interior/features/interior/presentation/interior_ash_list_scr
 import 'package:ai_interior/features/interior/presentation/interior_list_screen.dart';
 import 'package:ai_interior/features/main/presentaion/main_screen.dart';
 import 'package:ai_interior/widgets/custom_imageview.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../models/interior_design_create_model_response.dart';
+import '../../../services/subscription_manager.dart';
 import '../../../theme/app_colors.dart';
+import '../../subscription/presentation/subscription_screen.dart';
+import '../../subscription/presentation/subscription_screen_three.dart';
+import '../../subscription/presentation/subscription_screen_two.dart';
 import 'interior_output_screen.dart';
 import 'interior_screen.dart';
 
@@ -232,13 +238,57 @@ class _InteriorColorPaletteScreenState
   String? _selectedPalette;
 
   @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    isSubscriptionActive();
+  }
+
+  bool? isSubscribed;
+
+  void openSubscriptionScreen(BuildContext context) {
+    final nextIndex = SubscriptionScreenManager().getNextIndex();
+
+    final screens = [
+      SubscriptionScreen(),
+      SubscriptionScreenTwo(),
+      SubscriptionScreenThree(),
+    ];
+
+    Navigator.push(
+      context,
+      CupertinoPageRoute(builder: (_) => screens[nextIndex]),
+    );
+  }
+
+  Future<bool> isSubscriptionActive() async {
+    final prefs = await SharedPreferences.getInstance();
+    final data = prefs.getString('subscription_info');
+    if (data == null) {
+      setState(() {
+        isSubscribed = false;
+      });
+      return false;
+    }
+
+    final sub = SubscriptionInfo.fromJson(data);
+    setState(() {
+      isSubscribed = sub?.isActive ?? false;
+    });
+
+    return sub?.isActive ?? false;
+  }
+
+  @override
   Widget build(BuildContext context) {
     return BlocConsumer<InteriorDeignCreateBloc, InteriorDeignCreateState>(
       bloc: _interiorDeignCreateBloc,
       listener: (context, state) {
         if (state is InteriorDeignCreateSuccessState) {
           interiorDesignCreateModelResponse = state.login;
-          print("IMAGE ##: ${interiorDesignCreateModelResponse?.data?.outputImage ?? ""}");
+          print(
+            "IMAGE ##: ${interiorDesignCreateModelResponse?.data?.outputImage ?? ""}",
+          );
           Navigator.of(context).pushNamed(
             InteriorOutputScreen.routeName,
             arguments: {
@@ -250,8 +300,7 @@ class _InteriorColorPaletteScreenState
               "color": interiorDesignCreateModelResponse?.data?.colors ?? "",
               "designAsth":
                   interiorDesignCreateModelResponse?.data?.designAsthetic ?? "",
-              "id":
-                  interiorDesignCreateModelResponse?.data?.id ?? "",
+              "id": interiorDesignCreateModelResponse?.data?.id ?? "",
             },
           );
         } else if (state is InteriorDeignCreateFailureState) {
@@ -315,7 +364,6 @@ class _InteriorColorPaletteScreenState
   }
 
   // ── AppBar ────────────────────────────────────────────────────────────────
-
 
   Widget _buildProgressBar() {
     return Padding(
@@ -402,7 +450,7 @@ class _InteriorColorPaletteScreenState
   // ── Title ─────────────────────────────────────────────────────────────────
 
   Widget _buildTitle() {
-    return  Padding(
+    return Padding(
       padding: EdgeInsets.fromLTRB(16, 10, 16, 8),
       child: Text(
         'Choose colors for your room',
@@ -564,21 +612,25 @@ class _InteriorColorPaletteScreenState
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       child: GestureDetector(
         onTap: () async {
-          final imageFile = await assetToFile(
-            'assets/images/interior/interior_home.png',
-          );
+          if (isSubscribed == true) {
+            final imageFile = await assetToFile(
+              'assets/images/interior/interior_home.png',
+            );
 
-          _interiorDeignCreateBloc.add(
-            InteriorDeignCreateDataEvent(
-              login: {
-                "user_id": 342,
-                "colors": _selectedPalette?.toLowerCase(),
-                "design_asthetic": intAshType,
-                "space_type": intSpaceType,
-              },
-              image: picked != null ? picked ??  File("") : imageFile,
-            ),
-          );
+            _interiorDeignCreateBloc.add(
+              InteriorDeignCreateDataEvent(
+                login: {
+                  "user_id": 342,
+                  "colors": _selectedPalette?.toLowerCase(),
+                  "design_asthetic": intAshType,
+                  "space_type": intSpaceType,
+                },
+                image: picked != null ? picked ?? File("") : imageFile,
+              ),
+            );
+          } else {
+            openSubscriptionScreen(context);
+          }
         },
         child: Container(
           width: double.infinity,
