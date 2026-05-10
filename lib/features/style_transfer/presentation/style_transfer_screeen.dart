@@ -12,6 +12,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../models/create_style_transfer_model_response.dart';
+import '../../home/presentation/home_screen.dart';
+import '../../main/presentaion/main_screen.dart';
 
 File? picked;
 
@@ -175,14 +177,19 @@ class _StyleTransferScreenState extends State<StyleTransferScreen> {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text(
-                  '200',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF1A1A1A),
-                    letterSpacing: -0.2,
-                  ),
+                ValueListenableBuilder<String>(
+                  valueListenable: creditsNotifier,
+                  builder: (context, credits, _) {
+                    return Text(
+                      creditsNotifier.value.toString(),
+                      style: TextStyle(
+                        fontSize: isIPad(context) ? 50 : 16,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF1A1A1A),
+                        letterSpacing: -0.2,
+                      ),
+                    );
+                  },
                 ),
                 const SizedBox(width: 4),
                 CustomImageview(
@@ -536,7 +543,7 @@ class _StyleTransferScreenState extends State<StyleTransferScreen> {
         onTap: () {
           _createStyleTransferBloc.add(
             CreateStyleTransferDataEvent(
-              login: {"user_id": ""},
+              login: {"user_id": "342"},
               image: File(""),
               refImage: File(""),
             ),

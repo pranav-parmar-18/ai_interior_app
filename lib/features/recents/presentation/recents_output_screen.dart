@@ -449,6 +449,7 @@ class _PhotoSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print("image: ${img}");
     return SizedBox(
       height: 350,
       width: double.infinity,

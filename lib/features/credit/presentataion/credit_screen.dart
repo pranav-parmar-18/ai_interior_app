@@ -978,6 +978,8 @@ import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:in_app_purchase_android/in_app_purchase_android.dart';
 
 import '../../../models/add_credit_model_response.dart';
+import '../../home/presentation/home_screen.dart';
+import '../../main/presentaion/main_screen.dart';
 
 // ─── Color tokens ─────────────────────────────────────────────────────────────
 const _bg            = Color(0xFFF2EDE8);
@@ -1034,7 +1036,9 @@ class _CreditsScreenState extends State<CreditsScreen> {
   int _selectedIndex = 0;
   late StreamSubscription<List<PurchaseDetails>> _subscription;
   final InAppPurchase _iap = InAppPurchase.instance;
-  List<ProductDetails> _products = [];
+  List<ProductDetails> _products = [
+
+  ];
   AddCreditResponse? _addCreditResponse;
 
   bool _loadingProducts = true;
@@ -1110,6 +1114,7 @@ class _CreditsScreenState extends State<CreditsScreen> {
     setState(() => _isPurchasing = true);
 
     // Credits are consumable — use buyConsumable
+    print("HELLO  BUY ");
     final param = PurchaseParam(productDetails: product);
     _iap.buyConsumable(purchaseParam: param);
   }
@@ -1367,14 +1372,19 @@ class _BalanceBar extends StatelessWidget {
             children: [
               _CoinIcon(size: 22),
               const SizedBox(width: 6),
-              Text(
-                '$balance',
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w600,
-                  color: _titleBrown,
-                  letterSpacing: -0.3,
-                ),
+              ValueListenableBuilder<String>(
+                valueListenable: creditsNotifier,
+                builder: (context, credits, _) {
+                  return Text(
+                    creditsNotifier.value.toString(),
+                    style: TextStyle(
+                      fontSize: isIPad(context) ? 50 : 16,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF1A1A1A),
+                      letterSpacing: -0.2,
+                    ),
+                  );
+                },
               ),
             ],
           ),

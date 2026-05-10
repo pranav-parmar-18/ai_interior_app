@@ -14,7 +14,7 @@ class RecentSingleAPILoadingState extends RecentSingleAPIState {
 }
 
 class RecentSingleAPISuccessState extends RecentSingleAPIState {
-  final CommonModelResponse? exploreSongResponse;
+  final RecentSingleModelResponse? exploreSongResponse;
   final String message;
 
   RecentSingleAPISuccessState({

@@ -1,15 +1,12 @@
 import 'package:ai_interior/features/onboarding/presentation/first_onboarding_screen.dart';
 import 'package:ai_interior/features/splash/presentation/splash_screen.dart';
 import 'package:flutter/cupertino.dart';
-import '../features/chat/presentation/call_screen.dart';
-import '../features/chat/presentation/invite_screen.dart';
 import '../features/credit/presentataion/credit_screen.dart';
 import '../features/dream/presentation/dream_ash_list_screen.dart';
 import '../features/dream/presentation/dream_output_screen.dart';
 import '../features/dream/presentation/dream_plaate.dart';
 import '../features/dream/presentation/dream_screen.dart';
 import '../features/explore/presentation/explore_detail_screen.dart';
-
 import '../features/exterior/presentation/exterior_ash_list_screen.dart';
 import '../features/exterior/presentation/exterior_describe_me.dart';
 import '../features/exterior/presentation/exterior_list_screen.dart';
@@ -24,7 +21,6 @@ import '../features/interior/presentation/interior_plaate.dart';
 import '../features/interior/presentation/interior_screen.dart';
 import '../features/main/presentaion/main_screen.dart';
 import '../features/onboarding/presentation/fourth_onboarding_screen.dart';
-
 import '../features/recents/presentation/recents_output_screen.dart';
 import '../features/replace/presentation/replace_describe_me.dart';
 import '../features/replace/presentation/replace_edit_screen.dart';
@@ -68,16 +64,7 @@ class AppRouter {
           settings: settings,
           builder: (_) => MainScreen(),
         );
-      case InviteScreen.routeName:
-        return CupertinoPageRoute(
-          settings: settings,
-          builder: (_) => InviteScreen(),
-        );
-      case CallScreen.routeName:
-        return CupertinoPageRoute(
-          settings: settings,
-          builder: (_) => CallScreen(),
-        );
+
       case ExploreResultScreen.routeName:
         return CupertinoPageRoute(
           settings: settings,
@@ -94,7 +81,6 @@ class AppRouter {
           settings: settings,
           builder: (_) => SnapTipsScreen(),
         );
-
       case InteriorAshSelectionScreen.routeName:
         return CupertinoPageRoute(
           settings: settings,

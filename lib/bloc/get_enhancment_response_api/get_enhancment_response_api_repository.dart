@@ -1,9 +1,9 @@
 part of 'get_enhancment_response_api_bloc.dart';
 
-class GetDesignByIDRepository {
-  CommonModelResponse? _makeSongResponse;
+class GerEnhancmentResponseRepository {
+  ImageEnhanceModelResponse? _makeSongResponse;
 
-  CommonModelResponse? get makeSongResponse => _makeSongResponse;
+  ImageEnhanceModelResponse? get makeSongResponse => _makeSongResponse;
 
   String _message = '';
 
@@ -11,15 +11,47 @@ class GetDesignByIDRepository {
   bool? _success;
 
   bool? get success => _success;
+  static const String SECRET_KEY = '1';
+  static const int PRIME_NUMBER = 14010449171989;
 
-  Future<void> getCharacterList() async {
+  String simpleHash(String input) {
+    int hash = 0;
+    for (int i = 0; i < input.length; i++) {
+      hash = ((hash << 1) - hash + input.codeUnitAt(i)) & 0xFFFFFFFF;
+    }
+    return hash.abs().toRadixString(16);
+  }
+
+  String generateVerifyHeader(String payload) {
+    String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
+    String stringToHash = timestamp + payload + SECRET_KEY;
+    String stringToHashBase64 = base64.encode(utf8.encode(stringToHash));
+    String hashValue = simpleHash(stringToHashBase64);
+
+    int computedHash = (int.parse(hashValue, radix: 16) ~/ 100) * PRIME_NUMBER;
+    String headerValue = base64.encode(
+      utf8.encode("${computedHash.toRadixString(16)}:$timestamp"),
+    );
+
+    return headerValue;
+  }
+
+  Future<void> getEnhancementList(Map<String, dynamic> data) async {
     try {
       SharedPreferences preferences = await SharedPreferences.getInstance();
       String accessToken = preferences.getString('access_token') ?? "";
-      const String url = '${ProjectConstant.baseUrl}character/list?main_screen=true';
+      final uri = Uri.parse('${ProjectConstant.baseUrl}check-enhancement-status').replace(
+        queryParameters: data.map(
+              (key, value) => MapEntry(key, value.toString()),
+        ),
+      );
 
-      final response = await http.get(Uri.parse(url),headers: {
-        'Authorization': 'Bearer $accessToken'
+      final verifyHeader = generateVerifyHeader('');
+
+      final response = await http.get(uri,headers: {
+        'Authorization': 'Bearer $accessToken',
+        'verify': verifyHeader,
+
 
       });
       print("STATUS: ${response.statusCode}");
@@ -27,7 +59,7 @@ class GetDesignByIDRepository {
       if (response.statusCode == 200) {
         final responseJsonMap =
             jsonDecode(response.body) as Map<String, dynamic>;
-        final responseData = CommonModelResponse.fromJson(responseJsonMap);
+        final responseData = ImageEnhanceModelResponse.fromJson(responseJsonMap);
         _makeSongResponse = responseData;
         _message = "Success";
         _success = true;
@@ -37,14 +69,14 @@ class GetDesignByIDRepository {
         }
         final responseJsonMap =
             jsonDecode(response.body) as Map<String, dynamic>;
-        final responseData = CommonModelResponse.fromJson(responseJsonMap);
+        final responseData = ImageEnhanceModelResponse.fromJson(responseJsonMap);
         _makeSongResponse = responseData;
         _message = "Fail";
         _success = false;
       }
     } catch (error) {
       if (kDebugMode) {
-        print("GetDesignByID API Exception : $error");
+        print("Ger EnhancmentResponse API Exception : $error");
       }
       _message = 'Something went wrong!';
       rethrow;

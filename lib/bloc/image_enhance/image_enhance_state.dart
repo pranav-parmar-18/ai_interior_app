@@ -14,7 +14,7 @@ class ImageEnhanceLoadingState extends ImageEnhanceState {
 }
 
 class ImageEnhanceSuccessState extends ImageEnhanceState {
-  final CommonModelResponse? login;
+  final ImageEnhanceResponse? login;
   final String message;
 
   ImageEnhanceSuccessState({

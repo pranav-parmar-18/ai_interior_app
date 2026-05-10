@@ -643,15 +643,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 // ── Group 1 ──────────────────────────────────────────
                 _SettingsGroup(
                   items: [
-                    _SettingsItem(
-                      icon: _CreditIcon(),
-                      label: '200 Credits',
-                      onTap: () {
-                        Navigator.of(
-                          context,
-                        ).pushNamed(CreditsScreen.routeName);
-                      },
-                    ),
+                    // _SettingsItem(
+                    //   icon: _CreditIcon(),
+                    //   label: '200 Credits',
+                    //   onTap: () {
+                    //     Navigator.of(
+                    //       context,
+                    //     ).pushNamed(CreditsScreen.routeName);
+                    //   },
+                    // ),
                     _SettingsItem(
                       icon: const Icon(
                         Icons.translate,

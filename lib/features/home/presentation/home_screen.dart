@@ -217,7 +217,7 @@ class TopBarAppBar extends StatelessWidget implements PreferredSizeWidget {
                     return Text(
                       creditsNotifier.value.toString(),
                       style: TextStyle(
-                        fontSize: isIPad(context) ? 50 : 35,
+                        fontSize: isIPad(context) ? 50 : 16,
                         fontWeight: FontWeight.w700,
                         color: Color(0xFF1A1A1A),
                         letterSpacing: -0.2,

@@ -15,6 +15,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../models/interior_design_create_model_response.dart';
 import '../../../services/subscription_manager.dart';
 import '../../../theme/app_colors.dart';
+import '../../home/presentation/home_screen.dart';
 import '../../subscription/presentation/subscription_screen.dart';
 import '../../subscription/presentation/subscription_screen_three.dart';
 import '../../subscription/presentation/subscription_screen_two.dart';
@@ -423,14 +424,19 @@ class _InteriorColorPaletteScreenState
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text(
-                  '200',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF1A1A1A),
-                    letterSpacing: -0.2,
-                  ),
+                ValueListenableBuilder<String>(
+                  valueListenable: creditsNotifier,
+                  builder: (context, credits, _) {
+                    return Text(
+                      creditsNotifier.value.toString(),
+                      style: TextStyle(
+                        fontSize: isIPad(context) ? 50 : 16,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF1A1A1A),
+                        letterSpacing: -0.2,
+                      ),
+                    );
+                  },
                 ),
                 const SizedBox(width: 4),
                 CustomImageview(
@@ -612,7 +618,7 @@ class _InteriorColorPaletteScreenState
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       child: GestureDetector(
         onTap: () async {
-          if (isSubscribed == true) {
+          if (isSubscribed == false) {
             final imageFile = await assetToFile(
               'assets/images/interior/interior_home.png',
             );

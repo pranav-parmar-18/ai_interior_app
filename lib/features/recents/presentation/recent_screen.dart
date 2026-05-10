@@ -8,6 +8,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../widgets/custom_imageview.dart';
 import '../../credit/presentataion/credit_screen.dart';
 import '../../home/presentation/home_screen.dart';
+import '../../main/presentaion/main_screen.dart';
 import '../../setting/presentation/setting_screens.dart';
 
 class RecentsScreen extends StatefulWidget {
@@ -94,7 +95,17 @@ class _RecentsScreenState extends State<RecentsScreen> {
         return InkWell(
           borderRadius: BorderRadius.circular(15),
           onTap: () {
-            Navigator.of(context).pushNamed(RecentOutputScreen.routeName);
+            Navigator.of(context).pushNamed(
+              RecentOutputScreen.routeName,
+              arguments: {
+                "image": item.outputImage ?? "",
+                "prompt": item.prompt ?? "",
+                "spaceType": item.spaceType ?? "",
+                "color": item.colors ?? "",
+                "designAsth": item.designAsthetic ?? "",
+                "id": item.id ?? "",
+              },
+            );
           },
           child: ClipRRect(
             borderRadius: BorderRadius.circular(15),
@@ -120,28 +131,33 @@ class _RecentsScreenState extends State<RecentsScreen> {
                     ),
                   ),
                 ),
-                item.spaceType ==null? SizedBox.shrink(): Positioned(
-                  bottom: 10,
-                  left: 10,
-                  child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 10,vertical: 5),
-                    decoration: BoxDecoration(
-                      color: Color.fromRGBO(255, 255, 255, 0.5),
-                      borderRadius: BorderRadius.circular(50),
-                    ),
-                    child: Text(
-                      item.spaceType ?? "",
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        color: Color.fromRGBO(0, 0, 0, 1),
-                        letterSpacing: -0.2,
+                item.spaceType == null
+                    ? SizedBox.shrink()
+                    : Positioned(
+                      bottom: 10,
+                      left: 10,
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Color.fromRGBO(255, 255, 255, 0.5),
+                          borderRadius: BorderRadius.circular(50),
+                        ),
+                        child: Text(
+                          item.spaceType ?? "",
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: Color.fromRGBO(0, 0, 0, 1),
+                            letterSpacing: -0.2,
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                ),
               ],
             ),
           ),
@@ -562,14 +578,19 @@ class _TopBar extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text(
-                    '200',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF1A1A1A),
-                      letterSpacing: -0.2,
-                    ),
+                  ValueListenableBuilder<String>(
+                    valueListenable: creditsNotifier,
+                    builder: (context, credits, _) {
+                      return Text(
+                        creditsNotifier.value.toString(),
+                        style: TextStyle(
+                          fontSize: isIPad(context) ? 50 : 16,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF1A1A1A),
+                          letterSpacing: -0.2,
+                        ),
+                      );
+                    },
                   ),
                   const SizedBox(width: 4),
                   CustomImageview(

@@ -10,7 +10,7 @@ abstract class RecentSingleAPIEvent extends Equatable {
 class RecentSingleAPIInitialEvent extends RecentSingleAPIEvent {}
 
 class RecentSingleAPIDataEvent extends RecentSingleAPIEvent {
+  final Map<String, dynamic> data;
 
-final String genderId;
-  const RecentSingleAPIDataEvent({required this.genderId});
+  const RecentSingleAPIDataEvent({required this.data});
 }

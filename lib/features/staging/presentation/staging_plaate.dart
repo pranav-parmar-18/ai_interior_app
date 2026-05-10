@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:ai_interior/bloc/interoir_design_create/interior_design_create_bloc.dart';
 import 'package:ai_interior/features/main/presentaion/main_screen.dart';
+import 'package:ai_interior/features/staging/presentation/staging_ash_list_screen.dart';
+import 'package:ai_interior/features/staging/presentation/staging_list_screen.dart';
 import 'package:ai_interior/widgets/custom_imageview.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -15,6 +17,7 @@ import '../../../models/interior_design_create_model_response.dart';
 import '../../../models/smart_staging_create_model_response.dart';
 import '../../../services/subscription_manager.dart';
 import '../../../theme/app_colors.dart';
+import '../../home/presentation/home_screen.dart';
 import '../../subscription/presentation/subscription_screen.dart';
 import '../../subscription/presentation/subscription_screen_three.dart';
 import '../../subscription/presentation/subscription_screen_two.dart';
@@ -358,7 +361,6 @@ class _StagingColorPaletteScreenState extends State<StagingColorPaletteScreen> {
     );
   }
 
-
   Widget _buildProgressBar() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -417,14 +419,19 @@ class _StagingColorPaletteScreenState extends State<StagingColorPaletteScreen> {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text(
-                  '200',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF1A1A1A),
-                    letterSpacing: -0.2,
-                  ),
+                ValueListenableBuilder<String>(
+                  valueListenable: creditsNotifier,
+                  builder: (context, credits, _) {
+                    return Text(
+                      creditsNotifier.value.toString(),
+                      style: TextStyle(
+                        fontSize: isIPad(context) ? 50 : 16,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF1A1A1A),
+                        letterSpacing: -0.2,
+                      ),
+                    );
+                  },
                 ),
                 const SizedBox(width: 4),
                 CustomImageview(
@@ -606,25 +613,25 @@ class _StagingColorPaletteScreenState extends State<StagingColorPaletteScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       child: GestureDetector(
         onTap: () async {
-      if (isSubscribed == true) {
+          if (isSubscribed == true) {
+            final imageFile = await assetToFile(
+              'assets/images/interior/interior_home.png',
+            );
 
-        final imageFile = await assetToFile(
-            'assets/images/interior/interior_home.png',
-          );
-
-          _interiorDeignCreateBloc.add(
-            SmartStagingCreateDataEvent(
-              login: {
-                "user_id": 334,
-                "colors": "retro",
-                "design_asthetic": "zen",
-                "space_type": "bed room",
-              },
-              image: picked != null ? picked ?? File("") : imageFile,
-            ),
-          );}else{
-        openSubscriptionScreen(context);
-      }
+            _interiorDeignCreateBloc.add(
+              SmartStagingCreateDataEvent(
+                login: {
+                  "user_id": 342,
+                  "colors": _selectedPalette,
+                  "design_asthetic": stgAsh.toLowerCase(),
+                  "space_type": stgRoomType.toLowerCase(),
+                },
+                image: picked != null ? picked ?? File("") : imageFile,
+              ),
+            );
+          } else {
+            openSubscriptionScreen(context);
+          }
         },
         child: Container(
           width: double.infinity,

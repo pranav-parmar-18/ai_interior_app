@@ -9,6 +9,9 @@ import 'package:flutter/material.dart';
 
 import 'package:image_picker/image_picker.dart';
 
+import '../../home/presentation/home_screen.dart';
+import '../../main/presentaion/main_screen.dart';
+
 File? picked;
 
 class ReplaceScreen extends StatefulWidget {
@@ -133,14 +136,19 @@ class _ReplaceScreenState extends State<ReplaceScreen> {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text(
-                  '200',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF1A1A1A),
-                    letterSpacing: -0.2,
-                  ),
+                ValueListenableBuilder<String>(
+                  valueListenable: creditsNotifier,
+                  builder: (context, credits, _) {
+                    return Text(
+                      creditsNotifier.value.toString(),
+                      style: TextStyle(
+                        fontSize: isIPad(context) ? 50 : 16,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF1A1A1A),
+                        letterSpacing: -0.2,
+                      ),
+                    );
+                  },
                 ),
                 const SizedBox(width: 4),
                 CustomImageview(

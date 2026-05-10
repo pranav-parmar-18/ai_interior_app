@@ -11,9 +11,11 @@ import '../../../bloc/get_all_exterior_designs/get_all_exterior_designs_bloc.dar
 import '../../../models/get_all_interrior_design_model_response.dart';
 import '../../../widgets/custom_imageview.dart';
 import '../../credit/presentataion/credit_screen.dart';
+import '../../home/presentation/home_screen.dart';
 import '../../setting/presentation/setting_screens.dart';
 import 'dream_ash_list_screen.dart';
 
+String dreamSpaceType = "";
 // ─────────────────────────────────────────────────────────────────────────────
 // Data model
 // Replace imagePath strings with your actual asset or network image paths.
@@ -229,14 +231,19 @@ class _DreamSpaceScreenState extends State<DreamSpaceScreen>
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text(
-                  '200',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF1A1A1A),
-                    letterSpacing: -0.2,
-                  ),
+                ValueListenableBuilder<String>(
+                  valueListenable: creditsNotifier,
+                  builder: (context, credits, _) {
+                    return Text(
+                      creditsNotifier.value.toString(),
+                      style: TextStyle(
+                        fontSize: isIPad(context) ? 50 : 16,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF1A1A1A),
+                        letterSpacing: -0.2,
+                      ),
+                    );
+                  },
                 ),
                 const SizedBox(width: 4),
                 CustomImageview(
@@ -502,14 +509,19 @@ class _TopBar extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text(
-                    '200',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF1A1A1A),
-                      letterSpacing: -0.2,
-                    ),
+                  ValueListenableBuilder<String>(
+                    valueListenable: creditsNotifier,
+                    builder: (context, credits, _) {
+                      return Text(
+                        creditsNotifier.value.toString(),
+                        style: TextStyle(
+                          fontSize: isIPad(context) ? 50 : 16,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF1A1A1A),
+                          letterSpacing: -0.2,
+                        ),
+                      );
+                    },
                   ),
                   const SizedBox(width: 4),
                   CustomImageview(
@@ -540,7 +552,7 @@ class _TopBar extends StatelessWidget {
   }
 }
 
-class _RoomCard extends StatelessWidget {
+class _RoomCard extends StatefulWidget {
   final String data;
   final String image;
   final String prompt;
@@ -559,16 +571,24 @@ class _RoomCard extends StatelessWidget {
   });
 
   @override
+  State<_RoomCard> createState() => _RoomCardState();
+}
+
+class _RoomCardState extends State<_RoomCard> {
+  @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
         Navigator.of(context).pushNamed(DreamAshSelectionScreen.routeName);
+        setState(() {
+          dreamSpaceType = widget.spaceType;
+        });
       },
       child: ClipRRect(
         borderRadius: BorderRadius.circular(18),
         child: SizedBox(
           width: double.infinity,
-          child: Image.network(data, fit: BoxFit.cover),
+          child: Image.network(widget.data, fit: BoxFit.cover),
         ),
       ),
     );

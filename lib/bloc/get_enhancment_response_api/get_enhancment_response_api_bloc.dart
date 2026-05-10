@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../models/common_model_response.dart';
 import '../../models/explore_model_response.dart';
+import '../../models/image_enhance_model_response.dart';
 
 
 
@@ -16,32 +17,32 @@ part 'get_enhancment_response_api_event.dart';
 part 'get_enhancment_response_api_repository.dart';
 part 'get_enhancment_response_api_state.dart';
 
-class GetDesignByIDBloc extends Bloc<GetDesignByIDEvent, GetDesignByIDState> {
-  GetDesignByIDRepository adminKeyLoginRepository = GetDesignByIDRepository();
+class GerEnhancmentResponseBloc extends Bloc<GerEnhancmentResponseEvent, GerEnhancmentResponseState> {
+  GerEnhancmentResponseRepository adminKeyLoginRepository = GerEnhancmentResponseRepository();
 
-  GetDesignByIDBloc() : super(GetDesignByIDInitialState()) {
-    on<GetDesignByIDInitialEvent>((event, emit) => emit(GetDesignByIDInitialState()));
-    on<GetDesignByIDDataEvent>(_acceptOrderDataEvent);
+  GerEnhancmentResponseBloc() : super(GerEnhancmentResponseInitialState()) {
+    on<GerEnhancmentResponseInitialEvent>((event, emit) => emit(GerEnhancmentResponseInitialState()));
+    on<GerEnhancmentResponseDataEvent>(_acceptOrderDataEvent);
   }
 
-  void _acceptOrderDataEvent(GetDesignByIDDataEvent event, Emitter<GetDesignByIDState> emit) async {
-    emit(GetDesignByIDLoadingState());
+  void _acceptOrderDataEvent(GerEnhancmentResponseDataEvent event, Emitter<GerEnhancmentResponseState> emit) async {
+    emit(GerEnhancmentResponseLoadingState());
     try {
-      await adminKeyLoginRepository.getCharacterList();
+      await adminKeyLoginRepository.getEnhancementList(event.data);
       if (adminKeyLoginRepository.success == true) {
-        emit(GetDesignByIDSuccessState(
+        emit(GerEnhancmentResponseSuccessState(
             exploreSongResponse: adminKeyLoginRepository.makeSongResponse,
             message: adminKeyLoginRepository.message.toString().trim(),
         )
         );
       } else {
-        emit(GetDesignByIDFailureState(
+        emit(GerEnhancmentResponseFailureState(
           message: adminKeyLoginRepository.message.toString().trim(),
         ));
       }
     } catch (error) {
       print(error);
-      emit(GetDesignByIDExceptionState(
+      emit(GerEnhancmentResponseExceptionState(
         message: adminKeyLoginRepository.message.toString().trim(),
       ));
     }

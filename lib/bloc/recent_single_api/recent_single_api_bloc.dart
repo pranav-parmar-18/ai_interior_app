@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../models/common_model_response.dart';
+import '../../models/recent_single_model_response.dart';
 
 part 'recent_single_api_event.dart';
 part 'recent_single_api_repository.dart';
@@ -23,7 +24,7 @@ class RecentSingleAPIBloc extends Bloc<RecentSingleAPIEvent, RecentSingleAPIStat
   void _acceptOrderDataEvent(RecentSingleAPIDataEvent event, Emitter<RecentSingleAPIState> emit) async {
     emit(RecentSingleAPILoadingState());
     try {
-      await adminKeyLoginRepository.partnerList(event.genderId);
+      await adminKeyLoginRepository.recentSingleList(event.data);
       if (adminKeyLoginRepository.success == true) {
         emit(RecentSingleAPISuccessState(
             exploreSongResponse: adminKeyLoginRepository.makeSongResponse,

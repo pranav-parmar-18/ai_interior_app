@@ -1,13 +1,23 @@
+import 'dart:io';
+
 import 'package:ai_interior/bloc/delete_record/delete_record_bloc.dart';
+import 'package:ai_interior/bloc/get_all_designs/get_all_designs_bloc.dart';
 import 'package:ai_interior/bloc/image_enhance/image_enhance_bloc.dart';
 import 'package:ai_interior/bloc/publish_record/publish_record_bloc.dart';
+import 'package:ai_interior/models/image_enhance_response.dart';
 import 'package:ai_interior/widgets/custom_imageview.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:permission_handler/permission_handler.dart';
+
+import '../../../bloc/get_enhancment_response_api/get_enhancment_response_api_bloc.dart';
+import '../../../models/image_enhance_model_response.dart';
 
 class InteriorOutputScreen extends StatefulWidget {
   const InteriorOutputScreen({super.key});
@@ -22,7 +32,10 @@ class _InteriorOutputScreenState extends State<InteriorOutputScreen> {
   final ImageEnhanceBloc _imageEnhanceBloc = ImageEnhanceBloc();
   final PublishRecordBloc _publishRecordBloc = PublishRecordBloc();
   final DeleteRecordBloc _deleteRecordBloc = DeleteRecordBloc();
-
+  final GerEnhancmentResponseBloc _gerEnhancmentResponseBloc =
+      GerEnhancmentResponseBloc();
+  ImageEnhanceResponse? imageEnhanceResponse;
+  ImageEnhanceModelResponse? imageEnhanceModelResponse;
   Map<String, dynamic> data = {};
 
   @override
@@ -31,6 +44,36 @@ class _InteriorOutputScreenState extends State<InteriorOutputScreen> {
     super.didChangeDependencies();
     data = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>;
     print("IMAGE : ${data["image"]}");
+  }
+
+  Future<void> shareNetworkImage({
+    required BuildContext context,
+    required String imageUrl,
+  }) async {
+    // 1. Download image
+    final response = await http.get(Uri.parse(imageUrl));
+    if (response.statusCode != 200) {
+      throw Exception('Failed to download image');
+    }
+
+    Uint8List bytes = response.bodyBytes;
+
+    // 2. Save to temp directory
+    final tempDir = await getTemporaryDirectory();
+    final file = File(
+      '${tempDir.path}/share_${DateTime.now().millisecondsSinceEpoch}.png',
+    );
+    await file.writeAsBytes(bytes);
+
+    // 3. Get widget position (IMPORTANT for iOS)
+    final RenderBox box = context.findRenderObject() as RenderBox;
+
+    // 4. Share
+    await Share.shareXFiles(
+      [XFile(file.path)],
+      text: 'Check out this image',
+      sharePositionOrigin: box.localToGlobal(Offset.zero) & box.size,
+    );
   }
 
   @override
@@ -61,200 +104,247 @@ class _InteriorOutputScreenState extends State<InteriorOutputScreen> {
                 bloc: _imageEnhanceBloc,
                 listener: (context, state) {
                   if (state is ImageEnhanceSuccessState) {
+                    imageEnhanceResponse = state.login;
+
+                    Future.delayed(const Duration(seconds: 3), () {
+                      _gerEnhancmentResponseBloc.add(
+                        GerEnhancmentResponseDataEvent(
+                          data: {
+                            "user_id": 342,
+                            "module_id": 1,
+                            "id": 432,
+                            "task_id": imageEnhanceResponse?.data?.id ?? "",
+                          },
+                        ),
+                      );
+                    });
+
                   } else if (state is ImageEnhanceExceptionState ||
                       state is ImageEnhanceFailureState) {}
                 },
                 builder: (context, state) {
-                  return Scaffold(
-                    backgroundColor: const Color(0xFFF2EFEA),
-                    body:
-                        state is PublishRecordLoadingState
-                            ? Center(child: CupertinoActivityIndicator())
-                            : Column(
-                              children: [
-                                _PhotoSection(
-                                  onTap: () {
-                                    _imageEnhanceBloc.add(
-                                      ImageEnhanceDataEvent(login: {}),
-                                    );
-                                  },
-                                  topPad: topPad,
-                                  img: data["image"],
-                                ),
-                                Expanded(
-                                  child: SingleChildScrollView(
-                                    physics: const BouncingScrollPhysics(),
-                                    padding: const EdgeInsets.fromLTRB(
-                                      16,
-                                      16,
-                                      16,
-                                      0,
-                                    ),
-                                    child: Column(
-                                      children: [
-                                        _InfoTile(
-                                          iconWidget: const _BuildingIcon(),
-                                          label: 'Building Type',
-                                          value:
-                                              data["spaceType"]
-                                                  .toString()
-                                                  .toUpperCase(),
-                                          trailing: null,
-                                        ),
-                                        const SizedBox(height: 10),
-                                        _InfoTile(
-                                          iconWidget: const Icon(
-                                            Icons.style_outlined,
-                                            size: 26,
-                                            color: Color(0xFF5A5550),
+                  return BlocConsumer<
+                    GerEnhancmentResponseBloc,
+                    GerEnhancmentResponseState
+                  >(
+                    bloc: _gerEnhancmentResponseBloc,
+                    listener: (context, state) {
+                      if (state is GerEnhancmentResponseSuccessState) {
+                        imageEnhanceModelResponse = state.exploreSongResponse;
+                      }
+                    },
+                    builder: (context, state) {
+                      return Scaffold(
+                        backgroundColor: const Color(0xFFF2EFEA),
+                        body:
+                            state is PublishRecordLoadingState
+                                ? Center(child: CupertinoActivityIndicator())
+                                : Column(
+                                  children: [
+                                    _PhotoSection(
+                                      onTap: () {
+                                        _imageEnhanceBloc.add(
+                                          ImageEnhanceDataEvent(
+                                            login: {
+                                              "user_id": 342,
+                                              "module_id": 1,
+                                              "id": 432,
+                                            },
                                           ),
-                                          label: 'Design Aesthetic',
-                                          value:
-                                              data["designAsth"]
-                                                  .toString()
-                                                  .toUpperCase(),
-                                          trailing: null,
-                                        ),
-                                        const SizedBox(height: 10),
-                                        _InfoTile(
-                                          iconWidget: const Icon(
-                                            Icons.palette_outlined,
-                                            size: 26,
-                                            color: Color(0xFF5A5550),
-                                          ),
-                                          label: 'Color Palette',
-                                          value:
-                                              data["color"]
-                                                  .toString()
-                                                  .toUpperCase(),
-                                          trailing: const _ColorSwatches(),
-                                        ),
-                                        const SizedBox(height: 16),
-                                      ],
+                                        );
+                                      },
+                                      topPad: topPad,
+                                      img: imageEnhanceModelResponse?.imageUrl?.outputImage?.isNotEmpty == true
+                                          ? imageEnhanceModelResponse!.imageUrl!.outputImage
+                                          : data["image"],
                                     ),
-                                  ),
+                                    Expanded(
+                                      child: SingleChildScrollView(
+                                        physics: const BouncingScrollPhysics(),
+                                        padding: const EdgeInsets.fromLTRB(
+                                          16,
+                                          16,
+                                          16,
+                                          0,
+                                        ),
+                                        child: Column(
+                                          children: [
+                                            _InfoTile(
+                                              iconWidget: const _BuildingIcon(),
+                                              label: 'Building Type',
+                                              value:
+                                                  data["spaceType"]
+                                                      .toString()
+                                                      .toUpperCase(),
+                                              trailing: null,
+                                            ),
+                                            const SizedBox(height: 10),
+                                            _InfoTile(
+                                              iconWidget: const Icon(
+                                                Icons.style_outlined,
+                                                size: 26,
+                                                color: Color(0xFF5A5550),
+                                              ),
+                                              label: 'Design Aesthetic',
+                                              value:
+                                                  data["designAsth"]
+                                                      .toString()
+                                                      .toUpperCase(),
+                                              trailing: null,
+                                            ),
+                                            const SizedBox(height: 10),
+                                            _InfoTile(
+                                              iconWidget: const Icon(
+                                                Icons.palette_outlined,
+                                                size: 26,
+                                                color: Color(0xFF5A5550),
+                                              ),
+                                              label: 'Color Palette',
+                                              value:
+                                                  data["color"]
+                                                      .toString()
+                                                      .toUpperCase(),
+                                              trailing: const _ColorSwatches(),
+                                            ),
+                                            const SizedBox(height: 16),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
-                    bottomNavigationBar: SizedBox(
-                      height: 100,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          GestureDetector(
-                            onTap: () {
-                              _showRegenerateAlert(context);
-                            },
-                            child: Column(
-                              children: [
-                                CustomImageview(
-                                  imagePath: "assets/images/output_1.png",
-                                  height: 45,
-                                  width: 45,
-                                ),
-                                SizedBox(height: 10),
-                                Text(
-                                  "Regenerate",
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w500,
-                                    color: Color.fromRGBO(46, 46, 46, 1),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Column(
+                        bottomNavigationBar: SizedBox(
+                          height: 100,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
-                              CustomImageview(
-                                imagePath: "assets/images/output_2.png",
-                                height: 45,
-                                width: 45,
+                              GestureDetector(
+                                onTap: () {
+                                  _showRegenerateAlert(context);
+                                },
+                                child: Column(
+                                  children: [
+                                    CustomImageview(
+                                      imagePath: "assets/images/output_1.png",
+                                      height: 45,
+                                      width: 45,
+                                    ),
+                                    SizedBox(height: 10),
+                                    Text(
+                                      "Regenerate",
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500,
+                                        color: Color.fromRGBO(46, 46, 46, 1),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
-                              SizedBox(height: 10),
-                              Text(
-                                "Save",
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w500,
-                                  color: Color.fromRGBO(46, 46, 46, 1),
+                              GestureDetector(
+                                onTap: () {
+                                  shareNetworkImage(
+                                    context: context,
+                                    imageUrl: data["image"],
+                                  );
+                                },
+                                child: Column(
+                                  children: [
+                                    CustomImageview(
+                                      imagePath: "assets/images/output_2.png",
+                                      height: 45,
+                                      width: 45,
+                                    ),
+                                    SizedBox(height: 10),
+                                    Text(
+                                      "Save",
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500,
+                                        color: Color.fromRGBO(46, 46, 46, 1),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              GestureDetector(
+                                onTap: () {
+                                  showPublishSheet(context);
+                                },
+                                child: Column(
+                                  children: [
+                                    CustomImageview(
+                                      imagePath: "assets/images/output_3.png",
+                                      height: 45,
+                                      width: 45,
+                                    ),
+                                    SizedBox(height: 10),
+                                    Text(
+                                      "Publish",
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500,
+                                        color: Color.fromRGBO(46, 46, 46, 1),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              GestureDetector(
+                                onTap: () {
+                                  shareNetworkImage(
+                                    context: context,
+                                    imageUrl: data["image"],
+                                  );
+                                },
+                                child: Column(
+                                  children: [
+                                    CustomImageview(
+                                      imagePath: "assets/images/output_4.png",
+                                      height: 45,
+                                      width: 45,
+                                    ),
+                                    SizedBox(height: 10),
+                                    Text(
+                                      "Share",
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500,
+                                        color: Color.fromRGBO(46, 46, 46, 1),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              GestureDetector(
+                                onTap: () {
+                                  _showDeleteAlert(context);
+                                },
+                                child: Column(
+                                  children: [
+                                    CustomImageview(
+                                      imagePath: "assets/images/output_5.png",
+                                      height: 45,
+                                      width: 45,
+                                    ),
+                                    SizedBox(height: 10),
+                                    Text(
+                                      "Delete",
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500,
+                                        color: Color.fromRGBO(46, 46, 46, 1),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ],
                           ),
-                          GestureDetector(
-                            onTap: () {
-                              showPublishSheet(context);
-                            },
-                            child: Column(
-                              children: [
-                                CustomImageview(
-                                  imagePath: "assets/images/output_3.png",
-                                  height: 45,
-                                  width: 45,
-                                ),
-                                SizedBox(height: 10),
-                                Text(
-                                  "Publish",
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w500,
-                                    color: Color.fromRGBO(46, 46, 46, 1),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          GestureDetector(
-                            onTap: () {
-                              Share.share("text");
-                            },
-                            child: Column(
-                              children: [
-                                CustomImageview(
-                                  imagePath: "assets/images/output_4.png",
-                                  height: 45,
-                                  width: 45,
-                                ),
-                                SizedBox(height: 10),
-                                Text(
-                                  "Share",
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w500,
-                                    color: Color.fromRGBO(46, 46, 46, 1),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          GestureDetector(
-                            onTap: () {
-                              _showDeleteAlert(context);
-                            },
-                            child: Column(
-                              children: [
-                                CustomImageview(
-                                  imagePath: "assets/images/output_5.png",
-                                  height: 45,
-                                  width: 45,
-                                ),
-                                SizedBox(height: 10),
-                                Text(
-                                  "Delete",
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w500,
-                                    color: Color.fromRGBO(46, 46, 46, 1),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                        ),
+                      );
+                    },
                   );
                 },
               );

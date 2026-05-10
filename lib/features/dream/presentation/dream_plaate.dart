@@ -1,6 +1,8 @@
 import 'dart:io';
 
 import 'package:ai_interior/bloc/interoir_design_create/interior_design_create_bloc.dart';
+import 'package:ai_interior/features/dream/presentation/dream_ash_list_screen.dart';
+import 'package:ai_interior/features/dream/presentation/dream_screen.dart';
 import 'package:ai_interior/features/main/presentaion/main_screen.dart';
 import 'package:ai_interior/widgets/custom_imageview.dart';
 import 'package:flutter/material.dart';
@@ -11,6 +13,7 @@ import 'package:path_provider/path_provider.dart';
 import '../../../models/interior_design_create_model_response.dart';
 import '../../../theme/app_colors.dart';
 import '../../exterior/presentation/exterior_screen.dart';
+import '../../home/presentation/home_screen.dart';
 import 'dream_output_screen.dart';
 
 class ColorPalette {
@@ -370,14 +373,19 @@ class _DreamColorPaletteScreenState
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text(
-                  '200',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF1A1A1A),
-                    letterSpacing: -0.2,
-                  ),
+                ValueListenableBuilder<String>(
+                  valueListenable: creditsNotifier,
+                  builder: (context, credits, _) {
+                    return Text(
+                      creditsNotifier.value.toString(),
+                      style: TextStyle(
+                        fontSize: isIPad(context) ? 50 : 16,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF1A1A1A),
+                        letterSpacing: -0.2,
+                      ),
+                    );
+                  },
                 ),
                 const SizedBox(width: 4),
                 CustomImageview(
@@ -568,8 +576,8 @@ class _DreamColorPaletteScreenState
               login: {
                 "user_id": 342,
                 "colors": "retro",
-                "design_asthetic": "zen",
-                "space_type": "bed room",
+                "design_asthetic": dreamASH,
+                "space_type": dreamSpaceType,
               },
               image: extpicked != null ? extpicked ?? File("") : imageFile,
             ),
@@ -631,8 +639,6 @@ class _ColorCircle extends StatelessWidget {
     );
   }
 }
-
-// ─── Cube painter for Smart Tones icon ────────────────────────────────────────
 
 class _CubePainter extends CustomPainter {
   @override

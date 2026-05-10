@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../widgets/custom_imageview.dart';
+import '../../home/presentation/home_screen.dart';
+import '../../main/presentaion/main_screen.dart';
 import 'staging_ash_list_screen.dart';
 
+String stgRoomType = "";
 class RoomItem {
   final String name;
   final String imageUrl;
@@ -194,14 +197,19 @@ class _StagingRoomSelectionScreenState
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text(
-                  '200',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF1A1A1A),
-                    letterSpacing: -0.2,
-                  ),
+                ValueListenableBuilder<String>(
+                  valueListenable: creditsNotifier,
+                  builder: (context, credits, _) {
+                    return Text(
+                      creditsNotifier.value.toString(),
+                      style: TextStyle(
+                        fontSize: isIPad(context) ? 50 : 16,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF1A1A1A),
+                        letterSpacing: -0.2,
+                      ),
+                    );
+                  },
                 ),
                 const SizedBox(width: 4),
                 CustomImageview(
@@ -271,6 +279,7 @@ class _StagingRoomSelectionScreenState
       onTap: () {
         setState(() {
           _selectedRoom = room.name;
+          stgRoomType == room.name;
         });
         HapticFeedback.lightImpact();
       },

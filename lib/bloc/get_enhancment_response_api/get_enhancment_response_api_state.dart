@@ -1,40 +1,40 @@
 part of 'get_enhancment_response_api_bloc.dart';
 
-abstract class GetDesignByIDState extends Equatable {
-  GetDesignByIDState();
+abstract class GerEnhancmentResponseState extends Equatable {
+  GerEnhancmentResponseState();
 
   @override
   List<Object> get props => [];
 }
 
-class GetDesignByIDInitialState extends GetDesignByIDState {}
+class GerEnhancmentResponseInitialState extends GerEnhancmentResponseState {}
 
-class GetDesignByIDLoadingState extends GetDesignByIDState {
-  GetDesignByIDLoadingState();
+class GerEnhancmentResponseLoadingState extends GerEnhancmentResponseState {
+  GerEnhancmentResponseLoadingState();
 }
 
-class GetDesignByIDSuccessState extends GetDesignByIDState {
-  final CommonModelResponse? exploreSongResponse;
+class GerEnhancmentResponseSuccessState extends GerEnhancmentResponseState {
+  final ImageEnhanceModelResponse? exploreSongResponse;
   final String message;
 
-  GetDesignByIDSuccessState({
+  GerEnhancmentResponseSuccessState({
     required this.exploreSongResponse,
     required this.message,
   });
 }
 
-class GetDesignByIDFailureState extends GetDesignByIDState {
+class GerEnhancmentResponseFailureState extends GerEnhancmentResponseState {
   final String message;
 
-  GetDesignByIDFailureState({
+  GerEnhancmentResponseFailureState({
     required this.message,
   });
 }
 
-class GetDesignByIDExceptionState extends GetDesignByIDState {
+class GerEnhancmentResponseExceptionState extends GerEnhancmentResponseState {
   final String message;
 
-  GetDesignByIDExceptionState({
+  GerEnhancmentResponseExceptionState({
     required this.message,
   });
 }

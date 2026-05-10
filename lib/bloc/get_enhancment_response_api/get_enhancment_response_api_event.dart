@@ -1,16 +1,16 @@
 part of 'get_enhancment_response_api_bloc.dart';
 
-abstract class GetDesignByIDEvent extends Equatable {
-  const GetDesignByIDEvent();
+abstract class GerEnhancmentResponseEvent extends Equatable {
+  const GerEnhancmentResponseEvent();
 
   @override
   List<Object> get props => [];
 }
 
-class GetDesignByIDInitialEvent extends GetDesignByIDEvent {}
+class GerEnhancmentResponseInitialEvent extends GerEnhancmentResponseEvent {}
 
-class GetDesignByIDDataEvent extends GetDesignByIDEvent {
+class GerEnhancmentResponseDataEvent extends GerEnhancmentResponseEvent {
+  final Map<String, dynamic> data;
 
-
-  const GetDesignByIDDataEvent();
+  const GerEnhancmentResponseDataEvent({required this.data});
 }
