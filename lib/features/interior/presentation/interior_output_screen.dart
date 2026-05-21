@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:ai_interior/bloc/delete_record/delete_record_bloc.dart';
-import 'package:ai_interior/bloc/get_all_designs/get_all_designs_bloc.dart';
 import 'package:ai_interior/bloc/image_enhance/image_enhance_bloc.dart';
 import 'package:ai_interior/bloc/publish_record/publish_record_bloc.dart';
 import 'package:ai_interior/models/image_enhance_response.dart';
@@ -14,7 +13,6 @@ import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 import '../../../bloc/get_enhancment_response_api/get_enhancment_response_api_bloc.dart';
 import '../../../models/image_enhance_model_response.dart';
