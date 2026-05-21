@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:ai_interior/utils/responsive_utils.dart';
 
 import '../../../widgets/custom_imageview.dart';
 import '../../home/presentation/home_screen.dart';
@@ -153,43 +154,55 @@ class _StagingAshSelectionScreenState
 
   Widget _buildAppBar() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+      padding: EdgeInsets.fromLTRB(
+        r.wp(context, 16),
+        r.hp(context, 8),
+        r.wp(context, 16),
+        0,
+      ),
       child: Row(
         children: [
           GestureDetector(
             onTap: () {
               Navigator.of(context).pop();
             },
-            child: const SizedBox(
-              width: 36,
-              height: 36,
+            child: SizedBox(
+              width: r.adaptiveValue(context, mobile: 36, tablet: 48),
+              height: r.adaptiveValue(context, mobile: 36, tablet: 48),
               child: Icon(
                 Icons.arrow_back_ios_rounded,
-                size: 20,
-                color: Color(0xFF1A1A1A),
+                size: r.adaptiveValue(context, mobile: 20, tablet: 28),
+                color: const Color(0xFF1A1A1A),
               ),
             ),
           ),
-          const Expanded(
+          Expanded(
             child: Center(
-              child: Text(
-                'Smart Staging',
-                style: TextStyle(
-                  fontSize: 36,
-                  fontFamily: 'Georgia',
-                  fontWeight: FontWeight.w500,
-                  color: Color(0xFF1A1A1A),
-                  letterSpacing: -0.3,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  'Smart Staging',
+                  maxLines: 1,
+                  style: TextStyle(
+                    fontSize: r.sp(context, 36),
+                    fontFamily: 'Georgia',
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF1A1A1A),
+                    letterSpacing: -0.3,
+                  ),
                 ),
               ),
             ),
           ),
           // Coin badge
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            padding: EdgeInsets.symmetric(
+              horizontal: r.wp(context, 10),
+              vertical: r.hp(context, 5),
+            ),
             decoration: BoxDecoration(
               color: const Color(0xFFFFF3E8),
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(r.radius(context, 20)),
               border: Border.all(
                 color: const Color(0xFFE8873A).withOpacity(0.3),
               ),
@@ -201,21 +214,21 @@ class _StagingAshSelectionScreenState
                   valueListenable: creditsNotifier,
                   builder: (context, credits, _) {
                     return Text(
-                      creditsNotifier.value.toString(),
+                      credits,
                       style: TextStyle(
-                        fontSize: isIPad(context) ? 50 : 16,
+                        fontSize: r.sp(context, 14),
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFF1A1A1A),
+                        color: const Color(0xFF1A1A1A),
                         letterSpacing: -0.2,
                       ),
                     );
                   },
                 ),
-                const SizedBox(width: 4),
+                r.horizontalSpace(context, 4),
                 CustomImageview(
                   imagePath: "assets/images/credit.png",
-                  height: 25,
-                  width: 25,
+                  height: r.wp(context, 25),
+                  width: r.wp(context, 25),
                   fit: BoxFit.contain,
                 ),
               ],
@@ -228,10 +241,13 @@ class _StagingAshSelectionScreenState
 
   Widget _buildProgressBar() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: EdgeInsets.symmetric(
+        horizontal: r.wp(context, 10),
+        vertical: r.hp(context, 6),
+      ),
       child: LinearProgressIndicator(
         value: 0.65,
-        minHeight: 3,
+        minHeight: r.hp(context, 3),
         backgroundColor: const Color(0xFFE0DDD8),
         valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF3A7D7B)),
       ),
@@ -239,14 +255,19 @@ class _StagingAshSelectionScreenState
   }
 
   Widget _buildTitle() {
-    return const Padding(
-      padding: EdgeInsets.fromLTRB(16, 4, 16, 12),
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        r.wp(context, 16),
+        r.hp(context, 4),
+        r.wp(context, 16),
+        r.hp(context, 12),
+      ),
       child: Text(
         'Choose your design aesthetic',
         style: TextStyle(
-          fontSize: 20,
+          fontSize: r.sp(context, 20),
           fontWeight: FontWeight.w500,
-          color: Color(0xFF1A1A1A),
+          color: const Color(0xFF1A1A1A),
           letterSpacing: -0.4,
           height: 1.2,
         ),
@@ -256,14 +277,14 @@ class _StagingAshSelectionScreenState
 
   Widget _buildRoomGrid() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12),
+      padding: EdgeInsets.symmetric(horizontal: r.wp(context, 12)),
       child: GridView.builder(
-        padding: const EdgeInsets.only(bottom: 8),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          crossAxisSpacing: 10,
-          mainAxisSpacing: 10,
-          childAspectRatio: 1.05,
+        padding: EdgeInsets.only(bottom: r.hp(context, 8)),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: r.gridColumns(context),
+          crossAxisSpacing: r.wp(context, 10),
+          mainAxisSpacing: r.wp(context, 10),
+          childAspectRatio: r.gridAspectRatio(context, mobile: 1.05, tablet: 1.1),
         ),
         itemCount: 6,
         itemBuilder: (context, index) {
@@ -288,83 +309,73 @@ class _StagingAshSelectionScreenState
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeInOut,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(r.radius(context, 16)),
           border: Border.all(
             color: isSelected ? const Color(0xFFE8873A) : Colors.transparent,
-            width: 2.5,
+            width: r.wp(context, 2.5),
           ),
           boxShadow: [
             BoxShadow(
-              color:
-                  isSelected
-                      ? const Color(0xFFE8873A).withOpacity(0.25)
-                      : Colors.black.withOpacity(0.08),
-              blurRadius: isSelected ? 12 : 8,
-              offset: const Offset(0, 3),
-              spreadRadius: isSelected ? 1 : 0,
+              color: isSelected
+                  ? const Color(0xFFE8873A).withOpacity(0.25)
+                  : Colors.black.withOpacity(0.08),
+              blurRadius: isSelected ? r.wp(context, 12) : r.wp(context, 8),
+              offset: Offset(0, r.hp(context, 3)),
+              spreadRadius: isSelected ? r.wp(context, 1) : 0,
             ),
           ],
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(isSelected ? 13.5 : 16),
+          borderRadius: BorderRadius.circular(
+            isSelected ? r.radius(context, 13.5) : r.radius(context, 16),
+          ),
           child: Stack(
             fit: StackFit.expand,
             children: [
               // Room image
               index == 0
                   ? GestureDetector(
-                    onTap: () {
-                      Navigator.of(
-                        context,
-                      ).pushNamed(StagingDescribeVisionScreen.routeName);
-                    },
-                    child: Container(
-                      color: Color.fromRGBO(255, 255, 255, 0.6),
-                      child: Image.asset(
-                        "assets/gifs/describe_me.gif",
-                        height: 130,
-                        width: 130,
-                      ),
-                    ),
-                  )
-                  : Image.asset(
-                    "assets/images/interior/ash_${index + 1}.png",
-                    fit: BoxFit.cover,
-                    // loadingBuilder: (context, child, loadingProgress) {
-                    //   if (loadingProgress == null) return child;
-                    //   return Container(
-                    //     color: const Color(0xFFF5F5F5),
-                    //     child: Center(
-                    //       child: Icon(
-                    //         room.fallbackIcon,
-                    //         size: 36,
-                    //         color: const Color(0xFFCCCCCC),
-                    //       ),
-                    //     ),
-                    //   );
-                    // },
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              const Color(0xFFF0EDE8),
-                              const Color(0xFFE5E0D8),
-                            ],
-                          ),
-                        ),
+                      onTap: () {
+                        Navigator.of(
+                          context,
+                        ).pushNamed(StagingDescribeVisionScreen.routeName);
+                      },
+                      child: Container(
+                        color: const Color.fromRGBO(255, 255, 255, 0.6),
                         child: Center(
-                          child: Icon(
-                            room.fallbackIcon,
-                            size: 42,
-                            color: const Color(0xFFAA9880),
+                          child: Image.asset(
+                            "assets/gifs/describe_me.gif",
+                            height: r.wp(context, 130),
+                            width: r.wp(context, 130),
                           ),
                         ),
-                      );
-                    },
-                  ),
+                      ),
+                    )
+                  : Image.asset(
+                      "assets/images/interior/ash_${index + 1}.png",
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          decoration: const BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                Color(0xFFF0EDE8),
+                                Color(0xFFE5E0D8),
+                              ],
+                            ),
+                          ),
+                          child: Center(
+                            child: Icon(
+                              room.fallbackIcon,
+                              size: r.adaptiveValue(context, mobile: 36, tablet: 48),
+                              color: const Color(0xFFAA9880),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
 
               // Gradient overlay at bottom
               Positioned(
@@ -372,7 +383,7 @@ class _StagingAshSelectionScreenState
                 left: 0,
                 right: 0,
                 child: Container(
-                  height: 68,
+                  height: r.hp(context, 68),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
@@ -388,19 +399,19 @@ class _StagingAshSelectionScreenState
 
               // Room name label
               Positioned(
-                bottom: 10,
+                bottom: r.hp(context, 10),
                 left: 0,
                 right: 0,
                 child: Center(
                   child: Text(
                     room.name,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 13.5,
+                    style: TextStyle(
+                      fontSize: r.sp(context, 13.5),
                       fontWeight: FontWeight.w600,
                       color: Colors.white,
                       letterSpacing: -0.1,
-                      shadows: [
+                      shadows: const [
                         Shadow(
                           color: Colors.black26,
                           blurRadius: 4,
@@ -415,18 +426,18 @@ class _StagingAshSelectionScreenState
               // Selected checkmark overlay
               if (isSelected)
                 Positioned(
-                  top: 10,
-                  right: 10,
+                  top: r.hp(context, 10),
+                  right: r.wp(context, 10),
                   child: Container(
-                    width: 24,
-                    height: 24,
+                    width: r.adaptiveValue(context, mobile: 24, tablet: 32),
+                    height: r.adaptiveValue(context, mobile: 24, tablet: 32),
                     decoration: const BoxDecoration(
                       shape: BoxShape.circle,
                       color: Color(0xFFE8873A),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.check_rounded,
-                      size: 15,
+                      size: r.adaptiveValue(context, mobile: 15, tablet: 20),
                       color: Colors.white,
                     ),
                   ),
@@ -440,32 +451,35 @@ class _StagingAshSelectionScreenState
 
   Widget _buildNextButton() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      padding: EdgeInsets.symmetric(
+        horizontal: r.wp(context, 20),
+        vertical: r.hp(context, 12),
+      ),
       child: GestureDetector(
         onTap: () {
           Navigator.of(context).pushNamed(StagingColorPaletteScreen.routeName);
         },
         child: Container(
           width: double.infinity,
-          height: 58,
+          height: r.hp(context, 58),
           decoration: BoxDecoration(
             color: const Color(0xFFE8C9A0),
-            borderRadius: BorderRadius.circular(32),
+            borderRadius: BorderRadius.circular(r.radius(context, 32)),
             boxShadow: [
               BoxShadow(
                 color: const Color(0xFFE8C9A0).withOpacity(0.5),
-                blurRadius: 16,
-                offset: const Offset(0, 6),
+                blurRadius: r.wp(context, 16),
+                offset: Offset(0, r.hp(context, 6)),
               ),
             ],
           ),
           alignment: Alignment.center,
-          child: const Text(
+          child: Text(
             'Next',
             style: TextStyle(
-              fontSize: 18,
+              fontSize: r.sp(context, 18),
               fontWeight: FontWeight.w600,
-              color: Color(0xFF5A3E1B),
+              color: const Color(0xFF5A3E1B),
               letterSpacing: 0.3,
             ),
           ),

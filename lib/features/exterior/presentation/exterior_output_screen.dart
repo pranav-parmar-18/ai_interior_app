@@ -1,6 +1,7 @@
 import 'package:ai_interior/widgets/custom_imageview.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:ai_interior/utils/responsive_utils.dart';
 
 class ExteriorOutputScreen extends StatefulWidget {
   const ExteriorOutputScreen({super.key});
@@ -37,7 +38,12 @@ class _ExteriorOutputScreenState extends State<ExteriorOutputScreen> {
             Expanded(
               child: SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                padding: EdgeInsets.fromLTRB(
+                  r.wp(context, 16),
+                  r.hp(context, 16),
+                  r.wp(context, 16),
+                  0,
+                ),
                 child: Column(
                   children: [
                     // Building Type
@@ -47,33 +53,33 @@ class _ExteriorOutputScreenState extends State<ExteriorOutputScreen> {
                       value: data["spaceType"].toString().toUpperCase(),
                       trailing: null,
                     ),
-                    const SizedBox(height: 10),
+                    r.verticalSpace(context, 10),
 
                     // Design Aesthetic
                     _InfoTile(
-                      iconWidget: const Icon(
+                      iconWidget: Icon(
                         Icons.style_outlined,
-                        size: 26,
-                        color: Color(0xFF5A5550),
+                        size: r.iconSize(context, mobile: 26, tablet: 34),
+                        color: const Color(0xFF5A5550),
                       ),
                       label: 'Design Aesthetic',
                       value: data["designAsth"].toString().toUpperCase(),
                       trailing: null,
                     ),
-                    const SizedBox(height: 10),
+                    r.verticalSpace(context, 10),
 
                     // Color Palette
                     _InfoTile(
-                      iconWidget: const Icon(
+                      iconWidget: Icon(
                         Icons.palette_outlined,
-                        size: 26,
-                        color: Color(0xFF5A5550),
+                        size: r.iconSize(context, mobile: 26, tablet: 34),
+                        color: const Color(0xFF5A5550),
                       ),
                       label: 'Color Palette',
                       value: data["color"].toString().toUpperCase(),
                       trailing: const _ColorSwatches(),
                     ),
-                    const SizedBox(height: 16),
+                    r.verticalSpace(context, 16),
                   ],
                 ),
               ),
@@ -98,7 +104,7 @@ class _PhotoSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 300,
+      height: r.hp(context, 300),
       width: double.infinity,
       child: Stack(
         fit: StackFit.expand,
@@ -109,10 +115,10 @@ class _PhotoSection extends StatelessWidget {
             errorBuilder:
                 (_, __, ___) => Container(
                   color: const Color(0xFF8AAAC8),
-                  child: const Center(
+                  child: Center(
                     child: Icon(
                       Icons.location_city_outlined,
-                      size: 60,
+                      size: r.wp(context, 60),
                       color: Colors.white54,
                     ),
                   ),
@@ -120,34 +126,44 @@ class _PhotoSection extends StatelessWidget {
           ),
 
           Positioned(
-            left: 100,
-            bottom: 10,
+            left: r.wp(context, 100),
+            bottom: r.hp(context, 10),
             child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-              decoration: BoxDecoration(
+              padding: EdgeInsets.symmetric(
+                horizontal: r.wp(context, 10),
+                vertical: r.hp(context, 5),
+              ),
+              decoration: const BoxDecoration(
                 gradient: LinearGradient(colors: [
                   Color.fromRGBO(230, 203, 168, 1),
                   Color.fromRGBO(167, 196, 188, 1),
-                ])
+                ]),
               ),
               child: Row(
                 children: [
                   Text(
                     "Enhance",
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: r.sp(context, 16),
                       fontWeight: FontWeight.w500,
-                      color: Color.fromRGBO(46, 46, 46, 1),
+                      color: const Color.fromRGBO(46, 46, 46, 1),
                     ),
                   ),
-                  SizedBox(width: 3),
-                  CustomImageview(imagePath: "assets/images/credit.png"),
-                  SizedBox(width: 3),
-                  Text("1", style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                    color: Color.fromRGBO(46, 46, 46, 1),
-                  )),
+                  r.horizontalSpace(context, 3),
+                  CustomImageview(
+                    imagePath: "assets/images/credit.png",
+                    height: r.wp(context, 20),
+                    width: r.wp(context, 20),
+                  ),
+                  r.horizontalSpace(context, 3),
+                  Text(
+                    "1",
+                    style: TextStyle(
+                      fontSize: r.sp(context, 16),
+                      fontWeight: FontWeight.w500,
+                      color: const Color.fromRGBO(46, 46, 46, 1),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -156,7 +172,7 @@ class _PhotoSection extends StatelessWidget {
             top: 0,
             left: 0,
             right: 0,
-            height: topPad + 64,
+            height: topPad + r.hp(context, 64),
             child: DecoratedBox(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
@@ -168,13 +184,13 @@ class _PhotoSection extends StatelessWidget {
             ),
           ),
           Positioned(
-            top: topPad + 10,
-            left: 16,
+            top: topPad + r.hp(context, 10),
+            left: r.wp(context, 16),
             child: GestureDetector(
               onTap: () => Navigator.maybePop(context),
-              child: const Icon(
+              child: Icon(
                 Icons.chevron_left_rounded,
-                size: 32,
+                size: r.iconSize(context, mobile: 32, tablet: 42),
                 color: Colors.white,
               ),
             ),
@@ -203,11 +219,15 @@ class _InfoTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final sizeVal = r.adaptiveValue(context, mobile: 46, tablet: 56);
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      padding: EdgeInsets.symmetric(
+        horizontal: r.wp(context, 14),
+        vertical: r.hp(context, 14),
+      ),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(r.radius(context, 16)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.04),
@@ -220,15 +240,15 @@ class _InfoTile extends StatelessWidget {
         children: [
           // Icon container
           Container(
-            width: 46,
-            height: 46,
+            width: sizeVal,
+            height: sizeVal,
             decoration: BoxDecoration(
               color: const Color(0xFFF2EFEA),
-              borderRadius: BorderRadius.circular(11),
+              borderRadius: BorderRadius.circular(r.radius(context, 11)),
             ),
             child: Center(child: iconWidget),
           ),
-          const SizedBox(width: 13),
+          r.horizontalSpace(context, 13),
 
           // Label + value
           Expanded(
@@ -237,20 +257,20 @@ class _InfoTile extends StatelessWidget {
               children: [
                 Text(
                   label,
-                  style: const TextStyle(
-                    fontSize: 12.5,
+                  style: TextStyle(
+                    fontSize: r.sp(context, 12.5),
                     fontWeight: FontWeight.w500,
-                    color: Color(0xFF9C9690),
+                    color: const Color(0xFF9C9690),
                     height: 1.2,
                   ),
                 ),
-                const SizedBox(height: 3),
+                r.verticalSpace(context, 3),
                 Text(
                   value,
-                  style: const TextStyle(
-                    fontSize: 17,
+                  style: TextStyle(
+                    fontSize: r.sp(context, 17),
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF1A1816),
+                    color: const Color(0xFF1A1816),
                     letterSpacing: -0.2,
                   ),
                 ),
@@ -281,8 +301,8 @@ class _ColorSwatches extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const size = 28.0;
-    const overlap = 10.0;
+    final size = r.adaptiveValue(context, mobile: 28.0, tablet: 36.0);
+    final overlap = r.adaptiveValue(context, mobile: 10.0, tablet: 13.0);
 
     return SizedBox(
       width: size + (_colors.length - 1) * (size - overlap),
@@ -298,7 +318,7 @@ class _ColorSwatches extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: _colors[i],
                   shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 2),
+                  border: Border.all(color: Colors.white, width: r.wp(context, 2)),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withOpacity(0.10),
@@ -324,7 +344,7 @@ class _BuildingIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CustomPaint(
-      size: const Size(30, 30),
+      size: Size(r.wp(context, 30), r.wp(context, 30)),
       painter: _BuildingIconPainter(),
     );
   }
@@ -438,10 +458,10 @@ class _ApplyButtonState extends State<_ApplyButton> {
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.fromLTRB(
-        20,
-        8,
-        20,
-        widget.botPad > 0 ? widget.botPad : 24,
+        r.wp(context, 20),
+        r.hp(context, 8),
+        r.wp(context, 20),
+        widget.botPad > 0 ? widget.botPad : r.hp(context, 24),
       ),
       child: GestureDetector(
         onTapDown: (_) => setState(() => _pressed = true),
@@ -453,10 +473,10 @@ class _ApplyButtonState extends State<_ApplyButton> {
           duration: const Duration(milliseconds: 80),
           child: Container(
             width: double.infinity,
-            height: 60,
+            height: r.hp(context, 60),
             decoration: BoxDecoration(
               color: const Color(0xFFDEB887),
-              borderRadius: BorderRadius.circular(34),
+              borderRadius: BorderRadius.circular(r.radius(context, 34)),
               boxShadow: [
                 BoxShadow(
                   color: const Color(0xFFDEB887).withOpacity(0.40),
@@ -466,12 +486,12 @@ class _ApplyButtonState extends State<_ApplyButton> {
               ],
             ),
             alignment: Alignment.center,
-            child: const Text(
+            child: Text(
               'Apply Style',
               style: TextStyle(
-                fontSize: 19,
+                fontSize: r.sp(context, 19),
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF4A3218),
+                color: const Color(0xFF4A3218),
                 letterSpacing: 0.2,
               ),
             ),

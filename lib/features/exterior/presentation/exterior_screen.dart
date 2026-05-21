@@ -1,11 +1,13 @@
 import 'dart:io';
 
 import 'package:ai_interior/features/snap_trip/presentation/snap_trip_screen.dart';
+import 'package:ai_interior/utils/responsive_utils.dart';
 import 'package:ai_interior/widgets/custom_imageview.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../../home/presentation/home_screen.dart';
 import 'exterior_list_screen.dart';
 
 import 'package:image_picker/image_picker.dart';
@@ -22,21 +24,6 @@ class ExteriorDesignScreen extends StatefulWidget {
 
 class _ExteriorDesignScreenState extends State<ExteriorDesignScreen> {
   int _selectedTemplate = -1;
-
-  final List<String> _templateColors = [
-    '#E8D5C4', // Living room warm
-    '#C8D8E8', // Bedroom cool
-    '#8FB5A8', // Bathroom green
-    '#5C6B4E', // Dark dining
-  ];
-
-  // Template placeholder colors (replace with real AssetImage in a real project)
-  final List<Color> _templateSwatches = [
-    const Color(0xFFE07B54), // warm orange living
-    const Color(0xFFB8C8D8), // cool blue bedroom
-    const Color(0xFF6B9E8F), // teal bathroom
-    const Color(0xFF4A5E3A), // dark green dining
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -57,19 +44,19 @@ class _ExteriorDesignScreenState extends State<ExteriorDesignScreen> {
           Expanded(
             child: SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.only(bottom: 24),
+              padding: EdgeInsets.only(bottom: r.hp(context, 24)),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 22),
-                  _buildSectionTitle('Upload a photo of your room'),
-                  const SizedBox(height: 14),
+                  SizedBox(height: r.hp(context, 22)),
+                  _buildSectionTitle('Upload a photo of your house'),
+                  SizedBox(height: r.hp(context, 14)),
                   _buildUploadCard(),
-                  const SizedBox(height: 20),
+                  SizedBox(height: r.hp(context, 20)),
                   _buildOrDivider(),
-                  const SizedBox(height: 20),
+                  SizedBox(height: r.hp(context, 20)),
                   _buildSectionTitle('Choose from Template'),
-                  const SizedBox(height: 14),
+                  SizedBox(height: r.hp(context, 14)),
                   _buildTemplateGrid(),
                 ],
               ),
@@ -85,30 +72,36 @@ class _ExteriorDesignScreenState extends State<ExteriorDesignScreen> {
   }
 
   Widget _buildAppBar() {
+    final hPad = r.wp(context, 16);
+    final titleFontSize = r.sp(context, 36);
+    final iconSize = r.adaptiveValue(context, mobile: 25, tablet: 35);
+    final backBtnSize = r.adaptiveValue(context, mobile: 36, tablet: 48);
+    final backIconSize = r.adaptiveValue(context, mobile: 20, tablet: 28);
+
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+      padding: EdgeInsets.fromLTRB(hPad, r.hp(context, 8), hPad, 0),
       child: Row(
         children: [
           GestureDetector(
             onTap: () {
               Navigator.of(context).pop();
             },
-            child: const SizedBox(
-              width: 36,
-              height: 36,
+            child: SizedBox(
+              width: backBtnSize,
+              height: backBtnSize,
               child: Icon(
                 Icons.arrow_back_ios_rounded,
-                size: 20,
+                size: backIconSize,
                 color: Color(0xFF1A1A1A),
               ),
             ),
           ),
-          const Expanded(
+          Expanded(
             child: Center(
               child: Text(
                 'Exterior Design',
                 style: TextStyle(
-                  fontSize: 36,
+                  fontSize: titleFontSize,
                   fontFamily: 'Georgia',
                   fontWeight: FontWeight.w500,
                   color: Color(0xFF1A1A1A),
@@ -119,10 +112,13 @@ class _ExteriorDesignScreenState extends State<ExteriorDesignScreen> {
           ),
           // Coin badge
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            padding: EdgeInsets.symmetric(
+              horizontal: r.wp(context, 10),
+              vertical: r.hp(context, 5),
+            ),
             decoration: BoxDecoration(
               color: const Color(0xFFFFF3E8),
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(r.wp(context, 20)),
               border: Border.all(
                 color: const Color(0xFFE8873A).withOpacity(0.3),
               ),
@@ -130,20 +126,25 @@ class _ExteriorDesignScreenState extends State<ExteriorDesignScreen> {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text(
-                  '200',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF1A1A1A),
-                    letterSpacing: -0.2,
-                  ),
+                ValueListenableBuilder<String>(
+                  valueListenable: creditsNotifier,
+                  builder: (context, val, child) {
+                    return Text(
+                      creditsNotifier.value.toString(),
+                      style: TextStyle(
+                        fontSize: r.sp(context, 14),
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF1A1A1A),
+                        letterSpacing: -0.2,
+                      ),
+                    );
+                  },
                 ),
-                const SizedBox(width: 4),
+                SizedBox(width: r.wp(context, 4)),
                 CustomImageview(
                   imagePath: "assets/images/credit.png",
-                  height: 25,
-                  width: 25,
+                  height: iconSize,
+                  width: iconSize,
                   fit: BoxFit.contain,
                 ),
               ],
@@ -155,35 +156,46 @@ class _ExteriorDesignScreenState extends State<ExteriorDesignScreen> {
   }
 
   Widget _buildCoinBadge() {
+    final badgeHeight = r.hp(context, 34);
+    final hPad = r.wp(context, 10);
+    final fontSize = r.sp(context, 15);
+    final dotSize = r.wp(context, 20);
+    final iconSize = r.wp(context, 13);
+
     return Container(
-      height: 34,
-      padding: const EdgeInsets.symmetric(horizontal: 10),
+      height: badgeHeight,
+      padding: EdgeInsets.symmetric(horizontal: hPad),
       decoration: BoxDecoration(
         color: const Color(0xFFF5A05A),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(r.wp(context, 20)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text(
-            '200',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 15,
-              fontWeight: FontWeight.w700,
-            ),
+          ValueListenableBuilder<String>(
+            valueListenable: creditsNotifier,
+            builder: (context, val, child) {
+              return Text(
+                creditsNotifier.value.toString(),
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: fontSize,
+                  fontWeight: FontWeight.w700,
+                ),
+              );
+            },
           ),
-          const SizedBox(width: 5),
+          SizedBox(width: r.wp(context, 5)),
           Container(
-            width: 20,
-            height: 20,
+            width: dotSize,
+            height: dotSize,
             decoration: const BoxDecoration(
               color: Color(0xFFD4721A),
               shape: BoxShape.circle,
             ),
-            child: const Icon(
+            child: Icon(
               Icons.diamond_outlined,
-              size: 13,
+              size: iconSize,
               color: Colors.white,
             ),
           ),
@@ -197,10 +209,13 @@ class _ExteriorDesignScreenState extends State<ExteriorDesignScreen> {
   // ─────────────────────────────────────────────
   Widget _buildProgressBar() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: EdgeInsets.symmetric(
+        horizontal: r.wp(context, 10),
+        vertical: r.hp(context, 6),
+      ),
       child: LinearProgressIndicator(
         value: 0.25,
-        minHeight: 3,
+        minHeight: r.hp(context, 3).clamp(2, 5),
         backgroundColor: const Color(0xFFE0DDD8),
         valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF3A7D7B)),
       ),
@@ -209,11 +224,11 @@ class _ExteriorDesignScreenState extends State<ExteriorDesignScreen> {
 
   Widget _buildSectionTitle(String text) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: r.horizontalPadding(context),
       child: Text(
         text,
-        style: const TextStyle(
-          fontSize: 18,
+        style: TextStyle(
+          fontSize: r.sp(context, 18),
           fontWeight: FontWeight.w500,
           color: Color(0xFF1C1C1C),
           letterSpacing: -0.2,
@@ -223,13 +238,26 @@ class _ExteriorDesignScreenState extends State<ExteriorDesignScreen> {
   }
 
   Widget _buildUploadCard() {
+    final uploadImageHeight = r.clampedHeight(
+      context,
+      percent: 40,
+      minHeight: 220,
+      maxHeight: 500,
+    );
+    final borderRadius = r.wp(context, 20);
+    final buttonHeight = r.adaptiveValue(context, mobile: 48, tablet: 58);
+    final buttonFontSize = r.sp(context, 16);
+    final iconSize = r.adaptiveValue(context, mobile: 20, tablet: 26);
+    final infoBtnSize = r.adaptiveValue(context, mobile: 32, tablet: 42);
+    final infoIconSize = r.adaptiveValue(context, mobile: 18, tablet: 24);
+
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: r.horizontalPadding(context),
       child: Container(
         width: double.infinity,
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(borderRadius),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.05),
@@ -246,12 +274,12 @@ class _ExteriorDesignScreenState extends State<ExteriorDesignScreen> {
                 extpicked != null
                     ? CustomImageview(imagePath: extpicked!.path)
                     : ClipRRect(
-                      borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(20),
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(borderRadius),
                       ),
                       child: Container(
                         width: double.infinity,
-                        height: 330,
+                        height: uploadImageHeight,
                         color: const Color(0xFFF8F6F2),
 
                         child: CustomImageview(
@@ -262,15 +290,15 @@ class _ExteriorDesignScreenState extends State<ExteriorDesignScreen> {
                     ),
 
                 Positioned(
-                  top: 14,
-                  right: 14,
+                  top: r.hp(context, 14),
+                  right: r.wp(context, 14),
                   child: GestureDetector(
                     onTap: () {
                       Navigator.of(context).pushNamed(SnapTipsScreen.routeName);
                     },
                     child: Container(
-                      width: 32,
-                      height: 32,
+                      width: infoBtnSize,
+                      height: infoBtnSize,
                       decoration: BoxDecoration(
                         color: Colors.white,
                         shape: BoxShape.circle,
@@ -279,9 +307,9 @@ class _ExteriorDesignScreenState extends State<ExteriorDesignScreen> {
                           width: 1.5,
                         ),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.info_outline_rounded,
-                        size: 18,
+                        size: infoIconSize,
                         color: Color(0xFF5A5754),
                       ),
                     ),
@@ -292,32 +320,32 @@ class _ExteriorDesignScreenState extends State<ExteriorDesignScreen> {
 
             // Add Photo button
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 18),
+              padding: EdgeInsets.symmetric(vertical: r.hp(context, 18)),
               child: GestureDetector(
                 onTap: () => showMediaSourcePicker(
                   context,
                   onFilePicked: (file) => setState(() => extpicked = file),
                 ),
                 child: Container(
-                  height: 48,
-                  padding: const EdgeInsets.symmetric(horizontal: 32),
+                  height: buttonHeight,
+                  padding: EdgeInsets.symmetric(horizontal: r.wp(context, 32)),
                   decoration: BoxDecoration(
                     color: const Color(0xFFF2E8DA),
-                    borderRadius: BorderRadius.circular(30),
+                    borderRadius: BorderRadius.circular(r.wp(context, 30)),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
-                    children: const [
+                    children: [
                       Icon(
                         Icons.add_a_photo_outlined,
-                        size: 20,
+                        size: iconSize,
                         color: Color(0xFF5A4A3A),
                       ),
-                      SizedBox(width: 8),
+                      SizedBox(width: r.wp(context, 8)),
                       Text(
                         'Add Photo',
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: buttonFontSize,
                           fontWeight: FontWeight.w600,
                           color: Color(0xFF5A4A3A),
                         ),
@@ -344,28 +372,21 @@ class _ExteriorDesignScreenState extends State<ExteriorDesignScreen> {
     );
   }
 
-  Widget _buildIsometricRoomPlaceholder() {
-    return CustomPaint(
-      painter: _IsometricRoomPainter(),
-      child: const SizedBox.expand(),
-    );
-  }
-
   // ─────────────────────────────────────────────
   // OR Divider
   // ─────────────────────────────────────────────
   Widget _buildOrDivider() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: r.horizontalPadding(context),
       child: Row(
         children: [
           Expanded(child: Container(height: 1, color: const Color(0xFFD8D4CE))),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 14),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: r.wp(context, 14)),
             child: Text(
               'OR',
               style: TextStyle(
-                fontSize: 12,
+                fontSize: r.sp(context, 12),
                 fontWeight: FontWeight.w600,
                 color: Color(0xFFAEA9A3),
                 letterSpacing: 1.2,
@@ -382,42 +403,27 @@ class _ExteriorDesignScreenState extends State<ExteriorDesignScreen> {
   // Template horizontal list
   // ─────────────────────────────────────────────
   Widget _buildTemplateGrid() {
-    // Template data: label + accent color pairs
-    final templates = [
-      _TemplateData(
-        'Living Room',
-        const Color(0xFFE07B54),
-        const Color(0xFFF5E8DF),
-      ),
-      _TemplateData(
-        'Bedroom',
-        const Color(0xFF7A9DBF),
-        const Color(0xFFE0EAF4),
-      ),
-      _TemplateData(
-        'Bathroom',
-        const Color(0xFF6B9E8F),
-        const Color(0xFFD5EAE5),
-      ),
-      _TemplateData('Dining', const Color(0xFF5C7A5A), const Color(0xFFD5E5D3)),
-    ];
+    final listHeight = r.adaptiveValue(context, mobile: 128, tablet: 170);
+    final itemWidth = r.adaptiveValue(context, mobile: 108, tablet: 150);
+    final checkSize = r.adaptiveValue(context, mobile: 22, tablet: 30);
+    final checkIconSize = r.adaptiveValue(context, mobile: 14, tablet: 20);
 
     return SizedBox(
-      height: 128,
+      height: listHeight,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 20),
+        padding: r.horizontalPadding(context),
         itemCount: 8,
-        separatorBuilder: (_, __) => const SizedBox(width: 12),
+        separatorBuilder: (_, __) => SizedBox(width: r.wp(context, 12)),
         itemBuilder: (context, i) {
           final selected = _selectedTemplate == i;
           return GestureDetector(
             onTap: () => setState(() => _selectedTemplate = i),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
-              width: 108,
+              width: itemWidth,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(r.wp(context, 16)),
                 border: Border.all(
                   color:
                       selected ? const Color(0xFF3A7D7B) : Colors.transparent,
@@ -432,7 +438,7 @@ class _ExteriorDesignScreenState extends State<ExteriorDesignScreen> {
                 ],
               ),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(r.wp(context, 14)),
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
@@ -442,18 +448,18 @@ class _ExteriorDesignScreenState extends State<ExteriorDesignScreen> {
                     ),
                     if (selected)
                       Positioned(
-                        top: 8,
-                        right: 8,
+                        top: r.hp(context, 8),
+                        right: r.wp(context, 8),
                         child: Container(
-                          width: 22,
-                          height: 22,
+                          width: checkSize,
+                          height: checkSize,
                           decoration: const BoxDecoration(
                             color: Color(0xFF3A7D7B),
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.check_rounded,
-                            size: 14,
+                            size: checkIconSize,
                             color: Colors.white,
                           ),
                         ),
@@ -468,27 +474,19 @@ class _ExteriorDesignScreenState extends State<ExteriorDesignScreen> {
     );
   }
 
-  IconData _roomIcon(int i) {
-    switch (i) {
-      case 0:
-        return Icons.weekend_outlined;
-      case 1:
-        return Icons.bed_outlined;
-      case 2:
-        return Icons.bathtub_outlined;
-      case 3:
-        return Icons.dinner_dining_outlined;
-      default:
-        return Icons.home_outlined;
-    }
-  }
-
   // ─────────────────────────────────────────────
   // Next button
   // ─────────────────────────────────────────────
   Widget _buildNextButton() {
+    final buttonHeight = r.adaptiveValue(context, mobile: 58, tablet: 70);
+    final buttonFontSize = r.sp(context, 18);
+    final buttonRadius = r.wp(context, 32);
+
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
+      padding: EdgeInsets.symmetric(
+        horizontal: r.wp(context, 20),
+        vertical: r.hp(context, 12),
+      ),
       child: GestureDetector(
         onTap: () {
           Navigator.of(

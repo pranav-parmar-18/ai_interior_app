@@ -1,4 +1,5 @@
 import 'package:ai_interior/theme/theme.dart';
+import 'package:ai_interior/utils/responsive_utils.dart';
 import 'package:flutter/material.dart';
 
 class CustomTextFormField extends StatelessWidget {
@@ -92,7 +93,7 @@ class CustomTextFormField extends StatelessWidget {
           textStyle ??
           TextStyle(
             color: theme.colorScheme.onError,
-            fontSize: 14,
+            fontSize: ResponsiveUtils.sp(context, 14),
             fontFamily: 'Poppins',
             fontWeight: FontWeight.w500,
           ),

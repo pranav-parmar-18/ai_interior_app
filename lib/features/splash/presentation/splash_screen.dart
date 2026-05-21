@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:ai_interior/utils/responsive_utils.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -13,8 +14,7 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin{
-
+class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
 
@@ -32,7 +32,6 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
     _controller.forward();
   }
-
 
   @override
   void dispose() {
@@ -56,8 +55,11 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
   @override
   Widget build(BuildContext context) {
+    
+    final bool isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
+
     return Scaffold(
-      backgroundColor: Color.fromRGBO(13, 13, 16, 1),
+      backgroundColor: const Color.fromRGBO(13, 13, 16, 1),
       body: Stack(
         children: [
           CustomImageview(
@@ -65,38 +67,43 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
             width: MediaQuery.of(context).size.width,
             imagePath: 'assets/images/splash.png',
           ),
-          Align(
-            alignment: Alignment.center,
-            child: Column(
-              children: [
-                SizedBox(
-                  height: 300,
-                ),
-                CustomImageview(
-                  imagePath: "assets/images/splash_center.png",
-                  height: 200,
-                  width: 200,
-                ),
-                SizedBox(height: 20),
-                Text(
-                  "AI Interior",
-                  style: TextStyle(
-                    color: Color.fromRGBO(71, 126, 132, 1),
-                    fontSize: 30,
-                    fontWeight: FontWeight.bold,
+          Center(
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CustomImageview(
+                    imagePath: "assets/images/splash_center.png",
+                    height: isLandscape
+                        ? r.adaptiveValue(context, mobile: 130.0, tablet: 180.0)
+                        : r.adaptiveValue(context, mobile: 180.0, tablet: 240.0),
+                    width: isLandscape
+                        ? r.adaptiveValue(context, mobile: 130.0, tablet: 180.0)
+                        : r.adaptiveValue(context, mobile: 180.0, tablet: 240.0),
                   ),
-                ),
-                SizedBox(height: 20),
-                LinearPercentIndicator(
-                  padding: EdgeInsets.symmetric(horizontal: 100),
-                  lineHeight: 5, // iOS-style thin bar
-                  percent: _animation.value,
-                  backgroundColor: Colors.white,
-                  progressColor: Color.fromRGBO(50, 116, 127, 1),
-                  barRadius: const Radius.circular(2),
-                  animation: false, // we control animation
-                )
-              ],
+                  SizedBox(height: r.hp(context, 2)),
+                  Text(
+                    "AI Interior",
+                    style: TextStyle(
+                      color: const Color.fromRGBO(71, 126, 132, 1),
+                      fontSize: r.adaptiveValue(context, mobile: 28.0, tablet: 36.0),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: r.hp(context, 2.5)),
+                  LinearPercentIndicator(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isLandscape ? r.wp(context, 35) : r.wp(context, 20),
+                    ),
+                    lineHeight: r.adaptiveValue(context, mobile: 5.0, tablet: 7.0),
+                    percent: _animation.value,
+                    backgroundColor: Colors.white,
+                    progressColor: const Color.fromRGBO(50, 116, 127, 1),
+                    barRadius: const Radius.circular(2),
+                    animation: false,
+                  )
+                ],
+              ),
             ),
           ),
         ],

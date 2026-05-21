@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:ai_interior/features/snap_trip/presentation/snap_trip_screen.dart';
+import 'package:ai_interior/utils/responsive_utils.dart';
 import 'package:ai_interior/widgets/custom_imageview.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
@@ -59,19 +60,19 @@ class _InteriorDesignScreenState extends State<InteriorDesignScreen> {
           Expanded(
             child: SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.only(bottom: 24),
+              padding: EdgeInsets.only(bottom: r.hp(context, 24)),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 22),
+                  SizedBox(height: r.hp(context, 22)),
                   _buildSectionTitle('Upload a photo of your room'),
-                  const SizedBox(height: 14),
+                  SizedBox(height: r.hp(context, 14)),
                   _buildUploadCard(),
-                  const SizedBox(height: 20),
+                  SizedBox(height: r.hp(context, 20)),
                   _buildOrDivider(),
-                  const SizedBox(height: 20),
+                  SizedBox(height: r.hp(context, 20)),
                   _buildSectionTitle('Choose from Template'),
-                  const SizedBox(height: 14),
+                  SizedBox(height: r.hp(context, 14)),
                   _buildTemplateGrid(),
                 ],
               ),
@@ -90,30 +91,37 @@ class _InteriorDesignScreenState extends State<InteriorDesignScreen> {
   // AppBar
   // ─────────────────────────────────────────────
   Widget _buildAppBar() {
+    final hPad = r.wp(context, 16);
+    final titleFontSize = r.sp(context, 36);
+    final creditsFontSize = r.sp(context, 16);
+    final iconSize = r.adaptiveValue(context, mobile: 25, tablet: 35);
+    final backBtnSize = r.adaptiveValue(context, mobile: 36, tablet: 48);
+    final backIconSize = r.adaptiveValue(context, mobile: 20, tablet: 28);
+
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+      padding: EdgeInsets.fromLTRB(hPad, r.hp(context, 8), hPad, 0),
       child: Row(
         children: [
           GestureDetector(
             onTap: () {
               Navigator.of(context).pop();
             },
-            child: const SizedBox(
-              width: 36,
-              height: 36,
+            child: SizedBox(
+              width: backBtnSize,
+              height: backBtnSize,
               child: Icon(
                 Icons.arrow_back_ios_rounded,
-                size: 20,
+                size: backIconSize,
                 color: Color(0xFF1A1A1A),
               ),
             ),
           ),
-          const Expanded(
+          Expanded(
             child: Center(
               child: Text(
                 'Interior Design',
                 style: TextStyle(
-                  fontSize: 36,
+                  fontSize: titleFontSize,
                   fontFamily: 'Georgia',
                   fontWeight: FontWeight.w500,
                   color: Color(0xFF1A1A1A),
@@ -124,10 +132,13 @@ class _InteriorDesignScreenState extends State<InteriorDesignScreen> {
           ),
           // Coin badge
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            padding: EdgeInsets.symmetric(
+              horizontal: r.wp(context, 10),
+              vertical: r.hp(context, 5),
+            ),
             decoration: BoxDecoration(
               color: const Color(0xFFFFF3E8),
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(r.wp(context, 20)),
               border: Border.all(
                 color: const Color(0xFFE8873A).withOpacity(0.3),
               ),
@@ -141,7 +152,7 @@ class _InteriorDesignScreenState extends State<InteriorDesignScreen> {
                     return Text(
                       creditsNotifier.value.toString(),
                       style: TextStyle(
-                        fontSize: isIPad(context) ? 50 : 16,
+                        fontSize: creditsFontSize,
                         fontWeight: FontWeight.w700,
                         color: Color(0xFF1A1A1A),
                         letterSpacing: -0.2,
@@ -149,11 +160,11 @@ class _InteriorDesignScreenState extends State<InteriorDesignScreen> {
                     );
                   },
                 ),
-                const SizedBox(width: 4),
+                SizedBox(width: r.wp(context, 4)),
                 CustomImageview(
                   imagePath: "assets/images/credit.png",
-                  height: 25,
-                  width: 25,
+                  height: iconSize,
+                  width: iconSize,
                   fit: BoxFit.contain,
                 ),
               ],
@@ -207,10 +218,13 @@ class _InteriorDesignScreenState extends State<InteriorDesignScreen> {
   // ─────────────────────────────────────────────
   Widget _buildProgressBar() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: EdgeInsets.symmetric(
+        horizontal: r.wp(context, 10),
+        vertical: r.hp(context, 6),
+      ),
       child: LinearProgressIndicator(
         value: 0.25,
-        minHeight: 3,
+        minHeight: r.hp(context, 3).clamp(2, 5),
         backgroundColor: const Color(0xFFE0DDD8),
         valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF3A7D7B)),
       ),
@@ -222,11 +236,11 @@ class _InteriorDesignScreenState extends State<InteriorDesignScreen> {
   // ─────────────────────────────────────────────
   Widget _buildSectionTitle(String text) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: r.horizontalPadding(context),
       child: Text(
         text,
-        style: const TextStyle(
-          fontSize: 18,
+        style: TextStyle(
+          fontSize: r.sp(context, 18),
           fontWeight: FontWeight.w500,
           color: Color(0xFF1C1C1C),
           letterSpacing: -0.2,
@@ -239,13 +253,26 @@ class _InteriorDesignScreenState extends State<InteriorDesignScreen> {
   // Upload Card
   // ─────────────────────────────────────────────
   Widget _buildUploadCard() {
+    final uploadImageHeight = r.clampedHeight(
+      context,
+      percent: 40,
+      minHeight: 220,
+      maxHeight: 500,
+    );
+    final borderRadius = r.wp(context, 20);
+    final buttonHeight = r.adaptiveValue(context, mobile: 48, tablet: 58);
+    final buttonFontSize = r.sp(context, 16);
+    final iconSize = r.adaptiveValue(context, mobile: 20, tablet: 26);
+    final infoBtnSize = r.adaptiveValue(context, mobile: 32, tablet: 42);
+    final infoIconSize = r.adaptiveValue(context, mobile: 18, tablet: 24);
+
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: r.horizontalPadding(context),
       child: Container(
         width: double.infinity,
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(borderRadius),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.05),
@@ -262,14 +289,13 @@ class _InteriorDesignScreenState extends State<InteriorDesignScreen> {
                 picked != null
                     ? CustomImageview(imagePath: picked!.path)
                     : ClipRRect(
-                      borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(20),
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(borderRadius),
                       ),
                       child: Container(
                         width: double.infinity,
-                        height: 330,
+                        height: uploadImageHeight,
                         color: const Color(0xFFF8F6F2),
-
                         child: CustomImageview(
                           imagePath: "assets/images/interior/interior_home.png",
                           fit: BoxFit.contain,
@@ -278,15 +304,15 @@ class _InteriorDesignScreenState extends State<InteriorDesignScreen> {
                     ),
 
                 Positioned(
-                  top: 14,
-                  right: 14,
+                  top: r.hp(context, 14),
+                  right: r.wp(context, 14),
                   child: GestureDetector(
                     onTap: () {
                       Navigator.of(context).pushNamed(SnapTipsScreen.routeName);
                     },
                     child: Container(
-                      width: 32,
-                      height: 32,
+                      width: infoBtnSize,
+                      height: infoBtnSize,
                       decoration: BoxDecoration(
                         color: Colors.white,
                         shape: BoxShape.circle,
@@ -295,9 +321,9 @@ class _InteriorDesignScreenState extends State<InteriorDesignScreen> {
                           width: 1.5,
                         ),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.info_outline_rounded,
-                        size: 18,
+                        size: infoIconSize,
                         color: Color(0xFF5A5754),
                       ),
                     ),
@@ -308,32 +334,32 @@ class _InteriorDesignScreenState extends State<InteriorDesignScreen> {
 
             // Add Photo button
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 18),
+              padding: EdgeInsets.symmetric(vertical: r.hp(context, 18)),
               child: GestureDetector(
                 onTap: () => showMediaSourcePicker(
                   context,
                   onFilePicked: (file) => setState(() => picked = file),
                 ),
                 child: Container(
-                  height: 48,
-                  padding: const EdgeInsets.symmetric(horizontal: 32),
+                  height: buttonHeight,
+                  padding: EdgeInsets.symmetric(horizontal: r.wp(context, 32)),
                   decoration: BoxDecoration(
                     color: const Color(0xFFF2E8DA),
-                    borderRadius: BorderRadius.circular(30),
+                    borderRadius: BorderRadius.circular(r.wp(context, 30)),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
-                    children: const [
+                    children: [
                       Icon(
                         Icons.add_a_photo_outlined,
-                        size: 20,
+                        size: iconSize,
                         color: Color(0xFF5A4A3A),
                       ),
-                      SizedBox(width: 8),
+                      SizedBox(width: r.wp(context, 8)),
                       Text(
                         'Add Photo',
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: buttonFontSize,
                           fontWeight: FontWeight.w600,
                           color: Color(0xFF5A4A3A),
                         ),
@@ -373,16 +399,16 @@ class _InteriorDesignScreenState extends State<InteriorDesignScreen> {
   // ─────────────────────────────────────────────
   Widget _buildOrDivider() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: r.horizontalPadding(context),
       child: Row(
         children: [
           Expanded(child: Container(height: 1, color: const Color(0xFFD8D4CE))),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 14),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: r.wp(context, 14)),
             child: Text(
               'OR',
               style: TextStyle(
-                fontSize: 12,
+                fontSize: r.sp(context, 12),
                 fontWeight: FontWeight.w600,
                 color: Color(0xFFAEA9A3),
                 letterSpacing: 1.2,
@@ -399,6 +425,11 @@ class _InteriorDesignScreenState extends State<InteriorDesignScreen> {
   // Template horizontal list
   // ─────────────────────────────────────────────
   Widget _buildTemplateGrid() {
+    final listHeight = r.adaptiveValue(context, mobile: 128, tablet: 170);
+    final itemWidth = r.adaptiveValue(context, mobile: 108, tablet: 150);
+    final checkSize = r.adaptiveValue(context, mobile: 22, tablet: 30);
+    final checkIconSize = r.adaptiveValue(context, mobile: 14, tablet: 20);
+
     // Template data: label + accent color pairs
     final templates = [
       _TemplateData(
@@ -420,21 +451,21 @@ class _InteriorDesignScreenState extends State<InteriorDesignScreen> {
     ];
 
     return SizedBox(
-      height: 128,
+      height: listHeight,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 20),
+        padding: r.horizontalPadding(context),
         itemCount: 8,
-        separatorBuilder: (_, __) => const SizedBox(width: 12),
+        separatorBuilder: (_, __) => SizedBox(width: r.wp(context, 12)),
         itemBuilder: (context, i) {
           final selected = _selectedTemplate == i;
           return GestureDetector(
             onTap: () => setState(() => _selectedTemplate = i),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
-              width: 108,
+              width: itemWidth,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(r.wp(context, 16)),
                 border: Border.all(
                   color:
                       selected ? const Color(0xFF3A7D7B) : Colors.transparent,
@@ -449,7 +480,7 @@ class _InteriorDesignScreenState extends State<InteriorDesignScreen> {
                 ],
               ),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(r.wp(context, 14)),
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
@@ -459,18 +490,18 @@ class _InteriorDesignScreenState extends State<InteriorDesignScreen> {
                     ),
                     if (selected)
                       Positioned(
-                        top: 8,
-                        right: 8,
+                        top: r.hp(context, 8),
+                        right: r.wp(context, 8),
                         child: Container(
-                          width: 22,
-                          height: 22,
+                          width: checkSize,
+                          height: checkSize,
                           decoration: const BoxDecoration(
                             color: Color(0xFF3A7D7B),
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.check_rounded,
-                            size: 14,
+                            size: checkIconSize,
                             color: Colors.white,
                           ),
                         ),
@@ -504,8 +535,11 @@ class _InteriorDesignScreenState extends State<InteriorDesignScreen> {
   // Next button
   // ─────────────────────────────────────────────
   Widget _buildNextButton() {
+    final btnHeight = r.adaptiveValue(context, mobile: 58, tablet: 70);
+    final fontSize = r.sp(context, 18);
+
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
+      padding: EdgeInsets.symmetric(horizontal: r.wp(context, 20)),
       child: GestureDetector(
         onTap: () {
           Navigator.of(
@@ -514,10 +548,10 @@ class _InteriorDesignScreenState extends State<InteriorDesignScreen> {
         },
         child: Container(
           width: double.infinity,
-          height: 58,
+          height: btnHeight,
           decoration: BoxDecoration(
             color: const Color(0xFFE8C9A0),
-            borderRadius: BorderRadius.circular(32),
+            borderRadius: BorderRadius.circular(r.wp(context, 32)),
             boxShadow: [
               BoxShadow(
                 color: const Color(0xFFE8C9A0).withOpacity(0.5),
@@ -527,10 +561,10 @@ class _InteriorDesignScreenState extends State<InteriorDesignScreen> {
             ],
           ),
           alignment: Alignment.center,
-          child: const Text(
+          child: Text(
             'Next',
             style: TextStyle(
-              fontSize: 18,
+              fontSize: fontSize,
               fontWeight: FontWeight.w600,
               color: Color(0xFF5A3E1B),
               letterSpacing: 0.3,

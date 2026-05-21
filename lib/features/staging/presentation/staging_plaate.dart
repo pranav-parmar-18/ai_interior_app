@@ -11,6 +11,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:ai_interior/utils/responsive_utils.dart';
 
 import '../../../bloc/smart_staging_create/smart_staging_create_bloc.dart';
 import '../../../models/interior_design_create_model_response.dart';
@@ -310,52 +311,57 @@ class _StagingColorPaletteScreenState extends State<StagingColorPaletteScreen> {
       builder: (context, state) {
         return Scaffold(
           backgroundColor: const Color(0xFFF5F3EF),
-          body:
-              state is SmartStagingCreateLoadingState
-                  ? Column(
-                    children: [
-                      SizedBox(height: 300),
-                      Image.asset("assets/gifs/loading.gif", height: 393),
-                      SizedBox(height: 10),
-                      Text(
-                        "Bringing your vision to life...",
+          body: state is SmartStagingCreateLoadingState
+              ? Column(
+                  children: [
+                    const Spacer(flex: 3),
+                    Center(
+                      child: Image.asset(
+                        "assets/gifs/loading.gif",
+                        height: r.hp(context, 250),
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+                    r.verticalSpace(context, 16),
+                    Text(
+                      "Bringing your vision to life...",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: r.sp(context, 16),
+                        fontWeight: FontWeight.w400,
+                        color: const Color.fromRGBO(90, 106, 117, 1),
+                        letterSpacing: -0.3,
+                      ),
+                    ),
+                    const Spacer(flex: 2),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: r.wp(context, 30)),
+                      child: Text(
+                        "Keep the app open & don’t lock your device. This may take around 10 seconds.",
+                        textAlign: TextAlign.center,
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: r.sp(context, 14),
                           fontWeight: FontWeight.w400,
-                          color: Color.fromRGBO(90, 106, 117, 1),
+                          color: const Color.fromRGBO(90, 106, 117, 1),
                           letterSpacing: -0.3,
                         ),
                       ),
-                      SizedBox(height: 150),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 30.0),
-                        child: Text(
-                          "Keep the app open & don’t lock your device. This may take around 10 seconds.",
-                          textAlign: TextAlign.center,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w400,
-                            color: Color.fromRGBO(90, 106, 117, 1),
-                            letterSpacing: -0.3,
-                          ),
-                        ),
-                      ),
-                    ],
-                  )
-                  : SafeArea(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildAppBar(),
-                        _buildProgressBar(),
-                        _buildTitle(),
-                        Expanded(child: _buildList()),
-                        _buildGenerateButton(),
-                      ],
                     ),
+                    const Spacer(flex: 1),
+                  ],
+                )
+              : SafeArea(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildAppBar(),
+                      _buildProgressBar(),
+                      _buildTitle(),
+                      Expanded(child: _buildList()),
+                      _buildGenerateButton(),
+                    ],
                   ),
+                ),
         );
       },
     );
@@ -363,10 +369,13 @@ class _StagingColorPaletteScreenState extends State<StagingColorPaletteScreen> {
 
   Widget _buildProgressBar() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: EdgeInsets.symmetric(
+        horizontal: r.wp(context, 10),
+        vertical: r.hp(context, 6),
+      ),
       child: LinearProgressIndicator(
         value: 1,
-        minHeight: 3,
+        minHeight: r.hp(context, 3),
         backgroundColor: const Color(0xFFE0DDD8),
         valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF3A7D7B)),
       ),
@@ -375,43 +384,55 @@ class _StagingColorPaletteScreenState extends State<StagingColorPaletteScreen> {
 
   Widget _buildAppBar() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+      padding: EdgeInsets.fromLTRB(
+        r.wp(context, 16),
+        r.hp(context, 8),
+        r.wp(context, 16),
+        0,
+      ),
       child: Row(
         children: [
           GestureDetector(
             onTap: () {
               Navigator.of(context).pop();
             },
-            child: const SizedBox(
-              width: 36,
-              height: 36,
+            child: SizedBox(
+              width: r.adaptiveValue(context, mobile: 36, tablet: 48),
+              height: r.adaptiveValue(context, mobile: 36, tablet: 48),
               child: Icon(
                 Icons.arrow_back_ios_rounded,
-                size: 20,
-                color: Color(0xFF1A1A1A),
+                size: r.adaptiveValue(context, mobile: 20, tablet: 28),
+                color: const Color(0xFF1A1A1A),
               ),
             ),
           ),
-          const Expanded(
+          Expanded(
             child: Center(
-              child: Text(
-                'Smart Staging',
-                style: TextStyle(
-                  fontSize: 36,
-                  fontFamily: 'Georgia',
-                  fontWeight: FontWeight.w500,
-                  color: Color(0xFF1A1A1A),
-                  letterSpacing: -0.3,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  'Smart Staging',
+                  maxLines: 1,
+                  style: TextStyle(
+                    fontSize: r.sp(context, 36),
+                    fontFamily: 'Georgia',
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF1A1A1A),
+                    letterSpacing: -0.3,
+                  ),
                 ),
               ),
             ),
           ),
           // Coin badge
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            padding: EdgeInsets.symmetric(
+              horizontal: r.wp(context, 10),
+              vertical: r.hp(context, 5),
+            ),
             decoration: BoxDecoration(
               color: const Color(0xFFFFF3E8),
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(r.radius(context, 20)),
               border: Border.all(
                 color: const Color(0xFFE8873A).withOpacity(0.3),
               ),
@@ -423,21 +444,21 @@ class _StagingColorPaletteScreenState extends State<StagingColorPaletteScreen> {
                   valueListenable: creditsNotifier,
                   builder: (context, credits, _) {
                     return Text(
-                      creditsNotifier.value.toString(),
+                      credits,
                       style: TextStyle(
-                        fontSize: isIPad(context) ? 50 : 16,
+                        fontSize: r.sp(context, 14),
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFF1A1A1A),
+                        color: const Color(0xFF1A1A1A),
                         letterSpacing: -0.2,
                       ),
                     );
                   },
                 ),
-                const SizedBox(width: 4),
+                r.horizontalSpace(context, 4),
                 CustomImageview(
                   imagePath: "assets/images/credit.png",
-                  height: 25,
-                  width: 25,
+                  height: r.wp(context, 25),
+                  width: r.wp(context, 25),
                   fit: BoxFit.contain,
                 ),
               ],
@@ -452,11 +473,16 @@ class _StagingColorPaletteScreenState extends State<StagingColorPaletteScreen> {
 
   Widget _buildTitle() {
     return Padding(
-      padding: EdgeInsets.fromLTRB(16, 10, 16, 8),
+      padding: EdgeInsets.fromLTRB(
+        r.wp(context, 16),
+        r.hp(context, 10),
+        r.wp(context, 16),
+        r.hp(context, 8),
+      ),
       child: Text(
         'Choose colors for your room',
         style: TextStyle(
-          fontSize: 20,
+          fontSize: r.sp(context, 20),
           fontWeight: FontWeight.w600,
           color: AppColors.fontColor,
           letterSpacing: -0.4,
@@ -470,9 +496,12 @@ class _StagingColorPaletteScreenState extends State<StagingColorPaletteScreen> {
 
   Widget _buildList() {
     return ListView.separated(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      padding: EdgeInsets.symmetric(
+        horizontal: r.wp(context, 12),
+        vertical: r.hp(context, 4),
+      ),
       itemCount: palettes.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 0),
+      separatorBuilder: (_, __) => r.verticalSpace(context, 0),
       itemBuilder: (context, index) {
         final palette = palettes[index];
         final isSelected = _selectedPalette == palette.name + index.toString();
@@ -494,28 +523,29 @@ class _StagingColorPaletteScreenState extends State<StagingColorPaletteScreen> {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
         curve: Curves.easeInOut,
-        margin: const EdgeInsets.symmetric(vertical: 3),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        margin: EdgeInsets.symmetric(vertical: r.hp(context, 3)),
+        padding: EdgeInsets.symmetric(
+          horizontal: r.wp(context, 14),
+          vertical: r.hp(context, 10),
+        ),
         decoration: BoxDecoration(
           color: isSelected ? const Color(0xFFEDE8E0) : const Color(0xFFFAF8F5),
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(r.radius(context, 14)),
           border: Border.all(
-            color:
-                isSelected
-                    ? const Color(0xFFE8873A).withOpacity(0.6)
-                    : const Color(0xFFE8E2D8),
+            color: isSelected
+                ? const Color(0xFFE8873A).withOpacity(0.6)
+                : const Color(0xFFE8E2D8),
             width: isSelected ? 1.5 : 1,
           ),
-          boxShadow:
-              isSelected
-                  ? [
-                    BoxShadow(
-                      color: const Color(0xFFE8873A).withOpacity(0.12),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ]
-                  : [],
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: const Color(0xFFE8873A).withOpacity(0.12),
+                    blurRadius: r.wp(context, 8),
+                    offset: Offset(0, r.hp(context, 2)),
+                  ),
+                ]
+              : [],
         ),
         child: Row(
           children: [
@@ -524,14 +554,14 @@ class _StagingColorPaletteScreenState extends State<StagingColorPaletteScreen> {
               child: Text(
                 palette.name,
                 style: TextStyle(
-                  fontSize: 14.5,
+                  fontSize: r.sp(context, 14.5),
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                   color: const Color(0xFF2A2420),
                   letterSpacing: -0.1,
                 ),
               ),
             ),
-            const SizedBox(width: 8),
+            r.horizontalSpace(context, 8),
             // Color swatches / smart icon
             palette.isSmart
                 ? _buildSmartIcon()
@@ -545,9 +575,12 @@ class _StagingColorPaletteScreenState extends State<StagingColorPaletteScreen> {
   // ── Smart Tones AI icon ───────────────────────────────────────────────────
 
   Widget _buildSmartIcon() {
+    final double iconSz = r.wp(context, 42);
+    final double paintSz = r.wp(context, 24);
+
     return Container(
-      width: 42,
-      height: 42,
+      width: iconSz,
+      height: iconSz,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         gradient: const LinearGradient(
@@ -558,8 +591,8 @@ class _StagingColorPaletteScreenState extends State<StagingColorPaletteScreen> {
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.25),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            blurRadius: r.wp(context, 8),
+            offset: Offset(0, r.hp(context, 2)),
           ),
         ],
       ),
@@ -567,7 +600,10 @@ class _StagingColorPaletteScreenState extends State<StagingColorPaletteScreen> {
         alignment: Alignment.center,
         children: [
           // Colourful cube icon approximation using overlapping shapes
-          CustomPaint(size: const Size(24, 24), painter: _CubePainter()),
+          CustomPaint(
+            size: Size(paintSz, paintSz),
+            painter: _CubePainter(),
+          ),
         ],
       ),
     );
@@ -576,9 +612,9 @@ class _StagingColorPaletteScreenState extends State<StagingColorPaletteScreen> {
   // ── Color swatches row ────────────────────────────────────────────────────
 
   Widget _buildSwatches(List<Color> colors) {
-    // Circles overlap by 8 px; lay them right-to-left so left circle is on top
-    const double size = 34.0;
-    const double overlap = 10.0;
+    // Circles overlap; lay them right-to-left so left circle is on top
+    final double size = r.wp(context, 34.0);
+    final double overlap = r.wp(context, 10.0);
 
     final totalWidth = size + (colors.length - 1) * (size - overlap);
 
@@ -610,7 +646,10 @@ class _StagingColorPaletteScreenState extends State<StagingColorPaletteScreen> {
 
   Widget _buildGenerateButton() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      padding: EdgeInsets.symmetric(
+        horizontal: r.wp(context, 20),
+        vertical: r.hp(context, 12),
+      ),
       child: GestureDetector(
         onTap: () async {
           if (isSubscribed == true) {
@@ -635,15 +674,15 @@ class _StagingColorPaletteScreenState extends State<StagingColorPaletteScreen> {
         },
         child: Container(
           width: double.infinity,
-          height: 58,
+          height: r.hp(context, 58),
           decoration: BoxDecoration(
             color: const Color(0xFFE8C9A0),
-            borderRadius: BorderRadius.circular(32),
+            borderRadius: BorderRadius.circular(r.radius(context, 32)),
             boxShadow: [
               BoxShadow(
                 color: const Color(0xFFE8C9A0).withOpacity(0.5),
-                blurRadius: 16,
-                offset: const Offset(0, 6),
+                blurRadius: r.wp(context, 16),
+                offset: Offset(0, r.hp(context, 6)),
               ),
             ],
           ),
@@ -677,12 +716,12 @@ class _ColorCircle extends StatelessWidget {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: color,
-        border: Border.all(color: Colors.white, width: 1.8),
+        border: Border.all(color: Colors.white, width: r.wp(context, 1.8)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.10),
-            blurRadius: 3,
-            offset: const Offset(0, 1),
+            blurRadius: r.wp(context, 3),
+            offset: Offset(0, r.hp(context, 1)),
           ),
         ],
       ),
@@ -697,35 +736,33 @@ class _CubePainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final cx = size.width / 2;
     final cy = size.height / 2;
+    final scale = size.width / 24.0;
 
     // Top face – purple/pink
-    final topPath =
-        Path()
-          ..moveTo(cx, cy - 8)
-          ..lineTo(cx + 9, cy - 3)
-          ..lineTo(cx, cy + 2)
-          ..lineTo(cx - 9, cy - 3)
-          ..close();
+    final topPath = Path()
+      ..moveTo(cx, cy - 8 * scale)
+      ..lineTo(cx + 9 * scale, cy - 3 * scale)
+      ..lineTo(cx, cy + 2 * scale)
+      ..lineTo(cx - 9 * scale, cy - 3 * scale)
+      ..close();
     canvas.drawPath(topPath, Paint()..color = const Color(0xFFCC44CC));
 
     // Left face – blue
-    final leftPath =
-        Path()
-          ..moveTo(cx - 9, cy - 3)
-          ..lineTo(cx, cy + 2)
-          ..lineTo(cx, cy + 10)
-          ..lineTo(cx - 9, cy + 5)
-          ..close();
+    final leftPath = Path()
+      ..moveTo(cx - 9 * scale, cy - 3 * scale)
+      ..lineTo(cx, cy + 2 * scale)
+      ..lineTo(cx, cy + 10 * scale)
+      ..lineTo(cx - 9 * scale, cy + 5 * scale)
+      ..close();
     canvas.drawPath(leftPath, Paint()..color = const Color(0xFF4488FF));
 
     // Right face – orange/yellow
-    final rightPath =
-        Path()
-          ..moveTo(cx, cy + 2)
-          ..lineTo(cx + 9, cy - 3)
-          ..lineTo(cx + 9, cy + 5)
-          ..lineTo(cx, cy + 10)
-          ..close();
+    final rightPath = Path()
+      ..moveTo(cx, cy + 2 * scale)
+      ..lineTo(cx + 9 * scale, cy - 3 * scale)
+      ..lineTo(cx + 9 * scale, cy + 5 * scale)
+      ..lineTo(cx, cy + 10 * scale)
+      ..close();
     canvas.drawPath(rightPath, Paint()..color = const Color(0xFFFF8833));
   }
 

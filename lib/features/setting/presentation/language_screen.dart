@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:ai_interior/utils/responsive_utils.dart';
 
 const _languages = [
   'English',
@@ -46,37 +47,37 @@ class _LanguageScreenState extends State<LanguageScreen> {
           // ── Navigation header ──────────────────────────────────────────
           _Header(),
 
-          const SizedBox(height: 16),
+          r.verticalSpace(context, 16),
 
           // ── White card list ────────────────────────────────────────────
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: EdgeInsets.symmetric(horizontal: r.wp(context, 16)),
               child: Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(r.wp(context, 16)),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withOpacity(0.04),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
+                      blurRadius: r.wp(context, 8),
+                      offset: Offset(0, r.hp(context, 2)),
                     ),
                   ],
                 ),
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(r.wp(context, 16)),
                   child: ListView.separated(
                     physics: const BouncingScrollPhysics(),
                     padding: EdgeInsets.zero,
                     itemCount: _languages.length,
                     separatorBuilder:
-                        (_, __) => const Divider(
+                        (_, __) => Divider(
                           height: 1,
                           thickness: 0.6,
-                          color: Color(0xFFE0DADA),
-                          indent: 16,
-                          endIndent: 16,
+                          color: const Color(0xFFE0DADA),
+                          indent: r.wp(context, 16),
+                          endIndent: r.wp(context, 16),
                         ),
                     itemBuilder: (context, index) {
                       final lang = _languages[index];
@@ -96,17 +97,17 @@ class _LanguageScreenState extends State<LanguageScreen> {
             ),
           ),
 
-          SizedBox(height: bottom + 12),
+          SizedBox(height: bottom + r.hp(context, 12)),
 
           // ── Home indicator ─────────────────────────────────────────────
           Center(
             child: Container(
-              width: 130,
-              height: 5,
-              margin: const EdgeInsets.only(bottom: 8),
+              width: r.wp(context, 130),
+              height: r.hp(context, 5),
+              margin: EdgeInsets.only(bottom: r.hp(context, 8)),
               decoration: BoxDecoration(
                 color: Colors.black.withOpacity(0.18),
-                borderRadius: BorderRadius.circular(3),
+                borderRadius: BorderRadius.circular(r.wp(context, 3)),
               ),
             ),
           ),
@@ -121,7 +122,10 @@ class _Header extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      padding: EdgeInsets.symmetric(
+        horizontal: r.wp(context, 16),
+        vertical: r.hp(context, 6),
+      ),
       child: Stack(
         alignment: Alignment.center,
         children: [
@@ -131,24 +135,27 @@ class _Header extends StatelessWidget {
             child: GestureDetector(
               onTap: () => Navigator.maybePop(context),
               behavior: HitTestBehavior.opaque,
-              child: const Padding(
-                padding: EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                  vertical: r.hp(context, 8),
+                  horizontal: r.wp(context, 4),
+                ),
                 child: Icon(
                   Icons.chevron_left_rounded,
-                  size: 30,
-                  color: Color(0xFF2C2C2C),
+                  size: r.adaptiveValue(context, mobile: 30, tablet: 38),
+                  color: const Color(0xFF2C2C2C),
                 ),
               ),
             ),
           ),
 
           // Centered title
-          const Text(
+          Text(
             'Language',
             style: TextStyle(
-              fontSize: 26,
+              fontSize: r.sp(context, 26),
               fontWeight: FontWeight.w500,
-              color: Color(0xFF1C1C1C),
+              color: const Color(0xFF1C1C1C),
               fontFamily: 'Georgia',
               letterSpacing: -0.3,
             ),
@@ -181,16 +188,18 @@ class _LanguageRow extends StatelessWidget {
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
       child: Container(
-        // Slightly tinted background when selected
         color: Colors.transparent,
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+        padding: EdgeInsets.symmetric(
+          horizontal: r.wp(context, 20),
+          vertical: r.hp(context, 18),
+        ),
         child: Row(
           children: [
             Expanded(
               child: Text(
                 language,
                 style: TextStyle(
-                  fontSize: 17,
+                  fontSize: r.sp(context, 17),
                   fontWeight: isSelected ? FontWeight.w500 : FontWeight.w400,
                   color: const Color(0xFF1C1C1C),
                   letterSpacing: -0.1,
@@ -199,10 +208,10 @@ class _LanguageRow extends StatelessWidget {
               ),
             ),
             if (isSelected)
-              const Icon(
+              Icon(
                 Icons.check_rounded,
-                size: 22,
-                color: Color(0xFF1C1C1C),
+                size: r.wp(context, 22),
+                color: const Color(0xFF1C1C1C),
               ),
           ],
         ),

@@ -5,6 +5,7 @@ import 'package:ai_interior/widgets/custom_imageview.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:ai_interior/utils/responsive_utils.dart';
 
 import '../../home/presentation/home_screen.dart';
 import '../../main/presentaion/main_screen.dart';
@@ -59,19 +60,19 @@ class _StagingDesignScreenState extends State<StagingDesignScreen> {
           Expanded(
             child: SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.only(bottom: 24),
+              padding: EdgeInsets.only(bottom: r.hp(context, 24)),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 22),
+                  r.verticalSpace(context, 22),
                   _buildSectionTitle('Upload a photo of your room'),
-                  const SizedBox(height: 14),
+                  r.verticalSpace(context, 14),
                   _buildUploadCard(),
-                  const SizedBox(height: 20),
+                  r.verticalSpace(context, 20),
                   _buildOrDivider(),
-                  const SizedBox(height: 20),
+                  r.verticalSpace(context, 20),
                   _buildSectionTitle('Choose from Template'),
-                  const SizedBox(height: 14),
+                  r.verticalSpace(context, 14),
                   _buildTemplateGrid(),
                 ],
               ),
@@ -80,7 +81,7 @@ class _StagingDesignScreenState extends State<StagingDesignScreen> {
 
           // ── Next button ─────────────────────────────────────────────
           _buildNextButton(),
-          SizedBox(height: MediaQuery.of(context).padding.bottom + 8),
+          SizedBox(height: MediaQuery.of(context).padding.bottom + r.hp(context, 8)),
         ],
       ),
     );
@@ -90,44 +91,60 @@ class _StagingDesignScreenState extends State<StagingDesignScreen> {
   // AppBar
   // ─────────────────────────────────────────────
   Widget _buildAppBar() {
+    final titleFontSize = r.sp(context, 36);
+    final backBtnSize = r.adaptiveValue(context, mobile: 36, tablet: 48);
+    final backIconSize = r.adaptiveValue(context, mobile: 20, tablet: 28);
+
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+      padding: EdgeInsets.fromLTRB(
+        r.wp(context, 16),
+        r.hp(context, 8),
+        r.wp(context, 16),
+        0,
+      ),
       child: Row(
         children: [
           GestureDetector(
             onTap: () {
               Navigator.of(context).pop();
             },
-            child: const SizedBox(
-              width: 36,
-              height: 36,
+            child: SizedBox(
+              width: backBtnSize,
+              height: backBtnSize,
               child: Icon(
                 Icons.arrow_back_ios_rounded,
-                size: 20,
-                color: Color(0xFF1A1A1A),
+                size: backIconSize,
+                color: const Color(0xFF1A1A1A),
               ),
             ),
           ),
-          const Expanded(
+          Expanded(
             child: Center(
-              child: Text(
-                'Smart Staging',
-                style: TextStyle(
-                  fontSize: 36,
-                  fontFamily: 'Georgia',
-                  fontWeight: FontWeight.w500,
-                  color: Color(0xFF1A1A1A),
-                  letterSpacing: -0.3,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  'Smart Staging',
+                  maxLines: 1,
+                  style: TextStyle(
+                    fontSize: titleFontSize,
+                    fontFamily: 'Georgia',
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF1A1A1A),
+                    letterSpacing: -0.3,
+                  ),
                 ),
               ),
             ),
           ),
           // Coin badge
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            padding: EdgeInsets.symmetric(
+              horizontal: r.wp(context, 10),
+              vertical: r.hp(context, 5),
+            ),
             decoration: BoxDecoration(
               color: const Color(0xFFFFF3E8),
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(r.radius(context, 20)),
               border: Border.all(
                 color: const Color(0xFFE8873A).withOpacity(0.3),
               ),
@@ -139,21 +156,21 @@ class _StagingDesignScreenState extends State<StagingDesignScreen> {
                   valueListenable: creditsNotifier,
                   builder: (context, credits, _) {
                     return Text(
-                      creditsNotifier.value.toString(),
+                      credits,
                       style: TextStyle(
-                        fontSize: isIPad(context) ? 50 : 16,
+                        fontSize: r.sp(context, 14),
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFF1A1A1A),
+                        color: const Color(0xFF1A1A1A),
                         letterSpacing: -0.2,
                       ),
                     );
                   },
                 ),
-                const SizedBox(width: 4),
+                r.horizontalSpace(context, 4),
                 CustomImageview(
                   imagePath: "assets/images/credit.png",
-                  height: 25,
-                  width: 25,
+                  height: r.wp(context, 25),
+                  width: r.wp(context, 25),
                   fit: BoxFit.contain,
                 ),
               ],
@@ -166,27 +183,27 @@ class _StagingDesignScreenState extends State<StagingDesignScreen> {
 
   Widget _buildCoinBadge() {
     return Container(
-      height: 34,
-      padding: const EdgeInsets.symmetric(horizontal: 10),
+      height: r.hp(context, 34),
+      padding: EdgeInsets.symmetric(horizontal: r.wp(context, 10)),
       decoration: BoxDecoration(
         color: const Color(0xFFF5A05A),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(r.radius(context, 20)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text(
+          Text(
             '200',
             style: TextStyle(
               color: Colors.white,
-              fontSize: 15,
+              fontSize: r.sp(context, 15),
               fontWeight: FontWeight.w700,
             ),
           ),
-          const SizedBox(width: 5),
+          r.horizontalSpace(context, 5),
           Container(
-            width: 20,
-            height: 20,
+            width: r.wp(context, 20),
+            height: r.wp(context, 20),
             decoration: const BoxDecoration(
               color: Color(0xFFD4721A),
               shape: BoxShape.circle,
@@ -207,10 +224,13 @@ class _StagingDesignScreenState extends State<StagingDesignScreen> {
   // ─────────────────────────────────────────────
   Widget _buildProgressBar() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: EdgeInsets.symmetric(
+        horizontal: r.wp(context, 10),
+        vertical: r.hp(context, 6),
+      ),
       child: LinearProgressIndicator(
         value: 0.25,
-        minHeight: 3,
+        minHeight: r.hp(context, 3),
         backgroundColor: const Color(0xFFE0DDD8),
         valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF3A7D7B)),
       ),
@@ -222,13 +242,13 @@ class _StagingDesignScreenState extends State<StagingDesignScreen> {
   // ─────────────────────────────────────────────
   Widget _buildSectionTitle(String text) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: EdgeInsets.symmetric(horizontal: r.wp(context, 20)),
       child: Text(
         text,
-        style: const TextStyle(
-          fontSize: 18,
+        style: TextStyle(
+          fontSize: r.sp(context, 18),
           fontWeight: FontWeight.w500,
-          color: Color(0xFF1C1C1C),
+          color: const Color(0xFF1C1C1C),
           letterSpacing: -0.2,
         ),
       ),
@@ -240,12 +260,12 @@ class _StagingDesignScreenState extends State<StagingDesignScreen> {
   // ─────────────────────────────────────────────
   Widget _buildUploadCard() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: EdgeInsets.symmetric(horizontal: r.wp(context, 20)),
       child: Container(
         width: double.infinity,
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(r.radius(context, 20)),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.05),
@@ -262,14 +282,13 @@ class _StagingDesignScreenState extends State<StagingDesignScreen> {
                 picked != null
                     ? CustomImageview(imagePath: picked!.path)
                     : ClipRRect(
-                      borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(20),
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(r.radius(context, 20)),
                       ),
                       child: Container(
                         width: double.infinity,
-                        height: 330,
+                        height: r.hp(context, 330),
                         color: const Color(0xFFF8F6F2),
-
                         child: CustomImageview(
                           imagePath: "assets/images/staging_home.png",
                           fit: BoxFit.contain,
@@ -278,15 +297,15 @@ class _StagingDesignScreenState extends State<StagingDesignScreen> {
                     ),
 
                 Positioned(
-                  top: 14,
-                  right: 14,
+                  top: r.hp(context, 14),
+                  right: r.wp(context, 14),
                   child: GestureDetector(
                     onTap: () {
                       Navigator.of(context).pushNamed(SnapTipsScreen.routeName);
                     },
                     child: Container(
-                      width: 32,
-                      height: 32,
+                      width: r.wp(context, 32),
+                      height: r.wp(context, 32),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         shape: BoxShape.circle,
@@ -308,34 +327,34 @@ class _StagingDesignScreenState extends State<StagingDesignScreen> {
 
             // Add Photo button
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 18),
+              padding: EdgeInsets.symmetric(vertical: r.hp(context, 18)),
               child: GestureDetector(
                 onTap: () => showMediaSourcePicker(
                   context,
                   onFilePicked: (file) => setState(() => picked = file),
                 ),
                 child: Container(
-                  height: 48,
-                  padding: const EdgeInsets.symmetric(horizontal: 32),
+                  height: r.hp(context, 48),
+                  padding: EdgeInsets.symmetric(horizontal: r.wp(context, 32)),
                   decoration: BoxDecoration(
                     color: const Color(0xFFF2E8DA),
-                    borderRadius: BorderRadius.circular(30),
+                    borderRadius: BorderRadius.circular(r.radius(context, 30)),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
-                    children: const [
+                    children: [
                       Icon(
                         Icons.add_a_photo_outlined,
-                        size: 20,
-                        color: Color(0xFF5A4A3A),
+                        size: r.iconSize(context, mobile: 20, tablet: 28),
+                        color: const Color(0xFF5A4A3A),
                       ),
-                      SizedBox(width: 8),
+                      r.horizontalSpace(context, 8),
                       Text(
                         'Add Photo',
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: r.sp(context, 16),
                           fontWeight: FontWeight.w600,
-                          color: Color(0xFF5A4A3A),
+                          color: const Color(0xFF5A4A3A),
                         ),
                       ),
                     ],
@@ -373,18 +392,18 @@ class _StagingDesignScreenState extends State<StagingDesignScreen> {
   // ─────────────────────────────────────────────
   Widget _buildOrDivider() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: EdgeInsets.symmetric(horizontal: r.wp(context, 20)),
       child: Row(
         children: [
           Expanded(child: Container(height: 1, color: const Color(0xFFD8D4CE))),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 14),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: r.wp(context, 14)),
             child: Text(
               'OR',
               style: TextStyle(
-                fontSize: 12,
+                fontSize: r.sp(context, 12),
                 fontWeight: FontWeight.w600,
-                color: Color(0xFFAEA9A3),
+                color: const Color(0xFFAEA9A3),
                 letterSpacing: 1.2,
               ),
             ),
@@ -420,21 +439,21 @@ class _StagingDesignScreenState extends State<StagingDesignScreen> {
     ];
 
     return SizedBox(
-      height: 128,
+      height: r.hp(context, 128),
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 20),
+        padding: EdgeInsets.symmetric(horizontal: r.wp(context, 20)),
         itemCount: 8,
-        separatorBuilder: (_, __) => const SizedBox(width: 12),
+        separatorBuilder: (_, __) => SizedBox(width: r.wp(context, 12)),
         itemBuilder: (context, i) {
           final selected = _selectedTemplate == i;
           return GestureDetector(
             onTap: () => setState(() => _selectedTemplate = i),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
-              width: 108,
+              width: r.wp(context, 108),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(r.radius(context, 16)),
                 border: Border.all(
                   color:
                       selected ? const Color(0xFF3A7D7B) : Colors.transparent,
@@ -449,7 +468,7 @@ class _StagingDesignScreenState extends State<StagingDesignScreen> {
                 ],
               ),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(r.radius(context, 14)),
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
@@ -459,11 +478,11 @@ class _StagingDesignScreenState extends State<StagingDesignScreen> {
                     ),
                     if (selected)
                       Positioned(
-                        top: 8,
-                        right: 8,
+                        top: r.hp(context, 8),
+                        right: r.wp(context, 8),
                         child: Container(
-                          width: 22,
-                          height: 22,
+                          width: r.wp(context, 22),
+                          height: r.wp(context, 22),
                           decoration: const BoxDecoration(
                             color: Color(0xFF3A7D7B),
                             shape: BoxShape.circle,
@@ -505,7 +524,7 @@ class _StagingDesignScreenState extends State<StagingDesignScreen> {
   // ─────────────────────────────────────────────
   Widget _buildNextButton() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
+      padding: EdgeInsets.symmetric(horizontal: r.wp(context, 20)),
       child: GestureDetector(
         onTap: () {
           Navigator.of(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:ai_interior/utils/responsive_utils.dart';
 
 class StagingOutputScreen extends StatefulWidget {
   const StagingOutputScreen({super.key});
@@ -15,7 +16,6 @@ class _StagingOutputScreenState extends State<StagingOutputScreen> {
 
   @override
   void didChangeDependencies() {
-    // TODO: implement didChangeDependencies
     super.didChangeDependencies();
 
     data = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>;
@@ -40,7 +40,12 @@ class _StagingOutputScreenState extends State<StagingOutputScreen> {
             Expanded(
               child: SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                padding: EdgeInsets.fromLTRB(
+                  r.wp(context, 16),
+                  r.hp(context, 16),
+                  r.wp(context, 16),
+                  0,
+                ),
                 child: Column(
                   children: [
                     // Building Type
@@ -50,33 +55,33 @@ class _StagingOutputScreenState extends State<StagingOutputScreen> {
                       value: data["spaceType"].toString().toUpperCase(),
                       trailing: null,
                     ),
-                    const SizedBox(height: 10),
+                    r.verticalSpace(context, 10),
 
                     // Design Aesthetic
                     _InfoTile(
-                      iconWidget: const Icon(
+                      iconWidget: Icon(
                         Icons.style_outlined,
-                        size: 26,
-                        color: Color(0xFF5A5550),
+                        size: r.wp(context, 26),
+                        color: const Color(0xFF5A5550),
                       ),
                       label: 'Design Aesthetic',
                       value: data["designAsth"].toString().toUpperCase(),
                       trailing: null,
                     ),
-                    const SizedBox(height: 10),
+                    r.verticalSpace(context, 10),
 
                     // Color Palette
                     _InfoTile(
-                      iconWidget: const Icon(
+                      iconWidget: Icon(
                         Icons.palette_outlined,
-                        size: 26,
-                        color: Color(0xFF5A5550),
+                        size: r.wp(context, 26),
+                        color: const Color(0xFF5A5550),
                       ),
                       label: 'Color Palette',
                       value: data["color"].toString().toUpperCase(),
                       trailing: const _ColorSwatches(),
                     ),
-                    const SizedBox(height: 16),
+                    r.verticalSpace(context, 16),
                   ],
                 ),
               ),
@@ -103,7 +108,7 @@ class _PhotoSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 300,
+      height: r.hp(context, 300),
       width: double.infinity,
       child: Stack(
         fit: StackFit.expand,
@@ -115,10 +120,10 @@ class _PhotoSection extends StatelessWidget {
             errorBuilder:
                 (_, __, ___) => Container(
                   color: const Color(0xFF8AAAC8),
-                  child: const Center(
+                  child: Center(
                     child: Icon(
                       Icons.location_city_outlined,
-                      size: 60,
+                      size: r.wp(context, 60),
                       color: Colors.white54,
                     ),
                   ),
@@ -130,7 +135,7 @@ class _PhotoSection extends StatelessWidget {
             top: 0,
             left: 0,
             right: 0,
-            height: topPad + 64,
+            height: topPad + r.hp(context, 64),
             child: DecoratedBox(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
@@ -144,13 +149,13 @@ class _PhotoSection extends StatelessWidget {
 
           // Back button
           Positioned(
-            top: topPad + 10,
-            left: 16,
+            top: topPad + r.hp(context, 10),
+            left: r.wp(context, 16),
             child: GestureDetector(
               onTap: () => Navigator.maybePop(context),
-              child: const Icon(
+              child: Icon(
                 Icons.chevron_left_rounded,
-                size: 32,
+                size: r.wp(context, 32),
                 color: Colors.white,
               ),
             ),
@@ -180,15 +185,18 @@ class _InfoTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      padding: EdgeInsets.symmetric(
+        horizontal: r.wp(context, 14),
+        vertical: r.hp(context, 14),
+      ),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(r.wp(context, 16)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            blurRadius: r.wp(context, 8),
+            offset: Offset(0, r.hp(context, 2)),
           ),
         ],
       ),
@@ -196,15 +204,15 @@ class _InfoTile extends StatelessWidget {
         children: [
           // Icon container
           Container(
-            width: 46,
-            height: 46,
+            width: r.wp(context, 46),
+            height: r.wp(context, 46),
             decoration: BoxDecoration(
               color: const Color(0xFFF2EFEA),
-              borderRadius: BorderRadius.circular(11),
+              borderRadius: BorderRadius.circular(r.wp(context, 11)),
             ),
             child: Center(child: iconWidget),
           ),
-          const SizedBox(width: 13),
+          SizedBox(width: r.wp(context, 13)),
 
           // Label + value
           Expanded(
@@ -213,20 +221,20 @@ class _InfoTile extends StatelessWidget {
               children: [
                 Text(
                   label,
-                  style: const TextStyle(
-                    fontSize: 12.5,
+                  style: TextStyle(
+                    fontSize: r.sp(context, 12.5),
                     fontWeight: FontWeight.w500,
-                    color: Color(0xFF9C9690),
+                    color: const Color(0xFF9C9690),
                     height: 1.2,
                   ),
                 ),
-                const SizedBox(height: 3),
+                SizedBox(height: r.hp(context, 3)),
                 Text(
                   value,
-                  style: const TextStyle(
-                    fontSize: 17,
+                  style: TextStyle(
+                    fontSize: r.sp(context, 17),
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF1A1816),
+                    color: const Color(0xFF1A1816),
                     letterSpacing: -0.2,
                   ),
                 ),
@@ -257,8 +265,8 @@ class _ColorSwatches extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const size = 28.0;
-    const overlap = 10.0;
+    final double size = r.adaptiveValue(context, mobile: 28, tablet: 36);
+    final double overlap = r.adaptiveValue(context, mobile: 10, tablet: 12);
 
     return SizedBox(
       width: size + (_colors.length - 1) * (size - overlap),
@@ -274,12 +282,12 @@ class _ColorSwatches extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: _colors[i],
                   shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 2),
+                  border: Border.all(color: Colors.white, width: r.wp(context, 2)),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withOpacity(0.10),
-                      blurRadius: 3,
-                      offset: const Offset(0, 1),
+                      blurRadius: r.wp(context, 3),
+                      offset: Offset(0, r.hp(context, 1)),
                     ),
                   ],
                 ),
@@ -299,8 +307,9 @@ class _BuildingIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final double size = r.adaptiveValue(context, mobile: 30, tablet: 40);
     return CustomPaint(
-      size: const Size(30, 30),
+      size: Size(size, size),
       painter: _BuildingIconPainter(),
     );
   }
@@ -414,10 +423,10 @@ class _ApplyButtonState extends State<_ApplyButton> {
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.fromLTRB(
-        20,
-        8,
-        20,
-        widget.botPad > 0 ? widget.botPad : 24,
+        r.wp(context, 20),
+        r.hp(context, 8),
+        r.wp(context, 20),
+        widget.botPad > 0 ? widget.botPad : r.hp(context, 24),
       ),
       child: GestureDetector(
         onTapDown: (_) => setState(() => _pressed = true),
@@ -429,25 +438,25 @@ class _ApplyButtonState extends State<_ApplyButton> {
           duration: const Duration(milliseconds: 80),
           child: Container(
             width: double.infinity,
-            height: 60,
+            height: r.adaptiveValue(context, mobile: 60, tablet: 70),
             decoration: BoxDecoration(
               color: const Color(0xFFDEB887),
-              borderRadius: BorderRadius.circular(34),
+              borderRadius: BorderRadius.circular(r.wp(context, 34)),
               boxShadow: [
                 BoxShadow(
                   color: const Color(0xFFDEB887).withOpacity(0.40),
-                  blurRadius: 18,
-                  offset: const Offset(0, 7),
+                  blurRadius: r.wp(context, 18),
+                  offset: Offset(0, r.hp(context, 7)),
                 ),
               ],
             ),
             alignment: Alignment.center,
-            child: const Text(
+            child: Text(
               'Apply Style',
               style: TextStyle(
-                fontSize: 19,
+                fontSize: r.sp(context, 19),
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF4A3218),
+                color: const Color(0xFF4A3218),
                 letterSpacing: 0.2,
               ),
             ),

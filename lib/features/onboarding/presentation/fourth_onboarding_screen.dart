@@ -4,6 +4,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:ai_interior/utils/responsive_utils.dart';
 
 import '../../../bloc/create_user/create_user_bloc.dart';
 import '../../../services/device_indentification_service.dart';
@@ -41,6 +42,119 @@ class _OnboardingFourScreenState extends State<OnboardingFourScreen> {
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
     final size = MediaQuery.of(context).size;
     final topPadding = MediaQuery.of(context).padding.top;
+    final isLandscape = r.isLandscape(context);
+
+    final imageGridWidget = Stack(
+      children: [
+        // Main content
+        Padding(
+          padding: EdgeInsets.only(
+            top: topPadding + 12,
+            left: 16,
+            right: 16,
+          ),
+          child: _ImageGrid(),
+        ),
+
+        // Back button (top-right)
+        Positioned(
+          top: topPadding + 16,
+          right: r.adaptiveValue(context, mobile: 20, tablet: 32),
+          child: GestureDetector(
+            onTap: () {
+              setIsOnboardingDone();
+              Navigator.of(context).pushNamedAndRemoveUntil(
+                MainScreen.routeName,
+                (route) => false,
+              );
+            },
+            child: Container(
+              width: r.adaptiveValue(context, mobile: 32, tablet: 42),
+              height: r.adaptiveValue(context, mobile: 32, tablet: 42),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.5),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.close,
+                color: Colors.white,
+                size: r.adaptiveValue(context, mobile: 18, tablet: 24),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+
+    final detailsContent = Padding(
+      padding: EdgeInsets.symmetric(
+        horizontal: r.adaptiveValue(context, mobile: 24, tablet: 48),
+        vertical: isLandscape ? 12 : 24,
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          if (!isLandscape) SizedBox(height: r.hp(context, 16)),
+
+          // Title
+          Text(
+            'Upgrade Your Vision',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontFamily: 'Georgia',
+              fontSize: r.sp(context, 32),
+              fontWeight: FontWeight.w400,
+              color: const Color(0xFF2C2C2C),
+              height: 1.15,
+              letterSpacing: -0.3,
+            ),
+          ),
+
+          SizedBox(height: r.hp(context, 20)),
+
+          // Subtitle with inline auto-renew icon
+          RichText(
+            textAlign: TextAlign.center,
+            text: TextSpan(
+              style: TextStyle(
+                fontFamily: 'Georgia',
+                fontSize: r.sp(context, 15),
+                fontWeight: FontWeight.w400,
+                color: const Color(0xFF7A8080),
+                height: 1.55,
+              ),
+              children: [
+                const TextSpan(
+                  text:
+                      'Go beyond the basics — unlimited creations,\nexclusive styles, & more for just \$3.99/week,\n',
+                ),
+                WidgetSpan(
+                  alignment: PlaceholderAlignment.middle,
+                  child: _AutoRenewIcon(),
+                ),
+                const TextSpan(text: ' auto renews, cancel anytime.'),
+              ],
+            ),
+          ),
+
+          if (isLandscape) SizedBox(height: r.hp(context, 24)) else const Spacer(),
+
+          // Continue button
+          _ContinueButton(
+            onTap: () {
+              _createUserBloc.add(
+                CreateUserDataEvent(
+                  login: {"uuid": deviceId.toString()},
+                ),
+              );
+            },
+          ),
+
+          if (!isLandscape) SizedBox(height: r.hp(context, 16)),
+        ],
+      ),
+    );
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F0EA),
@@ -57,122 +171,39 @@ class _OnboardingFourScreenState extends State<OnboardingFourScreen> {
           } else if (state is CreateUserExceptionState ||
               state is CreateUserFailureState) {}
         },
-
         builder: (context, state) {
-          return Column(
-            children: [
-              SizedBox(
-                height: size.height * 0.615,
-                child: Stack(
+          return isLandscape
+              ? Row(
                   children: [
-                    // Main content
-                    Padding(
-                      padding: EdgeInsets.only(
-                        top: topPadding + 12,
-                        left: 16,
-                        right: 16,
-                      ),
-                      child: _ImageGrid(),
+                    Expanded(
+                      flex: 50,
+                      child: imageGridWidget,
                     ),
-
-                    // Back button (top-right)
-                    Positioned(
-                      top: topPadding + 16,
-                      right: 30,
-                      child: GestureDetector(
-                        onTap: () {
-                          setIsOnboardingDone();
-                          Navigator.of(context).pushNamedAndRemoveUntil(
-                            MainScreen.routeName,
-                            (route) => false,
-                          );
-                        },
-                        child: Container(
-                          width: 30,
-                          height: 30,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.5),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.close,
-                            color: Colors.white,
-                            size: 18,
-                          ),
+                    Expanded(
+                      flex: 50,
+                      child: SafeArea(
+                        left: false,
+                        child: SingleChildScrollView(
+                          child: detailsContent,
                         ),
                       ),
                     ),
                   ],
-                ),
-              ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 28),
-                  child: Column(
-                    children: [
-                      const SizedBox(height: 28),
-
-                      // Title
-                      const Text(
-                        'Upgrade Your Vision',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontFamily: 'Georgia',
-                          fontSize: 36,
-                          fontWeight: FontWeight.w400,
-                          color: Color(0xFF2C2C2C),
-                          height: 1.15,
-                          letterSpacing: -0.3,
-                        ),
+                )
+              : Column(
+                  children: [
+                    SizedBox(
+                      height: size.height * 0.58,
+                      child: imageGridWidget,
+                    ),
+                    Expanded(
+                      child: Container(
+                        color: const Color(0xFFF5F0EA),
+                        child: detailsContent,
                       ),
-
-                      const SizedBox(height: 30),
-
-                      // Subtitle with inline auto-renew icon
-                      RichText(
-                        textAlign: TextAlign.center,
-                        text: const TextSpan(
-                          style: TextStyle(
-                            fontFamily: 'Georgia',
-                            fontSize: 16,
-                            fontWeight: FontWeight.w400,
-                            color: Color(0xFF7A8080),
-                            height: 1.55,
-                          ),
-                          children: [
-                            TextSpan(
-                              text:
-                                  'Go beyond the basics — unlimited creations,\nexclusive styles, & more for just \$3.99/week,\n',
-                            ),
-                            WidgetSpan(
-                              alignment: PlaceholderAlignment.middle,
-                              child: _AutoRenewIcon(),
-                            ),
-                            TextSpan(text: ' auto renews, cancel anytime.'),
-                          ],
-                        ),
-                      ),
-
-                      const Spacer(),
-
-                      // Continue button
-                      _ContinueButton(
-                        onTap: () {
-                          _createUserBloc.add(
-                            CreateUserDataEvent(
-                              login: {"uuid": deviceId.toString()},
-                            ),
-                          );
-                        },
-                      ),
-
-                      const SizedBox(height: 30),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          );
+                    ),
+                  ],
+                );
         },
       ),
     );
@@ -285,26 +316,30 @@ class _ContinueButton extends StatelessWidget {
       onTap: onTap,
       child: Container(
         width: double.infinity,
-        height: 60,
+        height: r.adaptiveValue(context, mobile: 56, tablet: 64),
         decoration: BoxDecoration(
           color: const Color(0xFFD9B48C),
           borderRadius: BorderRadius.circular(50),
         ),
-        child: const Row(
+        child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
               'Continue',
               style: TextStyle(
                 fontFamily: 'Georgia',
-                fontSize: 17,
+                fontSize: r.sp(context, 17),
                 fontWeight: FontWeight.w400,
-                color: Color(0xFF3C3228),
+                color: const Color(0xFF3C3228),
                 letterSpacing: 0.3,
               ),
             ),
-            SizedBox(width: 10),
-            Icon(Icons.chevron_right, color: Color(0xFF3C3228), size: 22),
+            SizedBox(width: r.wp(context, 10)),
+            Icon(
+              Icons.chevron_right,
+              color: const Color(0xFF3C3228),
+              size: r.adaptiveValue(context, mobile: 22, tablet: 28),
+            ),
           ],
         ),
       ),
@@ -417,13 +452,16 @@ class _AnimatedImageColumn extends StatelessWidget {
     return ListView.builder(
       controller: controller,
       physics: const NeverScrollableScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 24),
+      padding: EdgeInsets.symmetric(
+        horizontal: r.wp(context, 8),
+        vertical: r.hp(context, 24),
+      ),
       itemCount: items.length,
       itemBuilder: (context, index) {
         return Padding(
-          padding: const EdgeInsets.only(bottom: 12),
+          padding: EdgeInsets.only(bottom: r.hp(context, 12)),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(r.radius(context, 18)),
             child: AspectRatio(
               aspectRatio: 0.85,
               child: Image.asset(items[index], fit: BoxFit.cover),

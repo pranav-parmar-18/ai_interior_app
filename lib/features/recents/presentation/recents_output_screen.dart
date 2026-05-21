@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:ai_interior/utils/responsive_utils.dart';
 
 class RecentOutputScreen extends StatefulWidget {
   const RecentOutputScreen({super.key});
@@ -58,17 +59,17 @@ class _RecentOutputScreenState extends State<RecentOutputScreen> {
                 backgroundColor: const Color(0xFFF2EFEA),
                 body:
                     state is PublishRecordLoadingState
-                        ? Center(child: CupertinoActivityIndicator())
+                        ? const Center(child: CupertinoActivityIndicator())
                         : Column(
                           children: [
                             _PhotoSection(topPad: topPad, img: data["image"]),
                             Expanded(
                               child: SingleChildScrollView(
                                 physics: const BouncingScrollPhysics(),
-                                padding: const EdgeInsets.fromLTRB(
-                                  16,
-                                  16,
-                                  16,
+                                padding: EdgeInsets.fromLTRB(
+                                  r.wp(context, 16),
+                                  r.hp(context, 16),
+                                  r.wp(context, 16),
                                   0,
                                 ),
                                 child: Column(
@@ -82,12 +83,12 @@ class _RecentOutputScreenState extends State<RecentOutputScreen> {
                                               .toUpperCase(),
                                       trailing: null,
                                     ),
-                                    const SizedBox(height: 10),
+                                    SizedBox(height: r.hp(context, 10)),
                                     _InfoTile(
-                                      iconWidget: const Icon(
+                                      iconWidget: Icon(
                                         Icons.style_outlined,
-                                        size: 26,
-                                        color: Color(0xFF5A5550),
+                                        size: r.wp(context, 26),
+                                        color: const Color(0xFF5A5550),
                                       ),
                                       label: 'Design Aesthetic',
                                       value:
@@ -96,12 +97,12 @@ class _RecentOutputScreenState extends State<RecentOutputScreen> {
                                               .toUpperCase(),
                                       trailing: null,
                                     ),
-                                    const SizedBox(height: 10),
+                                    SizedBox(height: r.hp(context, 10)),
                                     _InfoTile(
-                                      iconWidget: const Icon(
+                                      iconWidget: Icon(
                                         Icons.palette_outlined,
-                                        size: 26,
-                                        color: Color(0xFF5A5550),
+                                        size: r.wp(context, 26),
+                                        color: const Color(0xFF5A5550),
                                       ),
                                       label: 'Color Palette',
                                       value:
@@ -110,7 +111,7 @@ class _RecentOutputScreenState extends State<RecentOutputScreen> {
                                               .toUpperCase(),
                                       trailing: const _ColorSwatches(),
                                     ),
-                                    const SizedBox(height: 16),
+                                    SizedBox(height: r.hp(context, 16)),
                                   ],
                                 ),
                               ),
@@ -118,7 +119,7 @@ class _RecentOutputScreenState extends State<RecentOutputScreen> {
                           ],
                         ),
                 bottomNavigationBar: SizedBox(
-                  height: 100,
+                  height: r.hp(context, 100),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -128,60 +129,66 @@ class _RecentOutputScreenState extends State<RecentOutputScreen> {
                           _showRegenerateAlert(context);
                         },
                         child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             CustomImageview(
                               imagePath: "assets/images/output_1.png",
-                              height: 45,
-                              width: 45,
+                              height: r.wp(context, 45),
+                              width: r.wp(context, 45),
                             ),
-                            SizedBox(height: 10),
+                            SizedBox(height: r.hp(context, 10)),
                             Text(
                               "Regenerate",
                               style: TextStyle(
-                                fontSize: 12,
+                                fontSize: r.sp(context, 12),
                                 fontWeight: FontWeight.w500,
-                                color: Color.fromRGBO(46, 46, 46, 1),
+                                color: const Color.fromRGBO(46, 46, 46, 1),
                               ),
                             ),
                           ],
                         ),
                       ),
-                      Column(
-                        children: [
-                          CustomImageview(
-                            imagePath: "assets/images/output_2.png",
-                            height: 45,
-                            width: 45,
-                          ),
-                          SizedBox(height: 10),
-                          Text(
-                            "Save",
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                              color: Color.fromRGBO(46, 46, 46, 1),
+                      GestureDetector(
+                        onTap: () {},
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            CustomImageview(
+                              imagePath: "assets/images/output_2.png",
+                              height: r.wp(context, 45),
+                              width: r.wp(context, 45),
                             ),
-                          ),
-                        ],
+                            SizedBox(height: r.hp(context, 10)),
+                            Text(
+                              "Save",
+                              style: TextStyle(
+                                fontSize: r.sp(context, 12),
+                                fontWeight: FontWeight.w500,
+                                color: const Color.fromRGBO(46, 46, 46, 1),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                       GestureDetector(
                         onTap: () {
                           showPublishSheet(context);
                         },
                         child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             CustomImageview(
                               imagePath: "assets/images/output_3.png",
-                              height: 45,
-                              width: 45,
+                              height: r.wp(context, 45),
+                              width: r.wp(context, 45),
                             ),
-                            SizedBox(height: 10),
+                            SizedBox(height: r.hp(context, 10)),
                             Text(
                               "Publish",
                               style: TextStyle(
-                                fontSize: 12,
+                                fontSize: r.sp(context, 12),
                                 fontWeight: FontWeight.w500,
-                                color: Color.fromRGBO(46, 46, 46, 1),
+                                color: const Color.fromRGBO(46, 46, 46, 1),
                               ),
                             ),
                           ],
@@ -192,19 +199,20 @@ class _RecentOutputScreenState extends State<RecentOutputScreen> {
                           Share.share("text");
                         },
                         child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             CustomImageview(
                               imagePath: "assets/images/output_4.png",
-                              height: 45,
-                              width: 45,
+                              height: r.wp(context, 45),
+                              width: r.wp(context, 45),
                             ),
-                            SizedBox(height: 10),
+                            SizedBox(height: r.hp(context, 10)),
                             Text(
                               "Share",
                               style: TextStyle(
-                                fontSize: 12,
+                                fontSize: r.sp(context, 12),
                                 fontWeight: FontWeight.w500,
-                                color: Color.fromRGBO(46, 46, 46, 1),
+                                color: const Color.fromRGBO(46, 46, 46, 1),
                               ),
                             ),
                           ],
@@ -215,19 +223,20 @@ class _RecentOutputScreenState extends State<RecentOutputScreen> {
                           _showDeleteAlert(context);
                         },
                         child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             CustomImageview(
                               imagePath: "assets/images/output_5.png",
-                              height: 45,
-                              width: 45,
+                              height: r.wp(context, 45),
+                              width: r.wp(context, 45),
                             ),
-                            SizedBox(height: 10),
+                            SizedBox(height: r.hp(context, 10)),
                             Text(
                               "Delete",
                               style: TextStyle(
-                                fontSize: 12,
+                                fontSize: r.sp(context, 12),
                                 fontWeight: FontWeight.w500,
-                                color: Color.fromRGBO(46, 46, 46, 1),
+                                color: const Color.fromRGBO(46, 46, 46, 1),
                               ),
                             ),
                           ],
@@ -269,7 +278,6 @@ class _RecentOutputScreenState extends State<RecentOutputScreen> {
               CupertinoDialogAction(
                 isDestructiveAction: true,
                 onPressed: () async {
-
                   Navigator.of(context).pop();
                   SharedPreferences preferences =
                       await SharedPreferences.getInstance();
@@ -282,7 +290,6 @@ class _RecentOutputScreenState extends State<RecentOutputScreen> {
                   };
 
                   debugPrint("Publish Record DataEvent payload: $publishData");
-
                   debugPrint("user_id: $userId");
                   debugPrint("module_id: 1");
                   debugPrint("id: ${data["id"]}");
@@ -326,8 +333,14 @@ class _RecentOutputScreenState extends State<RecentOutputScreen> {
   }
 
   Widget publishBottomSheet(BuildContext context) {
+    final bottomPad = MediaQuery.of(context).padding.bottom;
     return Container(
-      padding: const EdgeInsets.fromLTRB(24, 12, 24, 36),
+      padding: EdgeInsets.fromLTRB(
+        r.wp(context, 24),
+        r.hp(context, 12),
+        r.wp(context, 24),
+        bottomPad > 0 ? bottomPad : r.hp(context, 36),
+      ),
       decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -337,49 +350,49 @@ class _RecentOutputScreenState extends State<RecentOutputScreen> {
         children: [
           // Drag handle
           Container(
-            width: 40,
-            height: 5,
+            width: r.wp(context, 40),
+            height: r.hp(context, 5),
             decoration: BoxDecoration(
               color: Colors.grey[300],
               borderRadius: BorderRadius.circular(3),
             ),
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: r.hp(context, 24)),
 
           // Avatar circle
           Container(
-            width: 72,
-            height: 72,
+            width: r.wp(context, 72),
+            height: r.wp(context, 72),
             decoration: const BoxDecoration(
               color: Color(0xFFE8D5BC),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.group, size: 36, color: Color(0xFF3D3229)),
+            child: Icon(Icons.group, size: r.wp(context, 36), color: const Color(0xFF3D3229)),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: r.hp(context, 16)),
 
           // Title
-          const Text(
+          Text(
             'Publish Your Design',
             style: TextStyle(
-              fontSize: 18,
+              fontSize: r.sp(context, 18),
               fontWeight: FontWeight.w600,
-              color: Color(0xFF1A1A1A),
+              color: const Color(0xFF1A1A1A),
             ),
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: r.hp(context, 10)),
 
           // Subtitle
-          const Text(
+          Text(
             'Share your design on the Explore page for\nothers to discover',
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 15,
-              color: Color(0xFF8A8A8A),
+              fontSize: r.sp(context, 15),
+              color: const Color(0xFF8A8A8A),
               height: 1.5,
             ),
           ),
-          const SizedBox(height: 28),
+          SizedBox(height: r.hp(context, 28)),
 
           // Publish button
           SizedBox(
@@ -398,7 +411,6 @@ class _RecentOutputScreenState extends State<RecentOutputScreen> {
                 };
 
                 debugPrint("PublishRecordDataEvent payload: $publishData");
-
                 debugPrint("user_id: $userId");
                 debugPrint("module_id: 1");
                 debugPrint("id: ${data["id"]}");
@@ -411,28 +423,28 @@ class _RecentOutputScreenState extends State<RecentOutputScreen> {
                 backgroundColor: const Color(0xFFE8D5BC),
                 foregroundColor: const Color(0xFF3D3229),
                 elevation: 0,
-                padding: const EdgeInsets.symmetric(vertical: 16),
+                padding: EdgeInsets.symmetric(vertical: r.hp(context, 16)),
                 shape: const StadiumBorder(),
-                textStyle: const TextStyle(
-                  fontSize: 16,
+                textStyle: TextStyle(
+                  fontSize: r.sp(context, 16),
                   fontWeight: FontWeight.w500,
                 ),
               ),
               child: const Text('Publish'),
             ),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: r.hp(context, 4)),
 
           // Cancel button
           TextButton(
             onPressed: () => Navigator.pop(context),
             style: TextButton.styleFrom(
               foregroundColor: const Color(0xFF1A1A1A),
-              padding: const EdgeInsets.symmetric(vertical: 14),
+              padding: EdgeInsets.symmetric(vertical: r.hp(context, 14)),
             ),
-            child: const Text(
+            child: Text(
               'Cancel',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
+              style: TextStyle(fontSize: r.sp(context, 16), fontWeight: FontWeight.w400),
             ),
           ),
         ],
@@ -451,7 +463,7 @@ class _PhotoSection extends StatelessWidget {
   Widget build(BuildContext context) {
     print("image: ${img}");
     return SizedBox(
-      height: 350,
+      height: r.hp(context, 350),
       width: double.infinity,
       child: Stack(
         fit: StackFit.expand,
@@ -462,10 +474,10 @@ class _PhotoSection extends StatelessWidget {
             errorBuilder:
                 (_, __, ___) => Container(
                   color: const Color(0xFF8AAAC8),
-                  child: const Center(
+                  child: Center(
                     child: Icon(
                       Icons.location_city_outlined,
-                      size: 60,
+                      size: r.wp(context, 60),
                       color: Colors.white54,
                     ),
                   ),
@@ -475,7 +487,7 @@ class _PhotoSection extends StatelessWidget {
             top: 0,
             left: 0,
             right: 0,
-            height: topPad + 64,
+            height: topPad + r.hp(context, 64),
             child: DecoratedBox(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
@@ -489,13 +501,13 @@ class _PhotoSection extends StatelessWidget {
 
           // Back button
           Positioned(
-            top: topPad + 10,
-            left: 16,
+            top: topPad + r.hp(context, 10),
+            left: r.wp(context, 16),
             child: GestureDetector(
               onTap: () => Navigator.maybePop(context),
-              child: const Icon(
+              child: Icon(
                 Icons.chevron_left_rounded,
-                size: 32,
+                size: r.wp(context, 32),
                 color: Colors.white,
               ),
             ),
@@ -522,10 +534,10 @@ class _InfoTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      padding: EdgeInsets.symmetric(horizontal: r.wp(context, 14), vertical: r.hp(context, 14)),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(r.wp(context, 16)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.04),
@@ -537,35 +549,35 @@ class _InfoTile extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            width: 46,
-            height: 46,
+            width: r.wp(context, 46),
+            height: r.wp(context, 46),
             decoration: BoxDecoration(
               color: const Color(0xFFF2EFEA),
-              borderRadius: BorderRadius.circular(11),
+              borderRadius: BorderRadius.circular(r.wp(context, 11)),
             ),
             child: Center(child: iconWidget),
           ),
-          const SizedBox(width: 13),
+          SizedBox(width: r.wp(context, 13)),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   label,
-                  style: const TextStyle(
-                    fontSize: 12.5,
+                  style: TextStyle(
+                    fontSize: r.sp(context, 12.5),
                     fontWeight: FontWeight.w500,
-                    color: Color(0xFF9C9690),
+                    color: const Color(0xFF9C9690),
                     height: 1.2,
                   ),
                 ),
-                const SizedBox(height: 3),
+                SizedBox(height: r.hp(context, 3)),
                 Text(
                   value,
-                  style: const TextStyle(
-                    fontSize: 17,
+                  style: TextStyle(
+                    fontSize: r.sp(context, 17),
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF1A1816),
+                    color: const Color(0xFF1A1816),
                     letterSpacing: -0.2,
                   ),
                 ),
@@ -596,8 +608,8 @@ class _ColorSwatches extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const size = 28.0;
-    const overlap = 10.0;
+    final size = r.wp(context, 28.0);
+    final overlap = r.wp(context, 10.0);
 
     return SizedBox(
       width: size + (_colors.length - 1) * (size - overlap),
@@ -639,7 +651,7 @@ class _BuildingIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CustomPaint(
-      size: const Size(30, 30),
+      size: Size(r.wp(context, 30), r.wp(context, 30)),
       painter: _BuildingIconPainter(),
     );
   }
@@ -753,10 +765,10 @@ class _ApplyButtonState extends State<_ApplyButton> {
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.fromLTRB(
-        20,
-        8,
-        20,
-        widget.botPad > 0 ? widget.botPad : 24,
+        r.wp(context, 20),
+        r.hp(context, 8),
+        r.wp(context, 20),
+        widget.botPad > 0 ? widget.botPad : r.hp(context, 24),
       ),
       child: GestureDetector(
         onTapDown: (_) => setState(() => _pressed = true),
@@ -768,10 +780,10 @@ class _ApplyButtonState extends State<_ApplyButton> {
           duration: const Duration(milliseconds: 80),
           child: Container(
             width: double.infinity,
-            height: 60,
+            height: r.hp(context, 60),
             decoration: BoxDecoration(
               color: const Color(0xFFDEB887),
-              borderRadius: BorderRadius.circular(34),
+              borderRadius: BorderRadius.circular(r.wp(context, 34)),
               boxShadow: [
                 BoxShadow(
                   color: const Color(0xFFDEB887).withOpacity(0.40),
@@ -781,12 +793,12 @@ class _ApplyButtonState extends State<_ApplyButton> {
               ],
             ),
             alignment: Alignment.center,
-            child: const Text(
+            child: Text(
               'Apply Style',
               style: TextStyle(
-                fontSize: 19,
+                fontSize: r.sp(context, 19),
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF4A3218),
+                color: const Color(0xFF4A3218),
                 letterSpacing: 0.2,
               ),
             ),

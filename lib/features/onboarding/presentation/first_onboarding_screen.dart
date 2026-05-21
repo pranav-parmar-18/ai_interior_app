@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:video_player/video_player.dart';
+import 'package:ai_interior/utils/responsive_utils.dart';
 
 import 'fourth_onboarding_screen.dart';
 
@@ -61,106 +62,132 @@ class _OnBoardingFirstScreenState extends State<OnBoardingFirstScreen> {
   @override
   Widget build(BuildContext context) {
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
+    final isLandscape = r.isLandscape(context);
+    final topPadding = MediaQuery.of(context).padding.top;
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF5F0EA),
-      body: Column(
-        children: [
-          Expanded(
-            flex: 60,
-            child: PageView.builder(
-              controller: _pageController,
-              itemCount: _pages.length,
-              onPageChanged: (index) {
-                setState(() => _currentPage = index);
-              },
-              itemBuilder: (context, index) {
-                return index == 0
-                    ? ShimmerSwitchImage(
-                      firstImage: 'assets/images/on_1.jpg',
-                      secondImage: 'assets/images/on_2.jpg',
-                    )
-                    : index == 1
-                    ? FullWidthVideo()
-                    : index == 2
+    final pageViewWidget = PageView.builder(
+      controller: _pageController,
+      itemCount: _pages.length,
+      onPageChanged: (index) {
+        setState(() => _currentPage = index);
+      },
+      itemBuilder: (context, index) {
+        return index == 0
+            ? ShimmerSwitchImage(
+                firstImage: 'assets/images/on_1.jpg',
+                secondImage: 'assets/images/on_2.jpg',
+              )
+            : index == 1
+                ? FullWidthVideo()
+                : index == 2
                     ? AutoImageSlider()
                     : _HeroImage(imagePath: _pages[index].imagePath);
-              },
+      },
+    );
+
+    final detailsContent = Padding(
+      padding: EdgeInsets.symmetric(
+        horizontal: r.adaptiveValue(context, mobile: 16, tablet: 32),
+        vertical: isLandscape ? 12 : 24,
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          if (!isLandscape) SizedBox(height: r.hp(context, 16)),
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            child: Text(
+              _pages[_currentPage].title,
+              key: ValueKey(_currentPage),
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontFamily: 'Georgia',
+                fontSize: r.sp(context, 32),
+                fontWeight: FontWeight.w400,
+                color: const Color(0xFF2C2C2C),
+                height: 1.15,
+                letterSpacing: -0.5,
+              ),
             ),
           ),
-
-          Expanded(
-            flex: 40,
-            child: Container(
-              color: const Color(0xFFF5F0EA),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 7.0),
-                child: Column(
-                  children: [
-                    const SizedBox(height: 32),
-                    AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 300),
-                      child: Text(
-                        _pages[_currentPage].title,
-                        key: ValueKey(_currentPage),
-                        textAlign: TextAlign.left,
-                        style: const TextStyle(
-                          fontFamily: 'Georgia',
-                          fontSize: 35,
-                          fontWeight: FontWeight.w400,
-                          color: Color(0xFF2C2C2C),
-                          height: 1.15,
-                          letterSpacing: -0.5,
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 30),
-
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 30.0),
-                      child: AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 300),
-                        child: Text(
-                          _pages[_currentPage].subtitle,
-                          key: ValueKey('sub_$_currentPage'),
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontFamily: 'Georgia',
-                            fontSize: 16,
-                            fontWeight: FontWeight.w400,
-                            color: Color(0xFF7A8080),
-                            height: 1.5,
-                            letterSpacing: 0.1,
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    const Spacer(),
-
-                    // Page Indicators
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(
-                        _pages.length,
-                        (index) => _PageDot(isActive: index == _currentPage),
-                      ),
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    // Continue Button
-                    _ContinueButton(onTap: _onContinue),
-
-                    const SizedBox(height: 32),
-                  ],
+          SizedBox(height: r.hp(context, 16)),
+          Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: r.wp(context, 16),
+            ),
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              child: Text(
+                _pages[_currentPage].subtitle,
+                key: ValueKey('sub_$_currentPage'),
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontFamily: 'Georgia',
+                  fontSize: r.sp(context, 15),
+                  fontWeight: FontWeight.w400,
+                  color: const Color(0xFF7A8080),
+                  height: 1.5,
+                  letterSpacing: 0.1,
                 ),
               ),
             ),
           ),
+          if (isLandscape) SizedBox(height: r.hp(context, 16)) else const Spacer(),
+          // Page Indicators
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(
+              _pages.length,
+              (index) => _PageDot(isActive: index == _currentPage),
+            ),
+          ),
+          SizedBox(height: r.hp(context, 16)),
+          // Continue Button
+          _ContinueButton(onTap: _onContinue),
+          if (!isLandscape) SizedBox(height: r.hp(context, 16)),
         ],
       ),
+    );
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F0EA),
+      body: isLandscape
+          ? Row(
+              children: [
+                Expanded(
+                  flex: 50,
+                  child: Padding(
+                    padding: EdgeInsets.only(top: topPadding),
+                    child: pageViewWidget,
+                  ),
+                ),
+                Expanded(
+                  flex: 50,
+                  child: SafeArea(
+                    left: false,
+                    child: SingleChildScrollView(
+                      child: detailsContent,
+                    ),
+                  ),
+                ),
+              ],
+            )
+          : Column(
+              children: [
+                Expanded(
+                  flex: 60,
+                  child: pageViewWidget,
+                ),
+                Expanded(
+                  flex: 40,
+                  child: Container(
+                    color: const Color(0xFFF5F0EA),
+                    child: detailsContent,
+                  ),
+                ),
+              ],
+            ),
     );
   }
 }
@@ -521,39 +548,44 @@ class _ContinueButton extends StatelessWidget {
       onTap: onTap,
       child: Container(
         width: double.infinity,
-        height: 60,
-        margin: EdgeInsets.symmetric(horizontal: 10),
-        padding: EdgeInsets.symmetric(horizontal: 20),
+        height: r.adaptiveValue(context, mobile: 56, tablet: 64),
+        margin: EdgeInsets.symmetric(
+          horizontal: r.adaptiveValue(context, mobile: 10, tablet: 20),
+        ),
         decoration: BoxDecoration(
           color: const Color(0xFFD9B48C), // warm tan/sand
           borderRadius: BorderRadius.circular(50),
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        child: Stack(
+          alignment: Alignment.center,
           children: [
-            const SizedBox(width: 140),
-
             Align(
-              child: const Text(
+              alignment: Alignment.center,
+              child: Text(
                 'Continue',
                 style: TextStyle(
                   fontFamily: 'Georgia',
-                  fontSize: 20,
+                  fontSize: r.sp(context, 18),
                   fontWeight: FontWeight.w400,
-                  color: Color(0xFF3C3228),
+                  color: const Color(0xFF3C3228),
                   letterSpacing: 0.3,
                 ),
               ),
             ),
-            Spacer(),
-            Container(
-              width: 26,
-              height: 26,
-              alignment: Alignment.center,
-              child: const Icon(
-                Icons.chevron_right,
-                color: Color(0xFF3C3228),
-                size: 30,
+            Align(
+              alignment: Alignment.centerRight,
+              child: Padding(
+                padding: EdgeInsets.only(right: r.adaptiveValue(context, mobile: 16, tablet: 24)),
+                child: Container(
+                  width: r.adaptiveValue(context, mobile: 26, tablet: 32),
+                  height: r.adaptiveValue(context, mobile: 26, tablet: 32),
+                  alignment: Alignment.center,
+                  child: Icon(
+                    Icons.chevron_right,
+                    color: const Color(0xFF3C3228),
+                    size: r.adaptiveValue(context, mobile: 24, tablet: 30),
+                  ),
+                ),
               ),
             ),
           ],
@@ -619,9 +651,7 @@ class _AutoImageSliderState extends State<AutoImageSlider> {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity, // ✅ FULL WIDTH
-      height: 220, // 🔹 set as needed
+    return SizedBox.expand(
       child: AnimatedSwitcher(
         duration: const Duration(milliseconds: 400),
         transitionBuilder: (child, animation) {
@@ -633,11 +663,12 @@ class _AutoImageSliderState extends State<AutoImageSlider> {
             ),
           );
         },
-        child: Image.asset(
-          images[_currentIndex],
+        child: SizedBox.expand(
           key: ValueKey(_currentIndex),
-          fit: BoxFit.cover,
-          width: double.infinity, // ✅ IMPORTANT
+          child: Image.asset(
+            images[_currentIndex],
+            fit: BoxFit.cover,
+          ),
         ),
       ),
     );
@@ -676,9 +707,7 @@ class _FullWidthVideoState extends State<FullWidthVideo> {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      height: 250,
+    return SizedBox.expand(
       child:
           _controller.value.isInitialized
               ? FittedBox(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../widgets/custom_imageview.dart';
+import '../../../utils/responsive_utils.dart';
 import '../../home/presentation/home_screen.dart';
 import '../../main/presentaion/main_screen.dart';
 import 'exterior_describe_me.dart';
@@ -143,12 +144,14 @@ class _ExteriorAshSelectionScreenState
       imageUrl:
           'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=400&q=80',
       fallbackIcon: Icons.add_home_rounded,
-    ),RoomItem(
+    ),
+    RoomItem(
       name: 'Neoclassical',
       imageUrl:
           'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=400&q=80',
       fallbackIcon: Icons.add_home_rounded,
-    ),RoomItem(
+    ),
+    RoomItem(
       name: 'Georgian Colonial',
       imageUrl:
           'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=400&q=80',
@@ -176,30 +179,36 @@ class _ExteriorAshSelectionScreenState
   }
 
   Widget _buildAppBar() {
+    final hPad = r.wp(context, 16);
+    final titleFontSize = r.sp(context, 36);
+    final iconSize = r.adaptiveValue(context, mobile: 25, tablet: 35);
+    final backBtnSize = r.adaptiveValue(context, mobile: 36, tablet: 48);
+    final backIconSize = r.adaptiveValue(context, mobile: 20, tablet: 28);
+
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+      padding: EdgeInsets.fromLTRB(hPad, r.hp(context, 8), hPad, 0),
       child: Row(
         children: [
           GestureDetector(
             onTap: () {
               Navigator.of(context).pop();
             },
-            child: const SizedBox(
-              width: 36,
-              height: 36,
+            child: SizedBox(
+              width: backBtnSize,
+              height: backBtnSize,
               child: Icon(
                 Icons.arrow_back_ios_rounded,
-                size: 20,
+                size: backIconSize,
                 color: Color(0xFF1A1A1A),
               ),
             ),
           ),
-          const Expanded(
+          Expanded(
             child: Center(
               child: Text(
                 'Exterior Design',
                 style: TextStyle(
-                  fontSize: 36,
+                  fontSize: titleFontSize,
                   fontFamily: 'Georgia',
                   fontWeight: FontWeight.w500,
                   color: Color(0xFF1A1A1A),
@@ -210,10 +219,13 @@ class _ExteriorAshSelectionScreenState
           ),
           // Coin badge
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            padding: EdgeInsets.symmetric(
+              horizontal: r.wp(context, 10),
+              vertical: r.hp(context, 5),
+            ),
             decoration: BoxDecoration(
               color: const Color(0xFFFFF3E8),
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(r.wp(context, 20)),
               border: Border.all(
                 color: const Color(0xFFE8873A).withOpacity(0.3),
               ),
@@ -227,7 +239,7 @@ class _ExteriorAshSelectionScreenState
                     return Text(
                       creditsNotifier.value.toString(),
                       style: TextStyle(
-                        fontSize: isIPad(context) ? 50 : 16,
+                        fontSize: r.sp(context, 16),
                         fontWeight: FontWeight.w700,
                         color: Color(0xFF1A1A1A),
                         letterSpacing: -0.2,
@@ -235,11 +247,11 @@ class _ExteriorAshSelectionScreenState
                     );
                   },
                 ),
-                const SizedBox(width: 4),
+                SizedBox(width: r.wp(context, 4)),
                 CustomImageview(
                   imagePath: "assets/images/credit.png",
-                  height: 25,
-                  width: 25,
+                  height: iconSize,
+                  width: iconSize,
                   fit: BoxFit.contain,
                 ),
               ],
@@ -252,10 +264,13 @@ class _ExteriorAshSelectionScreenState
 
   Widget _buildProgressBar() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: EdgeInsets.symmetric(
+        horizontal: r.wp(context, 10),
+        vertical: r.hp(context, 6),
+      ),
       child: LinearProgressIndicator(
         value: 0.65,
-        minHeight: 3,
+        minHeight: r.hp(context, 3).clamp(2, 5),
         backgroundColor: const Color(0xFFE0DDD8),
         valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF3A7D7B)),
       ),
@@ -263,12 +278,17 @@ class _ExteriorAshSelectionScreenState
   }
 
   Widget _buildTitle() {
-    return const Padding(
-      padding: EdgeInsets.fromLTRB(16, 4, 16, 12),
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        r.wp(context, 16),
+        r.hp(context, 4),
+        r.wp(context, 16),
+        r.hp(context, 12),
+      ),
       child: Text(
         'Choose your design aesthetic',
         style: TextStyle(
-          fontSize: 20,
+          fontSize: r.sp(context, 20),
           fontWeight: FontWeight.w500,
           color: Color(0xFF1A1A1A),
           letterSpacing: -0.4,
@@ -280,14 +300,14 @@ class _ExteriorAshSelectionScreenState
 
   Widget _buildRoomGrid() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12),
+      padding: EdgeInsets.symmetric(horizontal: r.wp(context, 12)),
       child: GridView.builder(
-        padding: const EdgeInsets.only(bottom: 8),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          crossAxisSpacing: 10,
-          mainAxisSpacing: 10,
-          childAspectRatio: 1.05,
+        padding: EdgeInsets.only(bottom: r.hp(context, 8)),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: r.gridColumns(context),
+          crossAxisSpacing: r.wp(context, 10),
+          mainAxisSpacing: r.hp(context, 10),
+          childAspectRatio: r.gridAspectRatio(context, mobile: 1.05, tablet: 1.1),
         ),
         itemCount: rooms.length,
         itemBuilder: (context, index) {
@@ -299,11 +319,18 @@ class _ExteriorAshSelectionScreenState
 
   Widget _buildRoomCard(RoomItem room, int index) {
     final isSelected = _selectedRoom == room.name;
+    final cardRadius = r.radius(context, 16);
+    final overlayHeight = r.hp(context, 68);
+    final textFontSize = r.sp(context, 13.5);
+    final checkSize = r.adaptiveValue(context, mobile: 24, tablet: 32);
+    final checkIconSize = r.adaptiveValue(context, mobile: 15, tablet: 20);
+    final gifSize = r.adaptiveValue(context, mobile: 130, tablet: 180);
 
     return GestureDetector(
       onTap: () {
         setState(() {
           _selectedRoom = room.name;
+          extAsh = room.name.toLowerCase();
         });
         HapticFeedback.lightImpact();
       },
@@ -311,17 +338,16 @@ class _ExteriorAshSelectionScreenState
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeInOut,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(cardRadius),
           border: Border.all(
             color: isSelected ? const Color(0xFFE8873A) : Colors.transparent,
             width: 2.5,
           ),
           boxShadow: [
             BoxShadow(
-              color:
-                  isSelected
-                      ? const Color(0xFFE8873A).withOpacity(0.25)
-                      : Colors.black.withOpacity(0.08),
+              color: isSelected
+                  ? const Color(0xFFE8873A).withOpacity(0.25)
+                  : Colors.black.withOpacity(0.08),
               blurRadius: isSelected ? 12 : 8,
               offset: const Offset(0, 3),
               spreadRadius: isSelected ? 1 : 0,
@@ -329,65 +355,54 @@ class _ExteriorAshSelectionScreenState
           ],
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(isSelected ? 13.5 : 16),
+          borderRadius: BorderRadius.circular(isSelected ? cardRadius - 2.5 : cardRadius),
           child: Stack(
             fit: StackFit.expand,
             children: [
               // Room image
               index == 0
                   ? GestureDetector(
-                    onTap: () {
-                      Navigator.of(
-                        context,
-                      ).pushNamed(ExteriorDescribeVisionScreen.routeName);
-                    },
-                    child: Container(
-                      color: Color.fromRGBO(255, 255, 255, 0.6),
-                      child: Image.asset(
-                        "assets/gifs/describe_me.gif",
-                        height: 130,
-                        width: 130,
-                      ),
-                    ),
-                  )
-                  : Image.asset(
-                    "assets/images/exterior/ash_${index + 1}.png",
-                    fit: BoxFit.cover,
-                    // loadingBuilder: (context, child, loadingProgress) {
-                    //   if (loadingProgress == null) return child;
-                    //   return Container(
-                    //     color: const Color(0xFFF5F5F5),
-                    //     child: Center(
-                    //       child: Icon(
-                    //         room.fallbackIcon,
-                    //         size: 36,
-                    //         color: const Color(0xFFCCCCCC),
-                    //       ),
-                    //     ),
-                    //   );
-                    // },
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              const Color(0xFFF0EDE8),
-                              const Color(0xFFE5E0D8),
-                            ],
-                          ),
-                        ),
+                      onTap: () {
+                        Navigator.of(
+                          context,
+                        ).pushNamed(ExteriorDescribeVisionScreen.routeName);
+                      },
+                      child: Container(
+                        color: Color.fromRGBO(255, 255, 255, 0.6),
                         child: Center(
-                          child: Icon(
-                            room.fallbackIcon,
-                            size: 42,
-                            color: const Color(0xFFAA9880),
+                          child: Image.asset(
+                            "assets/gifs/describe_me.gif",
+                            height: gifSize,
+                            width: gifSize,
                           ),
                         ),
-                      );
-                    },
-                  ),
+                      ),
+                    )
+                  : Image.asset(
+                      "assets/images/exterior/ash_${index + 1}.png",
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          decoration: const BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                Color(0xFFF0EDE8),
+                                Color(0xFFE5E0D8),
+                              ],
+                            ),
+                          ),
+                          child: Center(
+                            child: Icon(
+                              room.fallbackIcon,
+                              size: r.adaptiveValue(context, mobile: 42, tablet: 56),
+                              color: const Color(0xFFAA9880),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
 
               // Gradient overlay at bottom
               Positioned(
@@ -395,7 +410,7 @@ class _ExteriorAshSelectionScreenState
                 left: 0,
                 right: 0,
                 child: Container(
-                  height: 68,
+                  height: overlayHeight,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
@@ -411,19 +426,19 @@ class _ExteriorAshSelectionScreenState
 
               // Room name label
               Positioned(
-                bottom: 10,
+                bottom: r.hp(context, 10),
                 left: 0,
                 right: 0,
                 child: Center(
                   child: Text(
                     room.name,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 13.5,
+                    style: TextStyle(
+                      fontSize: textFontSize,
                       fontWeight: FontWeight.w600,
                       color: Colors.white,
                       letterSpacing: -0.1,
-                      shadows: [
+                      shadows: const [
                         Shadow(
                           color: Colors.black26,
                           blurRadius: 4,
@@ -438,18 +453,18 @@ class _ExteriorAshSelectionScreenState
               // Selected checkmark overlay
               if (isSelected)
                 Positioned(
-                  top: 10,
-                  right: 10,
+                  top: r.hp(context, 10),
+                  right: r.wp(context, 10),
                   child: Container(
-                    width: 24,
-                    height: 24,
+                    width: checkSize,
+                    height: checkSize,
                     decoration: const BoxDecoration(
                       shape: BoxShape.circle,
                       color: Color(0xFFE8873A),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.check_rounded,
-                      size: 15,
+                      size: checkIconSize,
                       color: Colors.white,
                     ),
                   ),
@@ -462,31 +477,38 @@ class _ExteriorAshSelectionScreenState
   }
 
   Widget _buildNextButton() {
+    final buttonHeight = r.adaptiveValue(context, mobile: 58, tablet: 70);
+    final buttonFontSize = r.sp(context, 18);
+    final buttonRadius = r.wp(context, 32);
+
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      padding: EdgeInsets.symmetric(
+        horizontal: r.wp(context, 20),
+        vertical: r.hp(context, 12),
+      ),
       child: GestureDetector(
         onTap: () {
           Navigator.of(context).pushNamed(ExteriorColorPaletteScreen.routeName);
         },
         child: Container(
           width: double.infinity,
-          height: 58,
+          height: buttonHeight,
           decoration: BoxDecoration(
             color: const Color(0xFFE8C9A0),
-            borderRadius: BorderRadius.circular(32),
+            borderRadius: BorderRadius.circular(buttonRadius),
             boxShadow: [
               BoxShadow(
                 color: const Color(0xFFE8C9A0).withOpacity(0.5),
-                blurRadius: 16,
-                offset: const Offset(0, 6),
+                blurRadius: r.wp(context, 16),
+                offset: Offset(0, r.hp(context, 6)),
               ),
             ],
           ),
           alignment: Alignment.center,
-          child: const Text(
+          child: Text(
             'Next',
             style: TextStyle(
-              fontSize: 18,
+              fontSize: buttonFontSize,
               fontWeight: FontWeight.w600,
               color: Color(0xFF5A3E1B),
               letterSpacing: 0.3,

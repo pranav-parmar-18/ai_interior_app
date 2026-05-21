@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ai_interior/utils/responsive_utils.dart';
 
 class DescribeVisionScreen extends StatefulWidget {
   const DescribeVisionScreen({super.key});
@@ -63,23 +64,23 @@ class _DescribeVisionScreenState extends State<DescribeVisionScreen> {
                 // Title block
                 _buildTitle(),
 
-                const SizedBox(height: 20),
+                r.verticalSpace(context, 20),
 
                 // Scrollable body
                 Expanded(
                   child: SingleChildScrollView(
                     physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    padding: EdgeInsets.symmetric(horizontal: r.wp(context, 20)),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Text field
                         _buildTextField(),
-                        const SizedBox(height: 22),
+                        r.verticalSpace(context, 22),
 
                         // Suggestion chips
                         _buildChipsWrap(),
-                        const SizedBox(height: 24),
+                        r.verticalSpace(context, 24),
                       ],
                     ),
                   ),
@@ -102,13 +103,17 @@ class _DescribeVisionScreenState extends State<DescribeVisionScreen> {
     return Align(
       alignment: Alignment.centerRight,
       child: Padding(
-        padding: const EdgeInsets.only(right: 22, top: 10, bottom: 4),
+        padding: EdgeInsets.only(
+          right: r.wp(context, 22),
+          top: r.hp(context, 10),
+          bottom: r.hp(context, 4),
+        ),
         child: GestureDetector(
           onTap: () => Navigator.maybePop(context),
-          child: const Icon(
+          child: Icon(
             Icons.close_rounded,
-            size: 26,
-            color: Color(0xFFC0998A),
+            size: r.adaptiveValue(context, mobile: 26, tablet: 34),
+            color: const Color(0xFFC0998A),
           ),
         ),
       ),
@@ -120,7 +125,7 @@ class _DescribeVisionScreenState extends State<DescribeVisionScreen> {
   // ───────────────────────────────────────────────
   Widget _buildTitle() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 22),
+      padding: EdgeInsets.symmetric(horizontal: r.wp(context, 22)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -143,12 +148,12 @@ class _DescribeVisionScreenState extends State<DescribeVisionScreen> {
               ],
             ),
           ),
-          const SizedBox(height: 6),
-          const Text(
+          r.verticalSpace(context, 6),
+          Text(
             'Tell AI what to replace',
             style: TextStyle(
-              fontSize: 14,
-              color: Color(0xFF8A7A6A),
+              fontSize: r.sp(context, 14),
+              color: const Color(0xFF8A7A6A),
               fontWeight: FontWeight.w400,
               letterSpacing: 0.1,
             ),
@@ -161,7 +166,7 @@ class _DescribeVisionScreenState extends State<DescribeVisionScreen> {
   TextStyle _titleStyle({required bool italic}) {
     return TextStyle(
       fontFamily: 'Georgia',
-      fontSize: 30,
+      fontSize: r.sp(context, 30),
       fontStyle: italic ? FontStyle.italic : FontStyle.normal,
       fontWeight: FontWeight.w700,
       color: const Color(0xFF3A3060),
@@ -177,7 +182,7 @@ class _DescribeVisionScreenState extends State<DescribeVisionScreen> {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.55),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(r.wp(context, 16)),
         border: Border.all(
           color: Colors.white.withOpacity(0.6),
           width: 1,
@@ -187,18 +192,20 @@ class _DescribeVisionScreenState extends State<DescribeVisionScreen> {
         controller: _controller,
         maxLines: null,
         minLines: 3,
-        style: const TextStyle(
-          fontSize: 15.5,
-          color: Color(0xFF6A5A80),
+        style: TextStyle(
+          fontSize: r.sp(context, 15.5),
+          color: const Color(0xFF6A5A80),
           height: 1.5,
           fontWeight: FontWeight.w400,
         ),
-        decoration: const InputDecoration(
-          contentPadding:
-          EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: InputDecoration(
+          contentPadding: EdgeInsets.symmetric(
+            horizontal: r.wp(context, 16),
+            vertical: r.hp(context, 14),
+          ),
           border: InputBorder.none,
           hintText: 'Describe what you want to change...',
-          hintStyle: TextStyle(color: Color(0xFFB0A0B8)),
+          hintStyle: const TextStyle(color: Color(0xFFB0A0B8)),
         ),
         cursorColor: const Color(0xFF6A5A80),
       ),
@@ -210,8 +217,8 @@ class _DescribeVisionScreenState extends State<DescribeVisionScreen> {
   // ───────────────────────────────────────────────
   Widget _buildChipsWrap() {
     return Wrap(
-      spacing: 10,
-      runSpacing: 10,
+      spacing: r.wp(context, 10),
+      runSpacing: r.hp(context, 10),
       children: _suggestions.asMap().entries.map((entry) {
         final idx = entry.key;
         final label = entry.value;
@@ -237,13 +244,15 @@ class _DescribeVisionScreenState extends State<DescribeVisionScreen> {
           },
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 160),
-            padding:
-            const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            padding: EdgeInsets.symmetric(
+              horizontal: r.wp(context, 14),
+              vertical: r.hp(context, 10),
+            ),
             decoration: BoxDecoration(
               color: isSelected
                   ? const Color(0xFF3A3060).withOpacity(0.12)
                   : Colors.white.withOpacity(0.60),
-              borderRadius: BorderRadius.circular(50),
+              borderRadius: BorderRadius.circular(r.wp(context, 50)),
               border: Border.all(
                 color: isSelected
                     ? const Color(0xFF3A3060).withOpacity(0.35)
@@ -253,8 +262,8 @@ class _DescribeVisionScreenState extends State<DescribeVisionScreen> {
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.04),
-                  blurRadius: 6,
-                  offset: const Offset(0, 2),
+                  blurRadius: r.wp(context, 6),
+                  offset: Offset(0, r.hp(context, 2)),
                 ),
               ],
             ),
@@ -263,16 +272,16 @@ class _DescribeVisionScreenState extends State<DescribeVisionScreen> {
               children: [
                 Icon(
                   isSelected ? Icons.check_rounded : Icons.add_rounded,
-                  size: 16,
+                  size: r.wp(context, 16),
                   color: isSelected
                       ? const Color(0xFF3A3060)
                       : const Color(0xFF6A5A70),
                 ),
-                const SizedBox(width: 5),
+                r.horizontalSpace(context, 5),
                 Text(
                   label,
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: r.sp(context, 14),
                     fontWeight: FontWeight.w500,
                     color: isSelected
                         ? const Color(0xFF3A3060)
@@ -294,33 +303,37 @@ class _DescribeVisionScreenState extends State<DescribeVisionScreen> {
   Widget _buildGenerateButton(double botPad) {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.fromLTRB(20, 12, 20, botPad > 0 ? botPad : 20),
-      // Subtle frosted top edge
-      decoration: BoxDecoration(
+      padding: EdgeInsets.fromLTRB(
+        r.wp(context, 20),
+        r.hp(context, 12),
+        r.wp(context, 20),
+        botPad > 0 ? botPad : r.hp(context, 20),
+      ),
+      decoration: const BoxDecoration(
         color: Colors.transparent,
       ),
       child: GestureDetector(
         onTap: () {},
         child: Container(
-          height: 58,
+          height: r.adaptiveValue(context, mobile: 58, tablet: 68),
           decoration: BoxDecoration(
             color: const Color(0xFF1E1A2E),
-            borderRadius: BorderRadius.circular(32),
+            borderRadius: BorderRadius.circular(r.wp(context, 32)),
             boxShadow: [
               BoxShadow(
                 color: const Color(0xFF1E1A2E).withOpacity(0.35),
-                blurRadius: 20,
-                offset: const Offset(0, 8),
+                blurRadius: r.wp(context, 20),
+                offset: Offset(0, r.hp(context, 8)),
               ),
             ],
           ),
           alignment: Alignment.center,
-          child: const Text(
+          child: Text(
             'Generate',
             style: TextStyle(
-              fontSize: 18,
+              fontSize: r.sp(context, 18),
               fontWeight: FontWeight.w600,
-              color: Color(0xFFD4A870),
+              color: const Color(0xFFD4A870),
               letterSpacing: 0.3,
             ),
           ),
@@ -392,8 +405,8 @@ class _BokehCircle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: size,
-      height: size,
+      width: r.wp(context, size),
+      height: r.wp(context, size),
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: color,

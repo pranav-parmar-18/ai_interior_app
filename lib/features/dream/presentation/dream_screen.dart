@@ -6,6 +6,7 @@ import 'package:ai_interior/models/get_all_exterior_design_model_response.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:ai_interior/utils/responsive_utils.dart';
 
 import '../../../bloc/get_all_exterior_designs/get_all_exterior_designs_bloc.dart';
 import '../../../models/get_all_interrior_design_model_response.dart';
@@ -41,15 +42,15 @@ const _interiorRight = [
 
 // ── Exterior cards ────────────────────────────────────────────────────────────
 const _exteriorLeft = [
-  RoomCardData('assets/exterior/facade.jpg'),
-  RoomCardData('assets/exterior/garden.jpg'),
-  RoomCardData('assets/exterior/patio.jpg'),
+  RoomCardData('assets/rooms/minimal.jpg'),
+  RoomCardData('assets/rooms/dark_living.jpg'),
+  RoomCardData('assets/rooms/boho.jpg'),
 ];
 const _exteriorRight = [
-  RoomCardData('assets/exterior/pool.jpg'),
-  RoomCardData('assets/exterior/balcony.jpg'),
-  RoomCardData('assets/exterior/rooftop.jpg'),
-  RoomCardData('assets/exterior/courtyard.jpg'),
+  RoomCardData('assets/rooms/modern.jpg'),
+  RoomCardData('assets/rooms/entry.jpg'),
+  RoomCardData('assets/rooms/sage.jpg'),
+  RoomCardData('assets/rooms/forest.jpg'),
 ];
 
 // ── Column heights (match screenshot proportions) ────────────────────────────
@@ -164,10 +165,10 @@ class _DreamSpaceScreenState extends State<DreamSpaceScreen>
                       _buildAppBar(),
                       _buildProgressBar(),
                       _buildTitle(),
-                      const SizedBox(height: 18),
+                      r.verticalSpace(context, 18),
 
                       _buildTabBar(),
-                      const SizedBox(height: 16),
+                      r.verticalSpace(context, 16),
                       Expanded(
                         child: TabBarView(
                           controller: _tabController,
@@ -187,32 +188,37 @@ class _DreamSpaceScreenState extends State<DreamSpaceScreen>
 
   Widget _buildAppBar() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+      padding: EdgeInsets.fromLTRB(
+        r.wp(context, 16),
+        r.hp(context, 8),
+        r.wp(context, 16),
+        0,
+      ),
       child: Row(
         children: [
           GestureDetector(
             onTap: () {
               Navigator.of(context).pop();
             },
-            child: const SizedBox(
-              width: 36,
-              height: 36,
+            child: SizedBox(
+              width: r.wp(context, 36),
+              height: r.wp(context, 36),
               child: Icon(
                 Icons.arrow_back_ios_rounded,
-                size: 20,
-                color: Color(0xFF1A1A1A),
+                size: r.wp(context, 20),
+                color: const Color(0xFF1A1A1A),
               ),
             ),
           ),
-          const Expanded(
+          Expanded(
             child: Center(
               child: Text(
                 'Create Space',
                 style: TextStyle(
-                  fontSize: 36,
+                  fontSize: r.sp(context, 36),
                   fontFamily: 'Georgia',
                   fontWeight: FontWeight.w500,
-                  color: Color(0xFF1A1A1A),
+                  color: const Color(0xFF1A1A1A),
                   letterSpacing: -0.3,
                 ),
               ),
@@ -220,10 +226,13 @@ class _DreamSpaceScreenState extends State<DreamSpaceScreen>
           ),
           // Coin badge
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            padding: EdgeInsets.symmetric(
+              horizontal: r.wp(context, 10),
+              vertical: r.hp(context, 5),
+            ),
             decoration: BoxDecoration(
               color: const Color(0xFFFFF3E8),
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(r.wp(context, 20)),
               border: Border.all(
                 color: const Color(0xFFE8873A).withOpacity(0.3),
               ),
@@ -237,19 +246,19 @@ class _DreamSpaceScreenState extends State<DreamSpaceScreen>
                     return Text(
                       creditsNotifier.value.toString(),
                       style: TextStyle(
-                        fontSize: isIPad(context) ? 50 : 16,
+                        fontSize: r.sp(context, 16),
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFF1A1A1A),
+                        color: const Color(0xFF1A1A1A),
                         letterSpacing: -0.2,
                       ),
                     );
                   },
                 ),
-                const SizedBox(width: 4),
+                r.horizontalSpace(context, 4),
                 CustomImageview(
                   imagePath: "assets/images/credit.png",
-                  height: 25,
-                  width: 25,
+                  height: r.wp(context, 25),
+                  width: r.wp(context, 25),
                   fit: BoxFit.contain,
                 ),
               ],
@@ -262,25 +271,33 @@ class _DreamSpaceScreenState extends State<DreamSpaceScreen>
 
   Widget _buildProgressBar() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      child: LinearProgressIndicator(
+      padding: EdgeInsets.symmetric(
+        horizontal: r.wp(context, 10),
+        vertical: r.hp(context, 6),
+      ),
+      child: const LinearProgressIndicator(
         value: 0.35,
         minHeight: 3,
-        backgroundColor: const Color(0xFFE0DDD8),
-        valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF3A7D7B)),
+        backgroundColor: Color(0xFFE0DDD8),
+        valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3A7D7B)),
       ),
     );
   }
 
   Widget _buildTitle() {
-    return const Padding(
-      padding: EdgeInsets.fromLTRB(16, 4, 16, 12),
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        r.wp(context, 16),
+        r.hp(context, 4),
+        r.wp(context, 16),
+        r.hp(context, 12),
+      ),
       child: Text(
         'What type of space do you want to design?',
         style: TextStyle(
-          fontSize: 20,
+          fontSize: r.sp(context, 20),
           fontWeight: FontWeight.w500,
-          color: Color(0xFF1A1A1A),
+          color: const Color(0xFF1A1A1A),
           letterSpacing: -0.4,
           height: 1.2,
         ),
@@ -291,12 +308,12 @@ class _DreamSpaceScreenState extends State<DreamSpaceScreen>
   // ── Flutter TabBar with pill-shaped sliding indicator ──────────────────
   Widget _buildTabBar() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: EdgeInsets.symmetric(horizontal: r.wp(context, 20)),
       child: Container(
-        height: 52,
+        height: r.hp(context, 52),
         decoration: BoxDecoration(
           color: const Color(0xFFECE8E0),
-          borderRadius: BorderRadius.circular(30),
+          borderRadius: BorderRadius.circular(r.wp(context, 30)),
         ),
         child: TabBar(
           controller: _tabController,
@@ -304,17 +321,17 @@ class _DreamSpaceScreenState extends State<DreamSpaceScreen>
           // ── Pill indicator ──────────────────────────────────────
           indicator: BoxDecoration(
             color: const Color(0xFFE8C898),
-            borderRadius: BorderRadius.circular(26),
+            borderRadius: BorderRadius.circular(r.wp(context, 26)),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.09),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
+                blurRadius: r.wp(context, 8),
+                offset: Offset(0, r.hp(context, 2)),
               ),
             ],
           ),
           indicatorSize: TabBarIndicatorSize.tab,
-          indicatorPadding: const EdgeInsets.all(4),
+          indicatorPadding: EdgeInsets.all(r.wp(context, 4)),
 
           // ── Remove default underline & ripple ───────────────────
           dividerColor: Colors.transparent,
@@ -324,13 +341,13 @@ class _DreamSpaceScreenState extends State<DreamSpaceScreen>
           // ── Label styles ────────────────────────────────────────
           labelColor: const Color(0xFF5A3E18),
           unselectedLabelColor: const Color(0xFF7A7068),
-          labelStyle: const TextStyle(
-            fontSize: 17,
+          labelStyle: TextStyle(
+            fontSize: r.sp(context, 17),
             fontWeight: FontWeight.w600,
             fontFamily: 'Georgia',
           ),
-          unselectedLabelStyle: const TextStyle(
-            fontSize: 17,
+          unselectedLabelStyle: TextStyle(
+            fontSize: r.sp(context, 17),
             fontWeight: FontWeight.w600,
             fontFamily: 'Georgia',
           ),
@@ -344,30 +361,30 @@ class _DreamSpaceScreenState extends State<DreamSpaceScreen>
   // ── Category filter chips ───────────────────────────────────────────────
   Widget _buildCategoryChips() {
     return SizedBox(
-      height: 38,
+      height: r.hp(context, 38),
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 20),
+        padding: EdgeInsets.symmetric(horizontal: r.wp(context, 20)),
         itemCount: _cats.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        separatorBuilder: (_, __) => r.horizontalSpace(context, 8),
         itemBuilder: (_, i) {
           final sel = _catIdx == i;
           return GestureDetector(
             onTap: () => setState(() => _catIdx = i),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 180),
-              padding: const EdgeInsets.symmetric(horizontal: 18),
+              padding: EdgeInsets.symmetric(horizontal: r.wp(context, 18)),
               decoration: BoxDecoration(
                 color:
                     sel
                         ? const Color(0xFF4A6A70)
                         : Colors.white.withOpacity(0.85),
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.circular(r.wp(context, 24)),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withOpacity(0.05),
-                    blurRadius: 5,
-                    offset: const Offset(0, 2),
+                    blurRadius: r.wp(context, 5),
+                    offset: Offset(0, r.hp(context, 2)),
                   ),
                 ],
               ),
@@ -375,7 +392,7 @@ class _DreamSpaceScreenState extends State<DreamSpaceScreen>
               child: Text(
                 _cats[i],
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: r.sp(context, 14),
                   fontWeight: sel ? FontWeight.w700 : FontWeight.w500,
                   color: sel ? Colors.white : const Color(0xFF3A3530),
                 ),
@@ -390,13 +407,16 @@ class _DreamSpaceScreenState extends State<DreamSpaceScreen>
   // ── Two-column masonry grid ─────────────────────────────────────────────
   Widget _buildGrid() {
     return GridView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      padding: EdgeInsets.symmetric(
+        horizontal: r.wp(context, 14),
+        vertical: r.hp(context, 10),
+      ),
       physics: const BouncingScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2, // 2 columns
-        crossAxisSpacing: 10,
-        mainAxisSpacing: 10,
-        childAspectRatio: 0.75, // adjust based on card height
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: r.gridColumns(context),
+        crossAxisSpacing: r.wp(context, 10),
+        mainAxisSpacing: r.hp(context, 10),
+        childAspectRatio: r.gridAspectRatio(context, mobile: 0.75, tablet: 0.8),
       ),
       itemCount: interiorDesignModelResponse?.data?.length ?? 0,
       itemBuilder: (context, index) {
@@ -415,13 +435,16 @@ class _DreamSpaceScreenState extends State<DreamSpaceScreen>
 
   Widget _buildGridNew() {
     return GridView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      padding: EdgeInsets.symmetric(
+        horizontal: r.wp(context, 14),
+        vertical: r.hp(context, 10),
+      ),
       physics: const BouncingScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2, // 2 columns
-        crossAxisSpacing: 10,
-        mainAxisSpacing: 10,
-        childAspectRatio: 0.75, // adjust based on card height
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: r.gridColumns(context),
+        crossAxisSpacing: r.wp(context, 10),
+        mainAxisSpacing: r.hp(context, 10),
+        childAspectRatio: r.gridAspectRatio(context, mobile: 0.75, tablet: 0.8),
       ),
       itemCount: exteriorDesignModelResponse?.data?.length ?? 0,
       itemBuilder: (context, index) {
@@ -442,7 +465,10 @@ class _DreamSpaceScreenState extends State<DreamSpaceScreen>
   Widget _buildBottomNav(double botPad) {
     return Container(
       color: const Color(0xFFF5F2EE),
-      padding: EdgeInsets.only(top: 10, bottom: botPad > 0 ? botPad : 14),
+      padding: EdgeInsets.only(
+        top: r.hp(context, 10),
+        bottom: botPad > 0 ? botPad : r.hp(context, 14),
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
@@ -477,17 +503,22 @@ class _TopBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final topPad = MediaQuery.of(context).padding.top;
     return Padding(
-      padding: EdgeInsets.only(top: topPad + 6, left: 16, right: 16, bottom: 4),
+      padding: EdgeInsets.only(
+        top: topPad + r.hp(context, 6),
+        left: r.wp(context, 16),
+        right: r.wp(context, 16),
+        bottom: r.hp(context, 4),
+      ),
       child: Row(
         children: [
           // Title
-          const Text(
+          Text(
             'AI Interior Design',
             style: TextStyle(
-              fontSize: 30,
+              fontSize: r.sp(context, 30),
               fontFamily: 'Georgia',
               fontWeight: FontWeight.w500,
-              color: Color.fromRGBO(135, 63, 0, 1),
+              color: const Color.fromRGBO(135, 63, 0, 1),
               letterSpacing: -0.2,
             ),
           ),
@@ -498,10 +529,13 @@ class _TopBar extends StatelessWidget {
               Navigator.of(context).pushNamed(CreditsScreen.routeName);
             },
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              padding: EdgeInsets.symmetric(
+                horizontal: r.wp(context, 10),
+                vertical: r.hp(context, 5),
+              ),
               decoration: BoxDecoration(
                 color: const Color(0xFFFFF3E8),
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(r.wp(context, 20)),
                 border: Border.all(
                   color: const Color(0xFFE8873A).withOpacity(0.3),
                 ),
@@ -515,26 +549,26 @@ class _TopBar extends StatelessWidget {
                       return Text(
                         creditsNotifier.value.toString(),
                         style: TextStyle(
-                          fontSize: isIPad(context) ? 50 : 16,
+                          fontSize: r.sp(context, 16),
                           fontWeight: FontWeight.w700,
-                          color: Color(0xFF1A1A1A),
+                          color: const Color(0xFF1A1A1A),
                           letterSpacing: -0.2,
                         ),
                       );
                     },
                   ),
-                  const SizedBox(width: 4),
+                  r.horizontalSpace(context, 4),
                   CustomImageview(
                     imagePath: "assets/images/credit.png",
-                    height: 25,
-                    width: 25,
+                    height: r.wp(context, 25),
+                    width: r.wp(context, 25),
                     fit: BoxFit.contain,
                   ),
                 ],
               ),
             ),
           ),
-          const SizedBox(width: 8),
+          r.horizontalSpace(context, 8),
           // Settings
           InkWell(
             onTap: () {
@@ -542,8 +576,8 @@ class _TopBar extends StatelessWidget {
             },
             child: CustomImageview(
               imagePath: "assets/images/setting.png",
-              height: 25,
-              width: 25,
+              height: r.wp(context, 25),
+              width: r.wp(context, 25),
             ),
           ),
         ],
@@ -585,7 +619,7 @@ class _RoomCardState extends State<_RoomCard> {
         });
       },
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(r.wp(context, 18)),
         child: SizedBox(
           width: double.infinity,
           child: Image.network(widget.data, fit: BoxFit.cover),
@@ -603,10 +637,14 @@ class _CardPlaceholder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: height,
+      height: r.hp(context, height),
       color: const Color(0xFFE0DBD4),
-      child: const Center(
-        child: Icon(Icons.image_outlined, size: 38, color: Color(0xFFB0A898)),
+      child: Center(
+        child: Icon(
+          Icons.image_outlined,
+          size: r.wp(context, 38),
+          color: const Color(0xFFB0A898),
+        ),
       ),
     );
   }
@@ -637,16 +675,16 @@ class _NavBtn extends StatelessWidget {
       onTap: () => onTap(idx),
       behavior: HitTestBehavior.opaque,
       child: SizedBox(
-        width: 80,
+        width: r.wp(context, 80),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 26, color: color),
-            const SizedBox(height: 4),
+            Icon(icon, size: r.wp(context, 26), color: color),
+            r.verticalSpace(context, 4),
             Text(
               label,
               style: TextStyle(
-                fontSize: 12,
+                fontSize: r.sp(context, 12),
                 fontWeight: sel ? FontWeight.w700 : FontWeight.w400,
                 color: color,
               ),
@@ -677,23 +715,24 @@ class _CompassNavBtn extends StatelessWidget {
   Widget build(BuildContext context) {
     final sel = idx == current;
     final color = sel ? const Color(0xFF2A7A80) : const Color(0xFF8A8480);
+    final double paintSize = r.wp(context, 28);
     return GestureDetector(
       onTap: () => onTap(idx),
       behavior: HitTestBehavior.opaque,
       child: SizedBox(
-        width: 80,
+        width: r.wp(context, 80),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             CustomPaint(
-              size: const Size(28, 28),
+              size: Size(paintSize, paintSize),
               painter: _CompassPainter(color: color),
             ),
-            const SizedBox(height: 4),
+            r.verticalSpace(context, 4),
             Text(
               label,
               style: TextStyle(
-                fontSize: 12,
+                fontSize: r.sp(context, 12),
                 fontWeight: sel ? FontWeight.w700 : FontWeight.w400,
                 color: color,
               ),
@@ -717,21 +756,22 @@ class _CompassPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final cx = size.width / 2;
     final cy = size.height / 2;
+    final scale = size.width / 28.0;
     final paint =
         Paint()
           ..color = color
-          ..strokeWidth = 2.0
+          ..strokeWidth = 2.0 * scale
           ..style = PaintingStyle.stroke;
 
     for (int i = 0; i < 8; i++) {
       final angle = i * math.pi / 4;
       canvas.drawLine(
-        Offset(cx + 4 * math.cos(angle), cy + 4 * math.sin(angle)),
-        Offset(cx + 12 * math.cos(angle), cy + 12 * math.sin(angle)),
+        Offset(cx + 4 * scale * math.cos(angle), cy + 4 * scale * math.sin(angle)),
+        Offset(cx + 12 * scale * math.cos(angle), cy + 12 * scale * math.sin(angle)),
         paint,
       );
     }
-    canvas.drawCircle(Offset(cx, cy), 2.5, Paint()..color = color);
+    canvas.drawCircle(Offset(cx, cy), 2.5 * scale, Paint()..color = color);
   }
 
   @override

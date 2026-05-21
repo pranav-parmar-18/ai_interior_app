@@ -569,6 +569,7 @@ import 'package:ai_interior/widgets/custom_imageview.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:ai_interior/utils/responsive_utils.dart';
 
 import '../../../services/subscription_manager.dart';
 import '../../subscription/presentation/subscription_screen.dart';
@@ -598,7 +599,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           // ── App Bar ──────────────────────────────────────────────────
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+            padding: EdgeInsets.symmetric(
+              horizontal: r.wp(context, 20),
+              vertical: r.hp(context, 14),
+            ),
             child: Stack(
               alignment: Alignment.center,
               children: [
@@ -607,56 +611,52 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   alignment: Alignment.centerLeft,
                   child: GestureDetector(
                     onTap: () => Navigator.of(context).maybePop(),
-                    child: const Icon(
+                    child: Icon(
                       Icons.chevron_left,
-                      size: 30,
-                      color: Color(0xFF1A1A1A),
+                      size: r.adaptiveValue(context, mobile: 30, tablet: 38),
+                      color: const Color(0xFF1A1A1A),
                     ),
                   ),
                 ),
                 // Title
-                const Text(
+                Text(
                   'Settings',
                   style: TextStyle(
                     fontFamily: 'Georgia',
-                    fontSize: 26,
+                    fontSize: r.sp(context, 26),
                     fontWeight: FontWeight.w400,
-                    color: Color(0xFF1A1A1A),
+                    color: const Color(0xFF1A1A1A),
                   ),
                 ),
               ],
             ),
           ),
 
-          const SizedBox(height: 8),
+          r.verticalSpace(context, 8),
 
           Expanded(
             child: ListView(
-              padding: EdgeInsets.fromLTRB(20, 0, 20, bottomPadding + 20),
+              padding: EdgeInsets.fromLTRB(
+                r.wp(context, 20),
+                0,
+                r.wp(context, 20),
+                bottomPadding + r.hp(context, 20),
+              ),
               physics: const BouncingScrollPhysics(),
               children: [
                 // ── Premium Banner ───────────────────────────────────
                 _PremiumBanner(),
 
-                const SizedBox(height: 20),
+                r.verticalSpace(context, 20),
 
                 // ── Group 1 ──────────────────────────────────────────
                 _SettingsGroup(
                   items: [
-                    // _SettingsItem(
-                    //   icon: _CreditIcon(),
-                    //   label: '200 Credits',
-                    //   onTap: () {
-                    //     Navigator.of(
-                    //       context,
-                    //     ).pushNamed(CreditsScreen.routeName);
-                    //   },
-                    // ),
                     _SettingsItem(
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.translate,
-                        size: 24,
-                        color: Color(0xFF1A1A1A),
+                        size: r.wp(context, 24),
+                        color: const Color(0xFF1A1A1A),
                       ),
                       label: 'Change Language',
                       onTap: () {
@@ -668,51 +668,51 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                r.verticalSpace(context, 16),
                 // ── Group 2 ──────────────────────────────────────────
                 _SettingsGroup(
                   items: [
                     _SettingsItem(
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.ios_share,
-                        size: 22,
-                        color: Color(0xFF1A1A1A),
+                        size: r.wp(context, 22),
+                        color: const Color(0xFF1A1A1A),
                       ),
                       label: 'Share App',
                       onTap: () {},
                     ),
                     _SettingsItem(
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.star,
-                        size: 23,
-                        color: Color(0xFF1A1A1A),
+                        size: r.wp(context, 23),
+                        color: const Color(0xFF1A1A1A),
                       ),
                       label: 'Rate Us',
                       onTap: () {},
                     ),
                     _SettingsItem(
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.headset_mic_outlined,
-                        size: 23,
-                        color: Color(0xFF1A1A1A),
+                        size: r.wp(context, 23),
+                        color: const Color(0xFF1A1A1A),
                       ),
                       label: 'Support',
                       onTap: () {},
                     ),
                     _SettingsItem(
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.insert_drive_file_outlined,
-                        size: 23,
-                        color: Color(0xFF1A1A1A),
+                        size: r.wp(context, 23),
+                        color: const Color(0xFF1A1A1A),
                       ),
                       label: 'Terms & Conditions',
                       onTap: () {},
                     ),
                     _SettingsItem(
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.shield_outlined,
-                        size: 23,
-                        color: Color(0xFF1A1A1A),
+                        size: r.wp(context, 23),
+                        color: const Color(0xFF1A1A1A),
                       ),
                       label: 'Privacy Policy',
                       onTap: () {},
@@ -726,14 +726,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           // Home indicator
           Container(
-            width: 134,
-            height: 5,
+            width: r.wp(context, 134),
+            height: r.hp(context, 5),
             margin: EdgeInsets.only(
-              bottom: bottomPadding > 0 ? bottomPadding - 4 : 8,
+              bottom: bottomPadding > 0 ? bottomPadding - 4 : r.hp(context, 8),
             ),
             decoration: BoxDecoration(
               color: const Color(0xFF1A1A1A),
-              borderRadius: BorderRadius.circular(3),
+              borderRadius: BorderRadius.circular(r.wp(context, 3)),
             ),
           ),
         ],
@@ -764,40 +764,45 @@ class _PremiumBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final containerSize = r.adaptiveValue(context, mobile: 70.0, tablet: 90.0);
+
     return GestureDetector(
       onTap: () {
         openSubscriptionScreen(context);
       },
       child: Container(
-        height: 92,
+        height: r.adaptiveValue(context, mobile: 92.0, tablet: 112.0),
         decoration: BoxDecoration(
           color: const Color(0xFF3A7D8C),
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(r.wp(context, 18)),
         ),
         child: Row(
           children: [
-            const SizedBox(width: 12),
+            r.horizontalSpace(context, 12),
 
             // House icon in white circle
             Container(
-              width: 70,
-              height: 70,
+              width: containerSize,
+              height: containerSize,
               decoration: const BoxDecoration(
                 color: Colors.white,
                 shape: BoxShape.circle,
               ),
               child: Center(
                 child: CustomPaint(
-                  size: const Size(44, 44),
+                  size: Size(
+                    r.adaptiveValue(context, mobile: 44.0, tablet: 56.0),
+                    r.adaptiveValue(context, mobile: 44.0, tablet: 56.0),
+                  ),
                   painter: _HouseDiamondPainter(),
                 ),
               ),
             ),
 
-            const SizedBox(width: 16),
+            r.horizontalSpace(context, 16),
 
             // Text
-            const Expanded(
+            Expanded(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -806,17 +811,17 @@ class _PremiumBanner extends StatelessWidget {
                     'Upgrade To Premium',
                     style: TextStyle(
                       fontFamily: 'Georgia',
-                      fontSize: 18,
+                      fontSize: r.sp(context, 18),
                       fontWeight: FontWeight.w700,
                       color: Colors.white,
                     ),
                   ),
-                  SizedBox(height: 3),
+                  r.verticalSpace(context, 3),
                   Text(
                     'Unlock all benefits!',
                     style: TextStyle(
                       fontFamily: 'Georgia',
-                      fontSize: 14,
+                      fontSize: r.sp(context, 14),
                       fontWeight: FontWeight.w400,
                       color: Colors.white,
                     ),
@@ -826,8 +831,12 @@ class _PremiumBanner extends StatelessWidget {
             ),
 
             // Chevron
-            const Icon(Icons.chevron_right, color: Colors.white, size: 26),
-            const SizedBox(width: 12),
+            Icon(
+              Icons.chevron_right,
+              color: Colors.white,
+              size: r.wp(context, 26),
+            ),
+            r.horizontalSpace(context, 12),
           ],
         ),
       ),
@@ -981,8 +990,8 @@ class _CreditIcon extends StatelessWidget {
   Widget build(BuildContext context) {
     return CustomImageview(
       imagePath: "assets/images/credit.png",
-      height: 30,
-      width: 30,
+      height: r.wp(context, 30),
+      width: r.wp(context, 30),
     );
   }
 }
@@ -1000,7 +1009,7 @@ class _SettingsGroup extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(r.wp(context, 18)),
       ),
       child: Column(children: items),
     );
@@ -1045,12 +1054,15 @@ class _SettingsItemState extends State<_SettingsItem> {
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+              padding: EdgeInsets.symmetric(
+                horizontal: r.wp(context, 18),
+                vertical: r.hp(context, 16),
+              ),
               child: Row(
                 children: [
                   // Icon container (fixed width for alignment)
-                  SizedBox(width: 30, child: widget.icon),
-                  const SizedBox(width: 14),
+                  SizedBox(width: r.wp(context, 30), child: widget.icon),
+                  r.horizontalSpace(context, 14),
                   // Label
                   Expanded(
                     child: Text(

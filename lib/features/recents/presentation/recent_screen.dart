@@ -5,6 +5,7 @@ import 'package:ai_interior/models/recents_model_response.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:ai_interior/utils/responsive_utils.dart';
 import '../../../widgets/custom_imageview.dart';
 import '../../credit/presentataion/credit_screen.dart';
 import '../../home/presentation/home_screen.dart';
@@ -71,29 +72,35 @@ class _RecentsScreenState extends State<RecentsScreen> {
     final items = recentListModelResponse?.data?.data ?? [];
 
     if (items.isEmpty) {
-      return const Center(
+      return Center(
         child: Text(
           "No recent items found",
-          style: TextStyle(color: Colors.grey),
+          style: TextStyle(
+            color: Colors.grey,
+            fontSize: r.sp(context, 16),
+          ),
         ),
       );
     }
 
     return GridView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      padding: EdgeInsets.symmetric(
+        horizontal: r.wp(context, 14),
+        vertical: r.hp(context, 10),
+      ),
       physics: const BouncingScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 10,
-        mainAxisSpacing: 10,
-        childAspectRatio: 0.75,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: r.gridColumns(context),
+        crossAxisSpacing: r.wp(context, 10),
+        mainAxisSpacing: r.hp(context, 10),
+        childAspectRatio: r.gridAspectRatio(context, mobile: 0.75, tablet: 0.8),
       ),
       itemCount: items.length,
       itemBuilder: (context, index) {
         final item = items[index];
 
         return InkWell(
-          borderRadius: BorderRadius.circular(15),
+          borderRadius: BorderRadius.circular(r.adaptiveValue(context, mobile: 15, tablet: 22)),
           onTap: () {
             Navigator.of(context).pushNamed(
               RecentOutputScreen.routeName,
@@ -108,7 +115,7 @@ class _RecentsScreenState extends State<RecentsScreen> {
             );
           },
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(15),
+            borderRadius: BorderRadius.circular(r.adaptiveValue(context, mobile: 15, tablet: 22)),
             child: Stack(
               fit: StackFit.expand,
               children: [
@@ -121,7 +128,7 @@ class _RecentsScreenState extends State<RecentsScreen> {
                   left: 0,
                   right: 0,
                   child: Container(
-                    height: 60,
+                    height: r.adaptiveValue(context, mobile: 60, tablet: 80),
                     decoration: const BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.bottomCenter,
@@ -132,27 +139,27 @@ class _RecentsScreenState extends State<RecentsScreen> {
                   ),
                 ),
                 item.spaceType == null
-                    ? SizedBox.shrink()
+                    ? const SizedBox.shrink()
                     : Positioned(
-                      bottom: 10,
-                      left: 10,
+                      bottom: r.adaptiveValue(context, mobile: 10, tablet: 15),
+                      left: r.adaptiveValue(context, mobile: 10, tablet: 15),
                       child: Container(
                         padding: EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 5,
+                          horizontal: r.wp(context, 10),
+                          vertical: r.hp(context, 5),
                         ),
                         decoration: BoxDecoration(
-                          color: Color.fromRGBO(255, 255, 255, 0.5),
-                          borderRadius: BorderRadius.circular(50),
+                          color: const Color.fromRGBO(255, 255, 255, 0.5),
+                          borderRadius: BorderRadius.circular(r.wp(context, 50)),
                         ),
                         child: Text(
                           item.spaceType ?? "",
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 12,
+                          style: TextStyle(
+                            fontSize: r.sp(context, 12),
                             fontWeight: FontWeight.w700,
-                            color: Color.fromRGBO(0, 0, 0, 1),
+                            color: const Color.fromRGBO(0, 0, 0, 1),
                             letterSpacing: -0.2,
                           ),
                         ),
@@ -171,35 +178,39 @@ class _RecentsScreenState extends State<RecentsScreen> {
       mainAxisSize: MainAxisSize.min,
       children: [
         // Illustrated open box with floating item
-        CustomImageview(imagePath: "assets/images/no_recents.png"),
-        const SizedBox(height: 28),
+        CustomImageview(
+          imagePath: "assets/images/no_recents.png",
+          height: r.adaptiveValue(context, mobile: 180, tablet: 260),
+          width: r.adaptiveValue(context, mobile: 180, tablet: 260),
+        ),
+        SizedBox(height: r.hp(context, 3.5)),
 
         // Title
-        const Text(
+        Text(
           'Your Designs Will Appear Here',
           textAlign: TextAlign.center,
           style: TextStyle(
-            fontSize: 22,
+            fontSize: r.sp(context, 22),
             fontWeight: FontWeight.w400,
-            color: Color(0xFF1C1A18),
+            color: const Color(0xFF1C1A18),
             letterSpacing: -0.3,
             height: 1.25,
             fontFamily: 'Georgia',
           ),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: r.hp(context, 1.5)),
 
         // Subtitle
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 32),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: r.wp(context, 32)),
           child: Text(
             'Upload a photo, try a style, and watch AI do the magic!',
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 15,
+              fontSize: r.sp(context, 15),
               fontFamily: 'Georgia',
               fontWeight: FontWeight.w400,
-              color: Color(0xFF8A8480),
+              color: const Color(0xFF8A8480),
               height: 1.5,
               letterSpacing: 0.1,
             ),
@@ -546,17 +557,22 @@ class _TopBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final topPad = MediaQuery.of(context).padding.top;
     return Padding(
-      padding: EdgeInsets.only(top: topPad + 6, left: 16, right: 16, bottom: 4),
+      padding: EdgeInsets.only(
+        top: topPad + r.hp(context, 6),
+        left: r.wp(context, 16),
+        right: r.wp(context, 16),
+        bottom: r.hp(context, 4),
+      ),
       child: Row(
         children: [
           // Title
-          const Text(
+          Text(
             'AI Interior Design',
             style: TextStyle(
-              fontSize: 30,
+              fontSize: r.sp(context, 30),
               fontFamily: 'Georgia',
               fontWeight: FontWeight.w500,
-              color: Color.fromRGBO(135, 63, 0, 1),
+              color: const Color.fromRGBO(135, 63, 0, 1),
               letterSpacing: -0.2,
             ),
           ),
@@ -567,10 +583,13 @@ class _TopBar extends StatelessWidget {
               Navigator.of(context).pushNamed(CreditsScreen.routeName);
             },
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              padding: EdgeInsets.symmetric(
+                horizontal: r.wp(context, 10),
+                vertical: r.hp(context, 5),
+              ),
               decoration: BoxDecoration(
                 color: const Color(0xFFFFF3E8),
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(r.wp(context, 20)),
                 border: Border.all(
                   color: const Color(0xFFE8873A).withOpacity(0.3),
                 ),
@@ -584,26 +603,26 @@ class _TopBar extends StatelessWidget {
                       return Text(
                         creditsNotifier.value.toString(),
                         style: TextStyle(
-                          fontSize: isIPad(context) ? 50 : 16,
+                          fontSize: isIPad(context) ? r.sp(context, 50) : r.sp(context, 16),
                           fontWeight: FontWeight.w700,
-                          color: Color(0xFF1A1A1A),
+                          color: const Color(0xFF1A1A1A),
                           letterSpacing: -0.2,
                         ),
                       );
                     },
                   ),
-                  const SizedBox(width: 4),
+                  SizedBox(width: r.wp(context, 4)),
                   CustomImageview(
                     imagePath: "assets/images/credit.png",
-                    height: 25,
-                    width: 25,
+                    height: r.wp(context, 25),
+                    width: r.wp(context, 25),
                     fit: BoxFit.contain,
                   ),
                 ],
               ),
             ),
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: r.wp(context, 8)),
           // Settings
           InkWell(
             onTap: () {
@@ -611,8 +630,8 @@ class _TopBar extends StatelessWidget {
             },
             child: CustomImageview(
               imagePath: "assets/images/setting.png",
-              height: 25,
-              width: 25,
+              height: r.wp(context, 25),
+              width: r.wp(context, 25),
             ),
           ),
         ],

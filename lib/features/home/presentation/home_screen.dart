@@ -1,6 +1,7 @@
 import 'package:ai_interior/bloc/create_user/create_user_bloc.dart';
 import 'package:ai_interior/features/style_transfer/presentation/style_transfer_screeen.dart';
 import 'package:ai_interior/models/create_user_model_response.dart';
+import 'package:ai_interior/utils/responsive_utils.dart';
 import 'package:ai_interior/widgets/custom_imageview.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -177,15 +178,21 @@ class TopBarAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
+    final titleFontSize = r.sp(context, 30);
+    final creditsFontSize = r.sp(context, 16);
+    final iconSize = r.adaptiveValue(context, mobile: 25, tablet: 35);
+    final badgePaddingH = r.wp(context, 10);
+    final badgePaddingV = r.hp(context, 5);
+
     return AppBar(
       automaticallyImplyLeading: false,
       backgroundColor: Colors.transparent,
       elevation: 0,
-      titleSpacing: 16,
-      title: const Text(
+      titleSpacing: r.wp(context, 16),
+      title: Text(
         'AI Interior Design',
         style: TextStyle(
-          fontSize: 30,
+          fontSize: titleFontSize,
           fontFamily: 'Georgia',
           fontWeight: FontWeight.w500,
           color: Color.fromRGBO(135, 63, 0, 1),
@@ -199,11 +206,14 @@ class TopBarAppBar extends StatelessWidget implements PreferredSizeWidget {
             Navigator.of(context).pushNamed(CreditsScreen.routeName);
           },
           child: Container(
-            margin: const EdgeInsets.only(right: 8),
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            margin: EdgeInsets.only(right: r.wp(context, 8)),
+            padding: EdgeInsets.symmetric(
+              horizontal: badgePaddingH,
+              vertical: badgePaddingV,
+            ),
             decoration: BoxDecoration(
               color: const Color(0xFFFFF3E8),
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(r.wp(context, 20)),
               border: Border.all(
                 color: const Color(0xFFE8873A).withOpacity(0.3),
               ),
@@ -217,7 +227,7 @@ class TopBarAppBar extends StatelessWidget implements PreferredSizeWidget {
                     return Text(
                       creditsNotifier.value.toString(),
                       style: TextStyle(
-                        fontSize: isIPad(context) ? 50 : 16,
+                        fontSize: creditsFontSize,
                         fontWeight: FontWeight.w700,
                         color: Color(0xFF1A1A1A),
                         letterSpacing: -0.2,
@@ -225,11 +235,11 @@ class TopBarAppBar extends StatelessWidget implements PreferredSizeWidget {
                     );
                   },
                 ),
-                const SizedBox(width: 4),
+                SizedBox(width: r.wp(context, 4)),
                 CustomImageview(
                   imagePath: "assets/images/credit.png",
-                  height: 25,
-                  width: 25,
+                  height: iconSize,
+                  width: iconSize,
                   fit: BoxFit.contain,
                 ),
               ],
@@ -243,11 +253,11 @@ class TopBarAppBar extends StatelessWidget implements PreferredSizeWidget {
             Navigator.of(context).pushNamed(SettingsScreen.routeName);
           },
           child: Padding(
-            padding: const EdgeInsets.only(right: 16),
+            padding: EdgeInsets.only(right: r.wp(context, 16)),
             child: CustomImageview(
               imagePath: "assets/images/setting.png",
-              height: 25,
-              width: 25,
+              height: iconSize,
+              width: iconSize,
             ),
           ),
         ),
@@ -267,8 +277,21 @@ class _FeatureCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final hPadding = r.wp(context, 14);
+    final vPadding = r.hp(context, 6);
+    final imageHeight = r.clampedHeight(
+      context,
+      percent: 37,
+      minHeight: 200,
+      maxHeight: 450,
+    );
+    final borderRadius = r.wp(context, 18);
+    final iconSize = r.adaptiveValue(context, mobile: 45, tablet: 60);
+    final titleFontSize = r.sp(context, 18);
+    final subtitleFontSize = r.sp(context, 16);
+
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+      padding: EdgeInsets.symmetric(horizontal: hPadding, vertical: vPadding),
       child: Column(
         children: [
           // Image area
@@ -294,9 +317,9 @@ class _FeatureCard extends StatelessWidget {
               }
             },
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(18),
+              borderRadius: BorderRadius.circular(borderRadius),
               child: SizedBox(
-                height: 300,
+                height: imageHeight,
                 width: double.infinity,
                 child: Stack(
                   fit: StackFit.expand,
@@ -308,38 +331,41 @@ class _FeatureCard extends StatelessWidget {
 
           // Label row
           Padding(
-            padding: const EdgeInsets.only(
-              top: 10,
-              bottom: 4,
-              left: 2,
-              right: 2,
+            padding: EdgeInsets.only(
+              top: r.hp(context, 10),
+              bottom: r.hp(context, 4),
+              left: r.wp(context, 2),
+              right: r.wp(context, 2),
             ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Icon circle
-                CustomImageview(imagePath: item.icon, height: 45, width: 45),
-                const SizedBox(width: 10),
+                CustomImageview(
+                  imagePath: item.icon,
+                  height: iconSize,
+                  width: iconSize,
+                ),
+                SizedBox(width: r.wp(context, 10)),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         item.title,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontFamily: 'Lato',
-                          fontSize: 18,
+                          fontSize: titleFontSize,
                           fontWeight: FontWeight.w600,
                           color: Color.fromRGBO(46, 46, 46, 1),
                         ),
                       ),
-                      const SizedBox(height: 2),
+                      SizedBox(height: r.hp(context, 2)),
                       Text(
                         item.subtitle,
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: subtitleFontSize,
                           fontFamily: 'Lato',
-
                           color: Color.fromRGBO(46, 46, 46, 1),
                           height: 1.3,
                         ),

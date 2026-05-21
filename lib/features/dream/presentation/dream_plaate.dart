@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:ai_interior/utils/responsive_utils.dart';
 
 import '../../../models/interior_design_create_model_response.dart';
 import '../../../theme/app_colors.dart';
@@ -264,49 +265,54 @@ class _DreamColorPaletteScreenState
           body:
               state is InteriorDeignCreateLoadingState
                   ? Column(
-                    children: [
-                      SizedBox(height: 300),
-                      Image.asset("assets/gifs/loading.gif", height: 393),
-                      SizedBox(height: 10),
-                      Text(
-                        "Bringing your vision to life...",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w400,
-                          color: Color.fromRGBO(90, 106, 117, 1),
-                          letterSpacing: -0.3,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Spacer(),
+                        Image.asset(
+                          "assets/gifs/loading.gif",
+                          height: r.adaptiveValue(context, mobile: 250, tablet: 350),
                         ),
-                      ),
-                      SizedBox(height: 150),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 30.0),
-                        child: Text(
-                          "Keep the app open & don’t lock your device. This may take around 10 seconds.",
-                          textAlign: TextAlign.center,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
+                        SizedBox(height: r.hp(context, 10)),
+                        Text(
+                          "Bringing your vision to life...",
                           style: TextStyle(
-                            fontSize: 14,
+                            fontSize: r.sp(context, 16),
                             fontWeight: FontWeight.w400,
-                            color: Color.fromRGBO(90, 106, 117, 1),
+                            color: const Color.fromRGBO(90, 106, 117, 1),
                             letterSpacing: -0.3,
                           ),
                         ),
-                      ),
-                    ],
-                  )
-                  : SafeArea(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildAppBar(),
-                        _buildProgressBar(),
-                        _buildTitle(),
-                        Expanded(child: _buildList()),
-                        _buildGenerateButton(),
+                        const Spacer(),
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: r.wp(context, 30.0)),
+                          child: Text(
+                            "Keep the app open & don’t lock your device. This may take around 10 seconds.",
+                            textAlign: TextAlign.center,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: r.sp(context, 14),
+                              fontWeight: FontWeight.w400,
+                              color: const Color.fromRGBO(90, 106, 117, 1),
+                              letterSpacing: -0.3,
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: r.hp(context, 40)),
                       ],
+                    )
+                  : SafeArea(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildAppBar(),
+                          _buildProgressBar(),
+                          _buildTitle(),
+                          Expanded(child: _buildList()),
+                          _buildGenerateButton(),
+                        ],
+                      ),
                     ),
-                  ),
         );
       },
     );
@@ -317,10 +323,10 @@ class _DreamColorPaletteScreenState
 
   Widget _buildProgressBar() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: EdgeInsets.symmetric(horizontal: r.wp(context, 10), vertical: r.hp(context, 6)),
       child: LinearProgressIndicator(
         value: 1,
-        minHeight: 3,
+        minHeight: r.hp(context, 3),
         backgroundColor: const Color(0xFFE0DDD8),
         valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF3A7D7B)),
       ),
@@ -329,32 +335,32 @@ class _DreamColorPaletteScreenState
 
   Widget _buildAppBar() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+      padding: EdgeInsets.fromLTRB(r.wp(context, 16), r.hp(context, 8), r.wp(context, 16), 0),
       child: Row(
         children: [
           GestureDetector(
             onTap: () {
               Navigator.of(context).pop();
             },
-            child: const SizedBox(
-              width: 36,
-              height: 36,
+            child: SizedBox(
+              width: r.adaptiveValue(context, mobile: 36, tablet: 44),
+              height: r.adaptiveValue(context, mobile: 36, tablet: 44),
               child: Icon(
                 Icons.arrow_back_ios_rounded,
-                size: 20,
-                color: Color(0xFF1A1A1A),
+                size: r.sp(context, 20),
+                color: const Color(0xFF1A1A1A),
               ),
             ),
           ),
-          const Expanded(
+          Expanded(
             child: Center(
               child: Text(
                 'Create Space',
                 style: TextStyle(
-                  fontSize: 36,
+                  fontSize: r.sp(context, 36),
                   fontFamily: 'Georgia',
                   fontWeight: FontWeight.w500,
-                  color: Color(0xFF1A1A1A),
+                  color: const Color(0xFF1A1A1A),
                   letterSpacing: -0.3,
                 ),
               ),
@@ -362,10 +368,10 @@ class _DreamColorPaletteScreenState
           ),
           // Coin badge
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            padding: EdgeInsets.symmetric(horizontal: r.wp(context, 10), vertical: r.hp(context, 5)),
             decoration: BoxDecoration(
               color: const Color(0xFFFFF3E8),
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(r.adaptiveValue(context, mobile: 20, tablet: 24)),
               border: Border.all(
                 color: const Color(0xFFE8873A).withOpacity(0.3),
               ),
@@ -379,19 +385,19 @@ class _DreamColorPaletteScreenState
                     return Text(
                       creditsNotifier.value.toString(),
                       style: TextStyle(
-                        fontSize: isIPad(context) ? 50 : 16,
+                        fontSize: isIPad(context) ? r.sp(context, 50) : r.sp(context, 16),
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFF1A1A1A),
+                        color: const Color(0xFF1A1A1A),
                         letterSpacing: -0.2,
                       ),
                     );
                   },
                 ),
-                const SizedBox(width: 4),
+                SizedBox(width: r.wp(context, 4)),
                 CustomImageview(
                   imagePath: "assets/images/credit.png",
-                  height: 25,
-                  width: 25,
+                  height: r.adaptiveValue(context, mobile: 25, tablet: 32),
+                  width: r.adaptiveValue(context, mobile: 25, tablet: 32),
                   fit: BoxFit.contain,
                 ),
               ],
@@ -405,12 +411,12 @@ class _DreamColorPaletteScreenState
   // ── Title ─────────────────────────────────────────────────────────────────
 
   Widget _buildTitle() {
-    return  Padding(
-      padding: EdgeInsets.fromLTRB(16, 10, 16, 8),
+    return Padding(
+      padding: EdgeInsets.fromLTRB(r.wp(context, 16), r.hp(context, 10), r.wp(context, 16), r.hp(context, 8)),
       child: Text(
         'Choose colors for your room',
         style: TextStyle(
-          fontSize: 20,
+          fontSize: r.sp(context, 20),
           fontWeight: FontWeight.w600,
           color: AppColors.fontColor,
           letterSpacing: -0.4,
@@ -424,7 +430,7 @@ class _DreamColorPaletteScreenState
 
   Widget _buildList() {
     return ListView.separated(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      padding: EdgeInsets.symmetric(horizontal: r.wp(context, 12), vertical: r.hp(context, 4)),
       itemCount: palettes.length,
       separatorBuilder: (_, __) => const SizedBox(height: 0),
       itemBuilder: (context, index) {
@@ -448,28 +454,26 @@ class _DreamColorPaletteScreenState
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
         curve: Curves.easeInOut,
-        margin: const EdgeInsets.symmetric(vertical: 3),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        margin: EdgeInsets.symmetric(vertical: r.hp(context, 3)),
+        padding: EdgeInsets.symmetric(horizontal: r.wp(context, 14), vertical: r.hp(context, 10)),
         decoration: BoxDecoration(
           color: isSelected ? const Color(0xFFEDE8E0) : const Color(0xFFFAF8F5),
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(r.adaptiveValue(context, mobile: 14, tablet: 18)),
           border: Border.all(
-            color:
-                isSelected
-                    ? const Color(0xFFE8873A).withOpacity(0.6)
-                    : const Color(0xFFE8E2D8),
+            color: isSelected
+                ? const Color(0xFFE8873A).withOpacity(0.6)
+                : const Color(0xFFE8E2D8),
             width: isSelected ? 1.5 : 1,
           ),
-          boxShadow:
-              isSelected
-                  ? [
-                    BoxShadow(
-                      color: const Color(0xFFE8873A).withOpacity(0.12),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ]
-                  : [],
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: const Color(0xFFE8873A).withOpacity(0.12),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : [],
         ),
         child: Row(
           children: [
@@ -478,14 +482,14 @@ class _DreamColorPaletteScreenState
               child: Text(
                 palette.name,
                 style: TextStyle(
-                  fontSize: 14.5,
+                  fontSize: r.sp(context, 14.5),
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                   color: const Color(0xFF2A2420),
                   letterSpacing: -0.1,
                 ),
               ),
             ),
-            const SizedBox(width: 8),
+            SizedBox(width: r.wp(context, 8)),
             // Color swatches / smart icon
             palette.isSmart
                 ? _buildSmartIcon()
@@ -499,9 +503,10 @@ class _DreamColorPaletteScreenState
   // ── Smart Tones AI icon ───────────────────────────────────────────────────
 
   Widget _buildSmartIcon() {
+    final double iconSize = r.adaptiveValue(context, mobile: 24, tablet: 30);
     return Container(
-      width: 42,
-      height: 42,
+      width: r.adaptiveValue(context, mobile: 42, tablet: 52),
+      height: r.adaptiveValue(context, mobile: 42, tablet: 52),
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         gradient: const LinearGradient(
@@ -521,7 +526,7 @@ class _DreamColorPaletteScreenState
         alignment: Alignment.center,
         children: [
           // Colourful cube icon approximation using overlapping shapes
-          CustomPaint(size: const Size(24, 24), painter: _CubePainter()),
+          CustomPaint(size: Size(iconSize, iconSize), painter: _CubePainter()),
         ],
       ),
     );
@@ -530,9 +535,9 @@ class _DreamColorPaletteScreenState
   // ── Color swatches row ────────────────────────────────────────────────────
 
   Widget _buildSwatches(List<Color> colors) {
-    // Circles overlap by 8 px; lay them right-to-left so left circle is on top
-    const double size = 34.0;
-    const double overlap = 10.0;
+    // Circles overlap by 10 px
+    final double size = r.adaptiveValue(context, mobile: 34.0, tablet: 42.0);
+    final double overlap = r.adaptiveValue(context, mobile: 10.0, tablet: 12.0);
 
     final totalWidth = size + (colors.length - 1) * (size - overlap);
 
@@ -564,7 +569,7 @@ class _DreamColorPaletteScreenState
 
   Widget _buildGenerateButton() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      padding: EdgeInsets.symmetric(horizontal: r.wp(context, 20), vertical: r.hp(context, 12)),
       child: GestureDetector(
         onTap: () async {
           final imageFile = await assetToFile(
@@ -585,10 +590,10 @@ class _DreamColorPaletteScreenState
         },
         child: Container(
           width: double.infinity,
-          height: 58,
+          height: r.hp(context, 58),
           decoration: BoxDecoration(
             color: const Color(0xFFE8C9A0),
-            borderRadius: BorderRadius.circular(32),
+            borderRadius: BorderRadius.circular(r.adaptiveValue(context, mobile: 32, tablet: 40)),
             boxShadow: [
               BoxShadow(
                 color: const Color(0xFFE8C9A0).withOpacity(0.5),
@@ -598,12 +603,12 @@ class _DreamColorPaletteScreenState
             ],
           ),
           alignment: Alignment.center,
-          child: const Text(
+          child: Text(
             'Generate',
             style: TextStyle(
-              fontSize: 18,
+              fontSize: r.sp(context, 18),
               fontWeight: FontWeight.w600,
-              color: Color(0xFF5A3E1B),
+              color: const Color(0xFF5A3E1B),
               letterSpacing: 0.3,
             ),
           ),
@@ -645,34 +650,35 @@ class _CubePainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final cx = size.width / 2;
     final cy = size.height / 2;
+    final scale = size.width / 24.0;
 
     // Top face – purple/pink
     final topPath =
         Path()
-          ..moveTo(cx, cy - 8)
-          ..lineTo(cx + 9, cy - 3)
-          ..lineTo(cx, cy + 2)
-          ..lineTo(cx - 9, cy - 3)
+          ..moveTo(cx, cy - 8 * scale)
+          ..lineTo(cx + 9 * scale, cy - 3 * scale)
+          ..lineTo(cx, cy + 2 * scale)
+          ..lineTo(cx - 9 * scale, cy - 3 * scale)
           ..close();
     canvas.drawPath(topPath, Paint()..color = const Color(0xFFCC44CC));
 
     // Left face – blue
     final leftPath =
         Path()
-          ..moveTo(cx - 9, cy - 3)
-          ..lineTo(cx, cy + 2)
-          ..lineTo(cx, cy + 10)
-          ..lineTo(cx - 9, cy + 5)
+          ..moveTo(cx - 9 * scale, cy - 3 * scale)
+          ..lineTo(cx, cy + 2 * scale)
+          ..lineTo(cx, cy + 10 * scale)
+          ..lineTo(cx - 9 * scale, cy + 5 * scale)
           ..close();
     canvas.drawPath(leftPath, Paint()..color = const Color(0xFF4488FF));
 
     // Right face – orange/yellow
     final rightPath =
         Path()
-          ..moveTo(cx, cy + 2)
-          ..lineTo(cx + 9, cy - 3)
-          ..lineTo(cx + 9, cy + 5)
-          ..lineTo(cx, cy + 10)
+          ..moveTo(cx, cy + 2 * scale)
+          ..lineTo(cx + 9 * scale, cy - 3 * scale)
+          ..lineTo(cx + 9 * scale, cy + 5 * scale)
+          ..lineTo(cx, cy + 10 * scale)
           ..close();
     canvas.drawPath(rightPath, Paint()..color = const Color(0xFFFF8833));
   }

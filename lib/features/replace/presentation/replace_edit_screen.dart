@@ -5,74 +5,11 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:ai_interior/utils/responsive_utils.dart';
+import 'replace_describe_me.dart';
 
 import '../../../widgets/custom_imageview.dart';
 import '../../interior/presentation/interior_screen.dart';
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Responsive helpers
-// ─────────────────────────────────────────────────────────────────────────────
-
-enum _DeviceClass { phone, tablet, desktop }
-
-class _Responsive {
-  final BuildContext context;
-  final double width;
-  final double height;
-
-  _Responsive(this.context)
-      : width = MediaQuery.of(context).size.width,
-        height = MediaQuery.of(context).size.height;
-
-  _DeviceClass get deviceClass {
-    if (width >= 1024) return _DeviceClass.desktop;
-    if (width >= 600) return _DeviceClass.tablet;
-    return _DeviceClass.phone;
-  }
-
-  bool get isPhone => deviceClass == _DeviceClass.phone;
-  bool get isTablet => deviceClass == _DeviceClass.tablet;
-  bool get isDesktop => deviceClass == _DeviceClass.desktop;
-
-  // Horizontal content padding
-  double get hPad {
-    if (isDesktop) return width * 0.1;
-    if (isTablet) return 32.0;
-    return 20.0;
-  }
-
-  // Max content width on desktop
-  double get contentMaxWidth {
-    if (isDesktop) return 900.0;
-    return double.infinity;
-  }
-
-  // Upload card image height
-  double get imageHeight {
-    if (isDesktop) return 440.0;
-    if (isTablet) return 380.0;
-    return 300.0;
-  }
-
-  // Font scaling factor
-  double get fontScale {
-    if (isDesktop) return 1.2;
-    if (isTablet) return 1.1;
-    return 1.0;
-  }
-
-  double sp(double size) => size * fontScale;
-
-  // Next button height
-  double get btnHeight {
-    if (isDesktop) return 64.0;
-    if (isTablet) return 60.0;
-    return 54.0;
-  }
-
-  // Whether to show content in two-column layout
-  bool get isTwoCols => isDesktop;
-}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Screen
@@ -124,7 +61,12 @@ class _ReplaceEditScreenState extends State<ReplaceEditScreen>
   // ── Build ──────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
-    final r = _Responsive(context);
+    final isTablet = r.isTablet(context);
+    final isTwoCols = MediaQuery.of(context).size.width >= 1024;
+    final double hPad = MediaQuery.of(context).size.width >= 1024 ? MediaQuery.of(context).size.width * 0.1 : (isTablet ? 32.0 : 20.0);
+    final double contentMaxWidth = MediaQuery.of(context).size.width >= 1024 ? 900.0 : double.infinity;
+    final double imageHeight = MediaQuery.of(context).size.width >= 1024 ? 440.0 : (isTablet ? 380.0 : 300.0);
+    final double btnHeight = MediaQuery.of(context).size.width >= 1024 ? 64.0 : (isTablet ? 60.0 : 54.0);
     final topPad = MediaQuery.of(context).padding.top;
     final botPad = MediaQuery.of(context).padding.bottom;
 
@@ -134,26 +76,30 @@ class _ReplaceEditScreenState extends State<ReplaceEditScreen>
         bottom: false,
         child: FadeTransition(
           opacity: _fadeAnim,
-          child: r.isTwoCols
-              ? _buildDesktopLayout(r, botPad)
-              : _buildMobileLayout(r, topPad, botPad),
+          child: isTwoCols
+              ? _buildDesktopLayout(botPad)
+              : _buildMobileLayout(topPad, botPad),
         ),
       ),
     );
   }
 
   // ── Desktop two-column layout ──────────────────────────────────────────────
-  Widget _buildDesktopLayout(_Responsive r, double botPad) {
+  Widget _buildDesktopLayout(double botPad) {
+    final isTablet = r.isTablet(context);
+    final double hPad = MediaQuery.of(context).size.width >= 1024 ? MediaQuery.of(context).size.width * 0.1 : (isTablet ? 32.0 : 20.0);
+    final double contentMaxWidth = MediaQuery.of(context).size.width >= 1024 ? 900.0 : double.infinity;
+
     return Column(
       children: [
-        _buildAppBar(r),
+        _buildAppBar(),
         _buildProgressBar(),
         Expanded(
           child: Center(
             child: ConstrainedBox(
-              constraints: BoxConstraints(maxWidth: r.contentMaxWidth),
+              constraints: BoxConstraints(maxWidth: contentMaxWidth),
               child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: r.hPad),
+                padding: EdgeInsets.symmetric(horizontal: hPad),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -165,9 +111,9 @@ class _ReplaceEditScreenState extends State<ReplaceEditScreen>
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _buildSectionTitle('Upload a photo of your room', r),
+                            _buildSectionTitle('Upload a photo of your room'),
                             const SizedBox(height: 16),
-                            _buildUploadCard(r),
+                            _buildUploadCard(),
                           ],
                         ),
                       ),
@@ -181,15 +127,15 @@ class _ReplaceEditScreenState extends State<ReplaceEditScreen>
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _buildUndoRedoRow(r),
+                            _buildUndoRedoRow(),
                             const SizedBox(height: 20),
-                            _buildBrushLabel(r),
+                            _buildBrushLabel(),
                             const SizedBox(height: 12),
-                            _buildAreaChips(r),
+                            _buildAreaChips(),
                             const SizedBox(height: 16),
-                            _buildBrushSlider(r),
+                            _buildBrushSlider(),
                             const SizedBox(height: 32),
-                            _buildNextButton(r, botPad),
+                            _buildNextButton(botPad),
                           ],
                         ),
                       ),
@@ -205,34 +151,37 @@ class _ReplaceEditScreenState extends State<ReplaceEditScreen>
   }
 
   // ── Mobile / tablet single-column layout ──────────────────────────────────
-  Widget _buildMobileLayout(_Responsive r, double topPad, double botPad) {
+  Widget _buildMobileLayout(double topPad, double botPad) {
+    final isTablet = r.isTablet(context);
+    final double hPad = isTablet ? 32.0 : 20.0;
+
     return Column(
       children: [
-        _buildAppBar(r),
+        _buildAppBar(),
         _buildProgressBar(),
         Expanded(
           child: SingleChildScrollView(
             child: Padding(
               padding: EdgeInsets.only(
-                left: r.hPad,
-                right: r.hPad,
+                left: hPad,
+                right: hPad,
                 top: 22,
                 bottom: botPad + 80,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildSectionTitle('Upload a photo of your room', r),
+                  _buildSectionTitle('Upload a photo of your room'),
                   const SizedBox(height: 14),
-                  _buildUploadCard(r),
+                  _buildUploadCard(),
                   const SizedBox(height: 20),
-                  _buildUndoRedoRow(r),
+                  _buildUndoRedoRow(),
                   const SizedBox(height: 16),
-                  _buildBrushLabel(r),
+                  _buildBrushLabel(),
                   const SizedBox(height: 10),
-                  _buildAreaChips(r),
+                  _buildAreaChips(),
                   const SizedBox(height: 14),
-                  _buildBrushSlider(r),
+                  _buildBrushSlider(),
                 ],
               ),
             ),
@@ -251,9 +200,9 @@ class _ReplaceEditScreenState extends State<ReplaceEditScreen>
             ],
           ),
           padding: EdgeInsets.fromLTRB(
-            r.hPad, 12, r.hPad, botPad + 12,
+            hPad, 12, hPad, botPad + 12,
           ),
-          child: _buildNextButton(r, 0),
+          child: _buildNextButton(0),
         ),
       ],
     );
@@ -262,9 +211,12 @@ class _ReplaceEditScreenState extends State<ReplaceEditScreen>
   // ─────────────────────────────────────────────
   // AppBar
   // ─────────────────────────────────────────────
-  Widget _buildAppBar(_Responsive r) {
+  Widget _buildAppBar() {
+    final isTablet = r.isTablet(context);
+    final double hPad = MediaQuery.of(context).size.width >= 1024 ? MediaQuery.of(context).size.width * 0.1 : (isTablet ? 32.0 : 20.0);
+
     return Padding(
-      padding: EdgeInsets.fromLTRB(r.hPad, 10, r.hPad, 0),
+      padding: EdgeInsets.fromLTRB(hPad, 10, hPad, 0),
       child: Row(
         children: [
           // Back button
@@ -316,11 +268,11 @@ class _ReplaceEditScreenState extends State<ReplaceEditScreen>
   // ─────────────────────────────────────────────
   // Section title
   // ─────────────────────────────────────────────
-  Widget _buildSectionTitle(String text, _Responsive r) {
+  Widget _buildSectionTitle(String text) {
     return Text(
       text,
       style: TextStyle(
-        fontSize: r.sp(18),
+        fontSize: r.sp(context, 18),
         fontWeight: FontWeight.w500,
         color: const Color(0xFF1C1C1C),
         letterSpacing: -0.2,
@@ -331,7 +283,7 @@ class _ReplaceEditScreenState extends State<ReplaceEditScreen>
   // ─────────────────────────────────────────────
   // Upload card
   // ─────────────────────────────────────────────
-  Widget _buildUploadCard(_Responsive r) {
+  Widget _buildUploadCard() {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -429,7 +381,7 @@ class _ReplaceEditScreenState extends State<ReplaceEditScreen>
   // ─────────────────────────────────────────────
   // Undo / Redo row
   // ─────────────────────────────────────────────
-  Widget _buildUndoRedoRow(_Responsive r) {
+  Widget _buildUndoRedoRow() {
     return Row(
       children: [
         // Undo + redo pill
@@ -506,11 +458,11 @@ class _ReplaceEditScreenState extends State<ReplaceEditScreen>
   // ─────────────────────────────────────────────
   // Brush label
   // ─────────────────────────────────────────────
-  Widget _buildBrushLabel(_Responsive r) {
+  Widget _buildBrushLabel() {
     return Text(
       'Brush over or pick an area to edit',
       style: TextStyle(
-        fontSize: r.sp(15),
+        fontSize: r.sp(context, 15),
         fontWeight: FontWeight.w400,
         color: const Color(0xFF2A2520),
         letterSpacing: 0.1,
@@ -521,8 +473,8 @@ class _ReplaceEditScreenState extends State<ReplaceEditScreen>
   // ─────────────────────────────────────────────
   // Area chips (wraps on tablet/desktop)
   // ─────────────────────────────────────────────
-  Widget _buildAreaChips(_Responsive r) {
-    if (r.isPhone) {
+  Widget _buildAreaChips() {
+    if (!r.isTablet(context)) {
       // Horizontal scroll on phones
       return SizedBox(
         height: 38,
@@ -544,7 +496,7 @@ class _ReplaceEditScreenState extends State<ReplaceEditScreen>
       runSpacing: 8,
       children: List.generate(
         _areas.length,
-            (i) => _AreaChip(
+        (i) => _AreaChip(
           label: _areas[i],
           selected: _selectedArea == i,
           onTap: () => setState(() => _selectedArea = i),
@@ -556,7 +508,7 @@ class _ReplaceEditScreenState extends State<ReplaceEditScreen>
   // ─────────────────────────────────────────────
   // Dual brush slider
   // ─────────────────────────────────────────────
-  Widget _buildBrushSlider(_Responsive r) {
+  Widget _buildBrushSlider() {
     final sliderTheme = SliderThemeData(
       trackHeight: 4,
       thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
@@ -605,13 +557,16 @@ class _ReplaceEditScreenState extends State<ReplaceEditScreen>
   // ─────────────────────────────────────────────
   // Next button
   // ─────────────────────────────────────────────
-  Widget _buildNextButton(_Responsive r, double extraBottom) {
+  Widget _buildNextButton(double extraBottom) {
+    final isTablet = r.isTablet(context);
+    final double btnHeight = MediaQuery.of(context).size.width >= 1024 ? 64.0 : (isTablet ? 60.0 : 54.0);
+
     return SizedBox(
       width: double.infinity,
-      height: r.btnHeight,
+      height: btnHeight,
       child: GestureDetector(
         onTap: () {
-          // Navigate to next screen
+          Navigator.of(context).pushNamed(ReplaceDescribeVisionScreen.routeName);
         },
         child: Container(
           decoration: BoxDecoration(
@@ -629,7 +584,7 @@ class _ReplaceEditScreenState extends State<ReplaceEditScreen>
           child: Text(
             'Next',
             style: TextStyle(
-              fontSize: r.sp(18),
+              fontSize: r.sp(context, 18),
               fontWeight: FontWeight.w600,
               color: const Color(0xFF5A3E1B),
               letterSpacing: 0.3,

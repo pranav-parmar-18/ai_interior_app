@@ -1,6 +1,5 @@
-import 'dart:io';
-
 import 'package:ai_interior/theme/theme.dart';
+import 'package:ai_interior/utils/responsive_utils.dart';
 import 'package:flutter/material.dart';
 
 class CustomElevatedButton extends StatelessWidget {
@@ -43,34 +42,33 @@ class CustomElevatedButton extends StatelessWidget {
         : buildElevatedButtonWidget(context);
   }
 
-  bool isIPad(BuildContext context) {
-    return Platform.isIOS &&
-        MediaQuery.of(context).size.shortestSide >= 600;
-  }
+  Widget buildElevatedButtonWidget(BuildContext context) {
+    final defaultHeight = r.adaptiveValue(context, mobile: 60, tablet: 70);
+    final borderRadius = r.wp(context, 30);
+    final fontSize = r.sp(context, 22);
 
-  Widget  buildElevatedButtonWidget (BuildContext context) {
     return Container(
-      height: this.height ?? 60,
+      height: this.height ?? defaultHeight,
       width: this.width ?? double.maxFinite,
       margin: margin,
       decoration:
-      decoration ??
+          decoration ??
           BoxDecoration(
-            borderRadius: BorderRadius.circular(30),
+            borderRadius: BorderRadius.circular(borderRadius),
             gradient: LinearGradient(
               colors: [
                 Color.fromRGBO(255, 218, 179, 1),
                 Color.fromRGBO(50, 116, 127, 1),
-                ],
+              ],
             ),
           ),
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.transparent, // Make button transparent
-          shadowColor: Colors.transparent, // Remove shadow effect
-          surfaceTintColor: Colors.transparent, // Fix for Material 3
+          backgroundColor: Colors.transparent,
+          shadowColor: Colors.transparent,
+          surfaceTintColor: Colors.transparent,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30),
+            borderRadius: BorderRadius.circular(borderRadius),
           ),
         ),
         onPressed: isDisabled ?? false ? null : onPressed ?? () {},
@@ -82,15 +80,15 @@ class CustomElevatedButton extends StatelessWidget {
             Text(
               text,
               style:
-              buttonTextStyle ??
+                  buttonTextStyle ??
                   TextStyle(
                     color: appTheme.gray200,
-                    fontSize: isIPad(context) ?30 :22,
+                    fontSize: fontSize,
                     fontFamily: 'Sora',
                     fontWeight: FontWeight.w800,
                   ),
             ),
-            rightIcon ?? const SizedBox.shrink()
+            rightIcon ?? const SizedBox.shrink(),
           ],
         ),
       ),

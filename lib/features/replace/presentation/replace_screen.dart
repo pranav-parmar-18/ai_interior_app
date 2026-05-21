@@ -6,6 +6,7 @@ import 'package:ai_interior/widgets/custom_imageview.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:ai_interior/utils/responsive_utils.dart';
 
 import 'package:image_picker/image_picker.dart';
 
@@ -60,19 +61,19 @@ class _ReplaceScreenState extends State<ReplaceScreen> {
           Expanded(
             child: SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.only(bottom: 24),
+              padding: EdgeInsets.only(bottom: r.hp(context, 24)),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 22),
+                  r.verticalSpace(context, 22),
                   _buildSectionTitle('Upload a photo of your room'),
-                  const SizedBox(height: 14),
+                  r.verticalSpace(context, 14),
                   _buildUploadCard(),
-                  const SizedBox(height: 20),
+                  r.verticalSpace(context, 20),
                   _buildOrDivider(),
-                  const SizedBox(height: 20),
+                  r.verticalSpace(context, 20),
                   _buildSectionTitle('Choose from Template'),
-                  const SizedBox(height: 14),
+                  r.verticalSpace(context, 14),
                   _buildTemplateGrid(),
                 ],
               ),
@@ -81,7 +82,7 @@ class _ReplaceScreenState extends State<ReplaceScreen> {
 
           // ── Next button ─────────────────────────────────────────────
           _buildNextButton(),
-          SizedBox(height: MediaQuery.of(context).padding.bottom + 8),
+          SizedBox(height: MediaQuery.of(context).padding.bottom + r.hp(context, 8)),
         ],
       ),
     );
@@ -92,32 +93,32 @@ class _ReplaceScreenState extends State<ReplaceScreen> {
   // ─────────────────────────────────────────────
   Widget _buildAppBar() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+      padding: EdgeInsets.fromLTRB(r.wp(context, 16), r.hp(context, 8), r.wp(context, 16), 0),
       child: Row(
         children: [
           GestureDetector(
             onTap: () {
               Navigator.of(context).pop();
             },
-            child: const SizedBox(
-              width: 36,
-              height: 36,
+            child: SizedBox(
+              width: r.wp(context, 36),
+              height: r.wp(context, 36),
               child: Icon(
                 Icons.arrow_back_ios_rounded,
-                size: 20,
-                color: Color(0xFF1A1A1A),
+                size: r.wp(context, 20),
+                color: const Color(0xFF1A1A1A),
               ),
             ),
           ),
-          const Expanded(
+          Expanded(
             child: Center(
               child: Text(
                 'Replace',
                 style: TextStyle(
-                  fontSize: 36,
+                  fontSize: r.sp(context, 36),
                   fontFamily: 'Georgia',
                   fontWeight: FontWeight.w500,
-                  color: Color(0xFF1A1A1A),
+                  color: const Color(0xFF1A1A1A),
                   letterSpacing: -0.3,
                 ),
               ),
@@ -125,12 +126,13 @@ class _ReplaceScreenState extends State<ReplaceScreen> {
           ),
           // Coin badge
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            padding: EdgeInsets.symmetric(horizontal: r.wp(context, 10), vertical: r.hp(context, 5)),
             decoration: BoxDecoration(
               color: const Color(0xFFFFF3E8),
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(r.wp(context, 20)),
               border: Border.all(
                 color: const Color(0xFFE8873A).withOpacity(0.3),
+                width: r.wp(context, 1),
               ),
             ),
             child: Row(
@@ -142,19 +144,19 @@ class _ReplaceScreenState extends State<ReplaceScreen> {
                     return Text(
                       creditsNotifier.value.toString(),
                       style: TextStyle(
-                        fontSize: isIPad(context) ? 50 : 16,
+                        fontSize: r.sp(context, 16),
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFF1A1A1A),
+                        color: const Color(0xFF1A1A1A),
                         letterSpacing: -0.2,
                       ),
                     );
                   },
                 ),
-                const SizedBox(width: 4),
+                r.horizontalSpace(context, 4),
                 CustomImageview(
                   imagePath: "assets/images/credit.png",
-                  height: 25,
-                  width: 25,
+                  height: r.wp(context, 25),
+                  width: r.wp(context, 25),
                   fit: BoxFit.contain,
                 ),
               ],
@@ -167,34 +169,34 @@ class _ReplaceScreenState extends State<ReplaceScreen> {
 
   Widget _buildCoinBadge() {
     return Container(
-      height: 34,
-      padding: const EdgeInsets.symmetric(horizontal: 10),
+      height: r.hp(context, 34),
+      padding: EdgeInsets.symmetric(horizontal: r.wp(context, 10)),
       decoration: BoxDecoration(
         color: const Color(0xFFF5A05A),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(r.wp(context, 20)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text(
+          Text(
             '200',
             style: TextStyle(
               color: Colors.white,
-              fontSize: 15,
+              fontSize: r.sp(context, 15),
               fontWeight: FontWeight.w700,
             ),
           ),
-          const SizedBox(width: 5),
+          r.horizontalSpace(context, 5),
           Container(
-            width: 20,
-            height: 20,
+            width: r.wp(context, 20),
+            height: r.wp(context, 20),
             decoration: const BoxDecoration(
               color: Color(0xFFD4721A),
               shape: BoxShape.circle,
             ),
-            child: const Icon(
+            child: Icon(
               Icons.diamond_outlined,
-              size: 13,
+              size: r.wp(context, 13),
               color: Colors.white,
             ),
           ),
@@ -208,10 +210,10 @@ class _ReplaceScreenState extends State<ReplaceScreen> {
   // ─────────────────────────────────────────────
   Widget _buildProgressBar() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: EdgeInsets.symmetric(horizontal: r.wp(context, 10), vertical: r.hp(context, 6)),
       child: LinearProgressIndicator(
         value: 0.25,
-        minHeight: 3,
+        minHeight: r.hp(context, 3),
         backgroundColor: const Color(0xFFE0DDD8),
         valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF3A7D7B)),
       ),
@@ -223,13 +225,13 @@ class _ReplaceScreenState extends State<ReplaceScreen> {
   // ─────────────────────────────────────────────
   Widget _buildSectionTitle(String text) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: EdgeInsets.symmetric(horizontal: r.wp(context, 20)),
       child: Text(
         text,
-        style: const TextStyle(
-          fontSize: 18,
+        style: TextStyle(
+          fontSize: r.sp(context, 18),
           fontWeight: FontWeight.w500,
-          color: Color(0xFF1C1C1C),
+          color: const Color(0xFF1C1C1C),
           letterSpacing: -0.2,
         ),
       ),
@@ -241,17 +243,17 @@ class _ReplaceScreenState extends State<ReplaceScreen> {
   // ─────────────────────────────────────────────
   Widget _buildUploadCard() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: EdgeInsets.symmetric(horizontal: r.wp(context, 20)),
       child: Container(
         width: double.infinity,
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(r.wp(context, 20)),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.05),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
+              blurRadius: r.wp(context, 12),
+              offset: Offset(0, r.hp(context, 4)),
             ),
           ],
         ),
@@ -263,12 +265,12 @@ class _ReplaceScreenState extends State<ReplaceScreen> {
                 picked != null
                     ? CustomImageview(imagePath: picked!.path)
                     : ClipRRect(
-                      borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(20),
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(r.wp(context, 20)),
                       ),
                       child: Container(
                         width: double.infinity,
-                        height: 330,
+                        height: r.hp(context, 330),
                         color: const Color(0xFFF8F6F2),
 
                         child: CustomImageview(
@@ -279,27 +281,27 @@ class _ReplaceScreenState extends State<ReplaceScreen> {
                     ),
 
                 Positioned(
-                  top: 14,
-                  right: 14,
+                  top: r.hp(context, 14),
+                  right: r.wp(context, 14),
                   child: GestureDetector(
                     onTap: () {
                       Navigator.of(context).pushNamed(SnapTipsScreen.routeName);
                     },
                     child: Container(
-                      width: 32,
-                      height: 32,
+                      width: r.wp(context, 32),
+                      height: r.wp(context, 32),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         shape: BoxShape.circle,
                         border: Border.all(
                           color: const Color(0xFFD0CEC9),
-                          width: 1.5,
+                          width: r.wp(context, 1.5),
                         ),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.info_outline_rounded,
-                        size: 18,
-                        color: Color(0xFF5A5754),
+                        size: r.wp(context, 18),
+                        color: const Color(0xFF5A5754),
                       ),
                     ),
                   ),
@@ -309,7 +311,7 @@ class _ReplaceScreenState extends State<ReplaceScreen> {
 
             // Add Photo button
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 18),
+              padding: EdgeInsets.symmetric(vertical: r.hp(context, 18)),
               child: GestureDetector(
                 onTap:
                     () => showMediaSourcePicker(
@@ -317,27 +319,27 @@ class _ReplaceScreenState extends State<ReplaceScreen> {
                       onFilePicked: (file) => setState(() => picked = file),
                     ),
                 child: Container(
-                  height: 48,
-                  padding: const EdgeInsets.symmetric(horizontal: 32),
+                  height: r.hp(context, 48),
+                  padding: EdgeInsets.symmetric(horizontal: r.wp(context, 32)),
                   decoration: BoxDecoration(
                     color: const Color(0xFFF2E8DA),
-                    borderRadius: BorderRadius.circular(30),
+                    borderRadius: BorderRadius.circular(r.wp(context, 30)),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
-                    children: const [
+                    children: [
                       Icon(
                         Icons.add_a_photo_outlined,
-                        size: 20,
-                        color: Color(0xFF5A4A3A),
+                        size: r.wp(context, 20),
+                        color: const Color(0xFF5A4A3A),
                       ),
-                      SizedBox(width: 8),
+                      r.horizontalSpace(context, 8),
                       Text(
                         'Add Photo',
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: r.sp(context, 16),
                           fontWeight: FontWeight.w600,
-                          color: Color(0xFF5A4A3A),
+                          color: const Color(0xFF5A4A3A),
                         ),
                       ),
                     ],
@@ -375,23 +377,23 @@ class _ReplaceScreenState extends State<ReplaceScreen> {
   // ─────────────────────────────────────────────
   Widget _buildOrDivider() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: EdgeInsets.symmetric(horizontal: r.wp(context, 20)),
       child: Row(
         children: [
-          Expanded(child: Container(height: 1, color: const Color(0xFFD8D4CE))),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 14),
+          Expanded(child: Container(height: r.hp(context, 1), color: const Color(0xFFD8D4CE))),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: r.wp(context, 14)),
             child: Text(
               'OR',
               style: TextStyle(
-                fontSize: 12,
+                fontSize: r.sp(context, 12),
                 fontWeight: FontWeight.w600,
-                color: Color(0xFFAEA9A3),
+                color: const Color(0xFFAEA9A3),
                 letterSpacing: 1.2,
               ),
             ),
           ),
-          Expanded(child: Container(height: 1, color: const Color(0xFFD8D4CE))),
+          Expanded(child: Container(height: r.hp(context, 1), color: const Color(0xFFD8D4CE))),
         ],
       ),
     );
@@ -422,36 +424,36 @@ class _ReplaceScreenState extends State<ReplaceScreen> {
     ];
 
     return SizedBox(
-      height: 128,
+      height: r.hp(context, 128),
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 20),
+        padding: EdgeInsets.symmetric(horizontal: r.wp(context, 20)),
         itemCount: 8,
-        separatorBuilder: (_, __) => const SizedBox(width: 12),
+        separatorBuilder: (_, __) => r.horizontalSpace(context, 12),
         itemBuilder: (context, i) {
           final selected = _selectedTemplate == i;
           return GestureDetector(
             onTap: () => setState(() => _selectedTemplate = i),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
-              width: 108,
+              width: r.wp(context, 108),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(r.wp(context, 16)),
                 border: Border.all(
                   color:
                       selected ? const Color(0xFF3A7D7B) : Colors.transparent,
-                  width: 2.5,
+                  width: r.wp(context, 2.5),
                 ),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withOpacity(selected ? 0.12 : 0.06),
-                    blurRadius: selected ? 14 : 8,
-                    offset: const Offset(0, 4),
+                    blurRadius: r.wp(context, selected ? 14 : 8),
+                    offset: Offset(0, r.hp(context, 4)),
                   ),
                 ],
               ),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(r.wp(context, 14)),
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
@@ -461,18 +463,18 @@ class _ReplaceScreenState extends State<ReplaceScreen> {
                     ),
                     if (selected)
                       Positioned(
-                        top: 8,
-                        right: 8,
+                        top: r.hp(context, 8),
+                        right: r.wp(context, 8),
                         child: Container(
-                          width: 22,
-                          height: 22,
+                          width: r.wp(context, 22),
+                          height: r.wp(context, 22),
                           decoration: const BoxDecoration(
                             color: Color(0xFF3A7D7B),
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.check_rounded,
-                            size: 14,
+                            size: r.wp(context, 14),
                             color: Colors.white,
                           ),
                         ),
@@ -507,7 +509,7 @@ class _ReplaceScreenState extends State<ReplaceScreen> {
   // ─────────────────────────────────────────────
   Widget _buildNextButton() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
+      padding: EdgeInsets.symmetric(horizontal: r.wp(context, 20), vertical: 0),
       child: GestureDetector(
         onTap: () {
           Navigator.of(
@@ -516,25 +518,25 @@ class _ReplaceScreenState extends State<ReplaceScreen> {
         },
         child: Container(
           width: double.infinity,
-          height: 58,
+          height: r.hp(context, 58),
           decoration: BoxDecoration(
             color: const Color(0xFFE8C9A0),
-            borderRadius: BorderRadius.circular(32),
+            borderRadius: BorderRadius.circular(r.wp(context, 32)),
             boxShadow: [
               BoxShadow(
                 color: const Color(0xFFE8C9A0).withOpacity(0.5),
-                blurRadius: 16,
-                offset: const Offset(0, 6),
+                blurRadius: r.wp(context, 16),
+                offset: Offset(0, r.hp(context, 6)),
               ),
             ],
           ),
           alignment: Alignment.center,
-          child: const Text(
+          child: Text(
             'Next',
             style: TextStyle(
-              fontSize: 18,
+              fontSize: r.sp(context, 18),
               fontWeight: FontWeight.w600,
-              color: Color(0xFF5A3E1B),
+              color: const Color(0xFF5A3E1B),
               letterSpacing: 0.3,
             ),
           ),

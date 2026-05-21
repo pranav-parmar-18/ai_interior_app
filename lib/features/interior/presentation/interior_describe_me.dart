@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../../utils/responsive_utils.dart';
 import 'interior_plaate.dart';
 
 class InteriorDescribeVisionScreen extends StatefulWidget {
@@ -49,23 +50,10 @@ class _InteriorDescribeVisionScreenState
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.dark,
       child: Scaffold(
-        // Scaffold bg transparent so our gradient Container fills everything
         backgroundColor: Colors.transparent,
         body: Container(
           width: double.infinity,
           height: double.infinity,
-          // ── Exact 3-stop gradient from spec ───────────────────────────
-          // rgba(248, 246, 244, 1)   → #F8F6F4   fully opaque
-          // rgba(202, 184, 158, 0.75)→ #CAB89E at 75% → blended on white: #D5C9B7 approx
-          // rgba(90,  106, 117, 0.85)→ #5A6A75 at 85% → blended on white: #748490 approx
-          //
-          // Because Flutter gradient colors are composited over the scaffold
-          // (which is transparent → black by default), we need to bake the
-          // alpha directly into the color values, blending against white:
-          //   result = alpha * fg + (1-alpha) * white
-          // Stop 1: fully opaque  → Color(0xFFF8F6F4)
-          // Stop 2: 0.75 on white → 0.75*(202,184,158) + 0.25*(255,255,255) = (215,201,182) = #D7C9B6
-          // Stop 3: 0.85 on white → 0.85*(90,106,117)  + 0.15*(255,255,255) = (115,128,138) = #73808A
           decoration: const BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topCenter,
@@ -89,17 +77,17 @@ class _InteriorDescribeVisionScreenState
               Expanded(
                 child: SingleChildScrollView(
                   physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.symmetric(horizontal: 22),
+                  padding: EdgeInsets.symmetric(horizontal: r.wp(context, 22)),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const SizedBox(height: 2),
+                      SizedBox(height: r.hp(context, 2)),
                       _buildTitle(),
-                      const SizedBox(height: 20),
+                      SizedBox(height: r.hp(context, 20)),
                       _buildTextField(),
-                      const SizedBox(height: 24),
+                      SizedBox(height: r.hp(context, 24)),
                       _buildChipsWrap(),
-                      const SizedBox(height: 32),
+                      SizedBox(height: r.hp(context, 32)),
                     ],
                   ),
                 ),
@@ -119,13 +107,17 @@ class _InteriorDescribeVisionScreenState
     return Align(
       alignment: Alignment.centerRight,
       child: Padding(
-        padding: const EdgeInsets.only(right: 22, top: 14, bottom: 4),
+        padding: EdgeInsets.only(
+          right: r.wp(context, 22),
+          top: r.hp(context, 14),
+          bottom: r.hp(context, 4),
+        ),
         child: GestureDetector(
           onTap: () => Navigator.maybePop(context),
-          child: const Icon(
+          child: Icon(
             Icons.close_rounded,
-            size: 24,
-            color: Color(0xFFB89A7A),
+            size: r.adaptiveValue(context, mobile: 24, tablet: 32),
+            color: const Color(0xFFB89A7A),
           ),
         ),
       ),
@@ -147,13 +139,13 @@ class _InteriorDescribeVisionScreenState
             ],
           ),
         ),
-        const SizedBox(height: 7),
-        const Text(
+        SizedBox(height: r.hp(context, 7)),
+        Text(
           'Tell AI what your preferred design aesthetic',
           style: TextStyle(
-            fontSize: 14,
+            fontSize: r.sp(context, 14),
             fontWeight: FontWeight.w400,
-            color: Color(0xFF6A6058),
+            color: const Color(0xFF6A6058),
             height: 1.45,
             letterSpacing: 0.1,
           ),
@@ -167,7 +159,7 @@ class _InteriorDescribeVisionScreenState
       text: text,
       style: TextStyle(
         fontFamily: 'Georgia',
-        fontSize: 30,
+        fontSize: r.sp(context, 30),
         fontStyle: italic ? FontStyle.italic : FontStyle.normal,
         fontWeight: FontWeight.w700,
         color: color,
@@ -181,25 +173,28 @@ class _InteriorDescribeVisionScreenState
   Widget _buildTextField() {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.50),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withOpacity(0.58), width: 1),
+        color: Colors.white.withValues(alpha: 0.50),
+        borderRadius: BorderRadius.circular(r.wp(context, 16)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.58), width: 1),
       ),
       child: TextField(
         controller: _controller,
         maxLines: null,
         minLines: 3,
-        style: const TextStyle(
-          fontSize: 15.5,
-          color: Color(0xFF5A4A68),
+        style: TextStyle(
+          fontSize: r.sp(context, 15.5),
+          color: const Color(0xFF5A4A68),
           height: 1.55,
           fontWeight: FontWeight.w400,
         ),
-        decoration: const InputDecoration(
-          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: InputDecoration(
+          contentPadding: EdgeInsets.symmetric(
+            horizontal: r.wp(context, 16),
+            vertical: r.hp(context, 14),
+          ),
           border: InputBorder.none,
           hintText: 'Describe your vision...',
-          hintStyle: TextStyle(color: Color(0xFFB0A8B8)),
+          hintStyle: const TextStyle(color: Color(0xFFB0A8B8)),
         ),
         cursorColor: const Color(0xFF5A4A68),
       ),
@@ -209,8 +204,8 @@ class _InteriorDescribeVisionScreenState
   // ─── Suggestion chips ─────────────────────────────────────────────────
   Widget _buildChipsWrap() {
     return Wrap(
-      spacing: 10,
-      runSpacing: 10,
+      spacing: r.wp(context, 10),
+      runSpacing: r.hp(context, 10),
       children: List.generate(_chips.length, (i) {
         final sel = _selected.contains(i);
         return GestureDetector(
@@ -233,20 +228,22 @@ class _InteriorDescribeVisionScreenState
           },
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 160),
-            padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+            padding: EdgeInsets.symmetric(
+              horizontal: r.wp(context, 15),
+              vertical: r.hp(context, 10),
+            ),
             decoration: BoxDecoration(
-              color:
-                  sel
-                      ? Colors.white.withOpacity(0.78)
-                      : Colors.white.withOpacity(0.58),
-              borderRadius: BorderRadius.circular(50),
+              color: sel
+                  ? Colors.white.withValues(alpha: 0.78)
+                  : Colors.white.withValues(alpha: 0.58),
+              borderRadius: BorderRadius.circular(r.wp(context, 50)),
               border: Border.all(
-                color: Colors.white.withOpacity(sel ? 0.92 : 0.68),
+                color: Colors.white.withValues(alpha: sel ? 0.92 : 0.68),
                 width: 1.2,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 5,
                   offset: const Offset(0, 2),
                 ),
@@ -257,18 +254,16 @@ class _InteriorDescribeVisionScreenState
               children: [
                 Icon(
                   sel ? Icons.check_rounded : Icons.add_rounded,
-                  size: 15,
-                  color:
-                      sel ? const Color(0xFF2E2C5A) : const Color(0xFF5A5060),
+                  size: r.adaptiveValue(context, mobile: 15, tablet: 20),
+                  color: sel ? const Color(0xFF2E2C5A) : const Color(0xFF5A5060),
                 ),
-                const SizedBox(width: 5),
+                SizedBox(width: r.wp(context, 5)),
                 Text(
                   _chips[i],
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: r.sp(context, 14),
                     fontWeight: FontWeight.w500,
-                    color:
-                        sel ? const Color(0xFF2E2C5A) : const Color(0xFF4A3A50),
+                    color: sel ? const Color(0xFF2E2C5A) : const Color(0xFF4A3A50),
                     letterSpacing: 0.1,
                   ),
                 ),
@@ -282,34 +277,42 @@ class _InteriorDescribeVisionScreenState
 
   // ─── Save button ──────────────────────────────────────────────────────
   Widget _buildSaveButton(double botPad) {
+    final btnHeight = r.adaptiveValue(context, mobile: 58, tablet: 70);
+    final fontSize = r.sp(context, 18);
+
     return Padding(
-      padding: EdgeInsets.fromLTRB(22, 8, 22, botPad > 0 ? botPad : 22),
+      padding: EdgeInsets.fromLTRB(
+        r.wp(context, 22),
+        r.hp(context, 8),
+        r.wp(context, 22),
+        botPad > 0 ? botPad : r.hp(context, 22),
+      ),
       child: GestureDetector(
         onTap: () async {
-          await Future.delayed(Duration(seconds: 1));
+          await Future.delayed(const Duration(seconds: 1));
           Navigator.of(context).pushNamed(InteriorColorPaletteScreen.routeName);
         },
         child: Container(
           width: double.infinity,
-          height: 58,
+          height: btnHeight,
           decoration: BoxDecoration(
-            color: Color.fromRGBO(36, 36, 36, 1),
-            borderRadius: BorderRadius.circular(32),
+            color: const Color.fromRGBO(36, 36, 36, 1),
+            borderRadius: BorderRadius.circular(r.wp(context, 32)),
             boxShadow: [
               BoxShadow(
-                color: Color.fromRGBO(36, 36, 36, 1).withOpacity(0.40),
+                color: const Color.fromRGBO(36, 36, 36, 1).withValues(alpha: 0.40),
                 blurRadius: 22,
                 offset: const Offset(0, 9),
               ),
             ],
           ),
           alignment: Alignment.center,
-          child: const Text(
+          child: Text(
             'Save',
             style: TextStyle(
-              fontSize: 18,
+              fontSize: fontSize,
               fontWeight: FontWeight.w600,
-              color: Color(0xFFD4A870),
+              color: const Color(0xFFD4A870),
               letterSpacing: 0.5,
             ),
           ),

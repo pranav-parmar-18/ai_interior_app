@@ -976,6 +976,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:in_app_purchase_android/in_app_purchase_android.dart';
+import 'package:ai_interior/utils/responsive_utils.dart';
 
 import '../../../models/add_credit_model_response.dart';
 import '../../home/presentation/home_screen.dart';
@@ -1188,12 +1189,10 @@ class _CreditsScreenState extends State<CreditsScreen> {
   @override
   Widget build(BuildContext context) {
     final mq     = MediaQuery.of(context);
-    final top    = mq.padding.top;
     final bottom = mq.padding.bottom;
-    final w      = mq.size.width;
 
-    // Responsive breakpoint
-    final isWide = w >= 600;
+    final isWide = r.isTablet(context);
+    final isLandscape = r.isLandscape(context);
 
     return Scaffold(
       backgroundColor: _bg,
@@ -1209,35 +1208,30 @@ class _CreditsScreenState extends State<CreditsScreen> {
         builder: (context, state) {
           final isProcessing = _isPurchasing || state is AddCreditsLoadingState;
 
-          return Column(
-            children: [
-              SizedBox(height: top),
-              _Header(),
-              Expanded(
-                child: SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  padding: EdgeInsets.symmetric(
-                    horizontal: isWide ? w * 0.12 : 20,
-                  ),
-                  child: Column(
-                    children: [
-                      SizedBox(height: isWide ? 12 : 4),
+          Widget bodyContent;
 
-                      // Coin illustration
+          if (isLandscape) {
+            bodyContent = Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  flex: 45,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      r.verticalSpace(context, 12),
                       CustomImageview(
                         imagePath: 'assets/images/coin_stack.png',
-                        height: isWide ? 200 : 150,
-                        width:  isWide ? 200 : 150,
+                        height: r.adaptiveValue(context, mobile: 110, tablet: 180),
+                        width:  r.adaptiveValue(context, mobile: 110, tablet: 180),
                         fit: BoxFit.contain,
                       ),
-                      SizedBox(height: isWide ? 28 : 16),
-
-                      // Title
+                      r.verticalSpace(context, 16),
                       Text(
                         'Get Credits for\nAI Interior Design',
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          fontSize: isWide ? 38 : 30,
+                          fontSize: r.sp(context, 26),
                           fontWeight: FontWeight.w500,
                           color: _titleBrown,
                           height: 1.2,
@@ -1245,21 +1239,90 @@ class _CreditsScreenState extends State<CreditsScreen> {
                           letterSpacing: -0.5,
                         ),
                       ),
-                      SizedBox(height: isWide ? 28 : 18),
-
-                      // Balance bar
+                      r.verticalSpace(context, 16),
                       _BalanceBar(balance: _balance),
-                      SizedBox(height: isWide ? 20 : 12),
-
-                      // Grid or loading
+                    ],
+                  ),
+                ),
+                r.horizontalSpace(context, 24),
+                Expanded(
+                  flex: 55,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      r.verticalSpace(context, 12),
                       _loadingProducts
                           ? const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 40),
+                              child: CircularProgressIndicator(
+                                color: _selectedBorder,
+                              ),
+                            )
+                          : _CreditGrid(
+                              count: _productIds.length,
+                              selectedIndex: _selectedIndex,
+                              priceFor: _priceFor,
+                              creditsFor: _creditsFor,
+                              onSelect: (i) =>
+                                  setState(() => _selectedIndex = i),
+                              isWide: isWide,
+                            ),
+                      r.verticalSpace(context, 20),
+                      _ContinueButton(
+                        onTap: isProcessing ? null : _onContinue,
+                        isLoading: isProcessing,
+                        label: _loadingProducts
+                            ? 'Loading…'
+                            : 'Continue  •  ${_priceFor(_selectedIndex)}',
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            );
+          } else {
+            bodyContent = Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                r.verticalSpace(context, isWide ? 12 : 4),
+
+                // Coin illustration
+                CustomImageview(
+                  imagePath: 'assets/images/coin_stack.png',
+                  height: r.adaptiveValue(context, mobile: 130, tablet: 200),
+                  width:  r.adaptiveValue(context, mobile: 130, tablet: 200),
+                  fit: BoxFit.contain,
+                ),
+                r.verticalSpace(context, isWide ? 28 : 16),
+
+                // Title
+                Text(
+                  'Get Credits for\nAI Interior Design',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: r.sp(context, 28),
+                    fontWeight: FontWeight.w500,
+                    color: _titleBrown,
+                    height: 1.2,
+                    fontFamily: 'Georgia',
+                    letterSpacing: -0.5,
+                  ),
+                ),
+                r.verticalSpace(context, isWide ? 28 : 18),
+
+                // Balance bar
+                _BalanceBar(balance: _balance),
+                r.verticalSpace(context, isWide ? 20 : 12),
+
+                // Grid or loading
+                _loadingProducts
+                    ? const Padding(
                         padding: EdgeInsets.symmetric(vertical: 40),
                         child: CircularProgressIndicator(
                           color: _selectedBorder,
                         ),
                       )
-                          : _CreditGrid(
+                    : _CreditGrid(
                         count: _productIds.length,
                         selectedIndex: _selectedIndex,
                         priceFor: _priceFor,
@@ -1268,30 +1331,43 @@ class _CreditsScreenState extends State<CreditsScreen> {
                             setState(() => _selectedIndex = i),
                         isWide: isWide,
                       ),
+              ],
+            );
+          }
 
-                      const SizedBox(height: 10),
-                    ],
+          return SafeArea(
+            bottom: false,
+            child: Column(
+              children: [
+                _Header(),
+                Expanded(
+                  child: SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    padding: EdgeInsets.fromLTRB(
+                      r.adaptiveValue(context, mobile: 20, tablet: 40),
+                      0,
+                      r.adaptiveValue(context, mobile: 20, tablet: 40),
+                      bottom + 16,
+                    ),
+                    child: Column(
+                      children: [
+                        bodyContent,
+                        if (!isLandscape) ...[
+                          r.verticalSpace(context, 24),
+                          _ContinueButton(
+                            onTap: isProcessing ? null : _onContinue,
+                            isLoading: isProcessing,
+                            label: _loadingProducts
+                                ? 'Loading…'
+                                : 'Continue  •  ${_priceFor(_selectedIndex)}',
+                          ),
+                        ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
-
-              // Continue button
-              Padding(
-                padding: EdgeInsets.fromLTRB(
-                  isWide ? w * 0.12 : 20,
-                  0,
-                  isWide ? w * 0.12 : 20,
-                  bottom + 16,
-                ),
-                child: _ContinueButton(
-                  onTap: isProcessing ? null : _onContinue,
-                  isLoading: isProcessing,
-                  label: _loadingProducts
-                      ? 'Loading…'
-                      : 'Continue  •  ${_priceFor(_selectedIndex)}',
-                ),
-              ),
-            ],
+              ],
+            ),
           );
         },
       ),
@@ -1304,17 +1380,22 @@ class _Header extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
+      padding: EdgeInsets.fromLTRB(
+        r.adaptiveValue(context, mobile: 16, tablet: 32),
+        r.hp(context, 14),
+        r.adaptiveValue(context, mobile: 16, tablet: 32),
+        0,
+      ),
       child: Stack(
         alignment: Alignment.center,
         children: [
-          const Text(
+          Text(
             'Add Credits',
             style: TextStyle(
-              fontSize: 26,
+              fontSize: r.sp(context, 22),
               fontFamily: 'Lato',
               fontWeight: FontWeight.w600,
-              color: Color(0xFF2E2E2E),
+              color: const Color(0xFF2E2E2E),
               letterSpacing: -0.3,
             ),
           ),
@@ -1323,16 +1404,16 @@ class _Header extends StatelessWidget {
             child: GestureDetector(
               onTap: () => Navigator.maybePop(context),
               child: Container(
-                width: 34,
-                height: 34,
+                width: r.adaptiveValue(context, mobile: 32, tablet: 42),
+                height: r.adaptiveValue(context, mobile: 32, tablet: 42),
                 decoration: BoxDecoration(
                   color: Colors.black.withOpacity(0.10),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.close_rounded,
-                  size: 18,
-                  color: Color(0xFF5C5348),
+                  size: r.adaptiveValue(context, mobile: 18, tablet: 24),
+                  color: const Color(0xFF5C5348),
                 ),
               ),
             ),
@@ -1352,35 +1433,38 @@ class _BalanceBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      padding: EdgeInsets.symmetric(
+        horizontal: r.wp(context, 20),
+        vertical: r.hp(context, 16),
+      ),
       decoration: BoxDecoration(
         color: _balanceBg,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(r.radius(context, 18)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Text(
+          Text(
             'Balance',
             style: TextStyle(
-              fontSize: 17,
+              fontSize: r.sp(context, 17),
               fontWeight: FontWeight.w500,
               color: _titleBrown,
             ),
           ),
           Row(
             children: [
-              _CoinIcon(size: 22),
-              const SizedBox(width: 6),
+              _CoinIcon(size: r.adaptiveValue(context, mobile: 22, tablet: 28)),
+              SizedBox(width: r.wp(context, 6)),
               ValueListenableBuilder<String>(
                 valueListenable: creditsNotifier,
                 builder: (context, credits, _) {
                   return Text(
                     creditsNotifier.value.toString(),
                     style: TextStyle(
-                      fontSize: isIPad(context) ? 50 : 16,
+                      fontSize: r.sp(context, 16),
                       fontWeight: FontWeight.w700,
-                      color: Color(0xFF1A1A1A),
+                      color: const Color(0xFF1A1A1A),
                       letterSpacing: -0.2,
                     ),
                   );
@@ -1428,32 +1512,30 @@ class _CreditGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final gridCount = count - 1;
+    final cols = r.isLandscape(context)
+        ? (r.isTablet(context) ? 4 : 3)
+        : (r.isTablet(context) ? 3 : 3);
 
     return Column(
       children: [
-        LayoutBuilder(
-          builder: (ctx, constraints) {
-            final cols = isWide ? 4 : 3;
-            return GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: cols,
-                crossAxisSpacing: 10,
-                mainAxisSpacing: 10,
-                childAspectRatio: isWide ? 1.6 : 1.4,
-              ),
-              itemCount: gridCount,
-              itemBuilder: (ctx, i) => _CreditCard(
-                price: priceFor(i),
-                credits: creditsFor(i),
-                isSelected: selectedIndex == i,
-                onTap: () => onSelect(i),
-              ),
-            );
-          },
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: cols,
+            crossAxisSpacing: r.wp(context, 10),
+            mainAxisSpacing: r.hp(context, 10),
+            childAspectRatio: r.isTablet(context) ? 1.6 : 1.35,
+          ),
+          itemCount: gridCount,
+          itemBuilder: (ctx, i) => _CreditCard(
+            price: priceFor(i),
+            credits: creditsFor(i),
+            isSelected: selectedIndex == i,
+            onTap: () => onSelect(i),
+          ),
         ),
-        const SizedBox(height: 10),
+        SizedBox(height: r.hp(context, 10)),
         // Last item — full width
         _CreditCard(
           price: priceFor(count - 1),
@@ -1485,8 +1567,7 @@ class _CreditCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final screenW = MediaQuery.of(context).size.width;
-    final isWide  = screenW >= 600;
+    final isWide = r.isTablet(context);
 
     return GestureDetector(
       onTap: onTap,
@@ -1495,12 +1576,14 @@ class _CreditCard extends StatelessWidget {
         curve: Curves.easeInOut,
         width: fullWidth ? double.infinity : null,
         padding: EdgeInsets.symmetric(
-          horizontal: fullWidth ? 20 : (isWide ? 14 : 10),
-          vertical: isWide ? 16 : 12,
+          horizontal: fullWidth
+              ? r.wp(context, 20)
+              : (isWide ? r.wp(context, 14) : r.wp(context, 10)),
+          vertical: isWide ? r.hp(context, 16) : r.hp(context, 12),
         ),
         decoration: BoxDecoration(
           color: isSelected ? _selectedBg : _cardBg,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(r.radius(context, 20)),
           border: Border.all(
             color: isSelected ? _selectedBorder : Colors.transparent,
             width: 1.8,
@@ -1515,49 +1598,49 @@ class _CreditCard extends StatelessWidget {
         ),
         child: fullWidth
             ? Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: _buildContent(large: true, isWide: isWide),
-        )
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: _buildContent(context, large: true, isWide: isWide),
+              )
             : Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: _buildContent(large: false, isWide: isWide),
-        ),
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: _buildContent(context, large: false, isWide: isWide),
+              ),
       ),
     );
   }
 
-  List<Widget> _buildContent({required bool large, required bool isWide}) {
+  List<Widget> _buildContent(BuildContext context, {required bool large, required bool isWide}) {
     final priceStyle = TextStyle(
-      fontSize: large ? 14 : (isWide ? 13 : 12),
+      fontSize: r.sp(context, large ? 14 : (isWide ? 13 : 12)),
       fontWeight: FontWeight.w400,
       color: isSelected ? _priceBrown : const Color(0xFF8A7060),
     );
     final amountStyle = TextStyle(
-      fontSize: large ? (isWide ? 30 : 26) : (isWide ? 26 : 22),
+      fontSize: r.sp(context, large ? (isWide ? 30 : 26) : (isWide ? 26 : 22)),
       fontWeight: FontWeight.w700,
       color: isSelected ? _amountBrown : const Color(0xFF2C2C2C),
       letterSpacing: -0.5,
     );
-    final coinSize = large ? 22.0 : (isWide ? 20.0 : 17.0);
+    final coinSize = r.wp(context, large ? 22.0 : (isWide ? 20.0 : 17.0));
 
     if (large) {
       return [
         Text(price, style: priceStyle),
-        const SizedBox(width: 10),
+        SizedBox(width: r.wp(context, 10)),
         _CoinIcon(size: coinSize),
-        const SizedBox(width: 6),
+        SizedBox(width: r.wp(context, 6)),
         Text('$credits', style: amountStyle),
       ];
     }
 
     return [
       Text(price, style: priceStyle),
-      const SizedBox(height: 4),
+      SizedBox(height: r.hp(context, 4)),
       Row(
         children: [
           _CoinIcon(size: coinSize),
-          const SizedBox(width: 4),
+          SizedBox(width: r.wp(context, 4)),
           Flexible(
             child: Text(
               '$credits',
@@ -1585,8 +1668,6 @@ class _ContinueButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isWide = MediaQuery.of(context).size.width >= 600;
-
     return GestureDetector(
       onTap: onTap,
       child: AnimatedOpacity(
@@ -1594,30 +1675,30 @@ class _ContinueButton extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         child: Container(
           width: double.infinity,
-          height: isWide ? 64 : 56,
+          height: r.adaptiveValue(context, mobile: 56, tablet: 64),
           decoration: BoxDecoration(
             color: const Color.fromRGBO(230, 203, 168, 1),
             borderRadius: BorderRadius.circular(30),
           ),
           child: Center(
             child: isLoading
-                ? const SizedBox(
-              width: 24,
-              height: 24,
-              child: CircularProgressIndicator(
-                color: _continueText,
-                strokeWidth: 2.5,
-              ),
-            )
+                ? SizedBox(
+                    width: r.wp(context, 24),
+                    height: r.wp(context, 24),
+                    child: const CircularProgressIndicator(
+                      color: _continueText,
+                      strokeWidth: 2.5,
+                    ),
+                  )
                 : Text(
-              label,
-              style: TextStyle(
-                fontSize: isWide ? 20 : 18,
-                fontWeight: FontWeight.w600,
-                color: _continueText,
-                letterSpacing: 0.1,
-              ),
-            ),
+                    label,
+                    style: TextStyle(
+                      fontSize: r.sp(context, 18),
+                      fontWeight: FontWeight.w600,
+                      color: _continueText,
+                      letterSpacing: 0.1,
+                    ),
+                  ),
           ),
         ),
       ),

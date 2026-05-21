@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:ai_interior/features/subscription/presentation/subscription_screen.dart';
+import 'package:ai_interior/utils/responsive_utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -83,52 +84,25 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  // Future<void> getIsSubscribed() async {
-  //   SharedPreferences preferences = await SharedPreferences.getInstance();
-  //   preferences.getBool('is_subscribed');
-  // }
-
   @override
   void dispose() {
     selectedIndex.dispose();
     super.dispose();
   }
-
-  // Future<bool> isSubscriptionActive() async {
-  //   final prefs = await SharedPreferences.getInstance();
-  //   final data = prefs.getString('subscription_info');
-  //   if (data == null) {
-  //     setState(() {
-  //       isSubscribed = false;
-  //     });
-  //     return false;
-  //   }
-  //
-  //   final sub = SubscriptionInfo.fromJson(data);
-  //   setState(() {
-  //     isSubscribed = sub?.isActive ?? false;
-  //   });
-  //
-  //   return sub?.isActive ?? false;
-  // }
 }
 
-
+/// Legacy helper — delegates to [ResponsiveUtils.isIPad].
+/// Kept for backward compatibility during migration.
 bool isIPad(BuildContext context) {
-  return Platform.isIOS && MediaQuery.of(context).size.shortestSide >= 600;
+  return ResponsiveUtils.isIPad(context);
 }
 
+/// Legacy helper — delegates to [ResponsiveUtils.isSmallPhone].
 bool isIPhoneMini(BuildContext context) {
-  final size = MediaQuery.of(context).size;
-  final height = size.height;
-  final width = size.width;
-  final shortestSide = size.shortestSide;
-
-  return Platform.isIOS &&
-      shortestSide < 400 &&
-      ((height == 812 && width == 375) || (height == 375 && width == 812));
+  return ResponsiveUtils.isSmallPhone(context);
 }
 
+/// Legacy helper for iPhone SE detection.
 bool isIPhoneSE(BuildContext context) {
   final size = MediaQuery.of(context).size;
   final height = size.height;
@@ -153,12 +127,15 @@ void showSnackSuccess(BuildContext context, String name) {
       content: Center(
         child: ConstrainedBox(
           constraints: BoxConstraints(
-            maxWidth: MediaQuery.of(context).size.width * 0.9,
+            maxWidth: r.screenWidth(context) * 0.9,
           ),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(30),
+            borderRadius: BorderRadius.circular(r.wp(context, 30)),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              padding: EdgeInsets.symmetric(
+                horizontal: r.wp(context, 20),
+                vertical: r.hp(context, 12),
+              ),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
@@ -168,18 +145,18 @@ void showSnackSuccess(BuildContext context, String name) {
                   begin: Alignment.centerLeft,
                   end: Alignment.centerRight,
                 ),
-                borderRadius: BorderRadius.circular(18),
+                borderRadius: BorderRadius.circular(r.wp(context, 18)),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  const Icon(
+                  Icon(
                     CupertinoIcons.check_mark_circled_solid,
                     color: Colors.white,
-                    size: 28,
+                    size: r.iconSize(context, mobile: 28, tablet: 36),
                   ),
-                  const SizedBox(width: 10),
+                  SizedBox(width: r.wp(context, 10)),
 
                   /// ✅ This is the important part
                   Flexible(
@@ -188,10 +165,10 @@ void showSnackSuccess(BuildContext context, String name) {
                       maxLines: 2,
                       softWrap: true,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontFamily: 'Geist',
                         fontWeight: FontWeight.w800,
-                        fontSize: 16,
+                        fontSize: r.sp(context, 16),
                         color: Colors.white,
                         height: 1.2,
                       ),
@@ -217,12 +194,15 @@ void showSnackError(BuildContext context, String name) {
       content: Center(
         child: ConstrainedBox(
           constraints: BoxConstraints(
-            maxWidth: MediaQuery.of(context).size.width * 0.9,
+            maxWidth: r.screenWidth(context) * 0.9,
           ),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(30),
+            borderRadius: BorderRadius.circular(r.wp(context, 30)),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              padding: EdgeInsets.symmetric(
+                horizontal: r.wp(context, 20),
+                vertical: r.hp(context, 12),
+              ),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
@@ -232,18 +212,18 @@ void showSnackError(BuildContext context, String name) {
                   begin: Alignment.centerLeft,
                   end: Alignment.centerRight,
                 ),
-                borderRadius: BorderRadius.circular(18),
+                borderRadius: BorderRadius.circular(r.wp(context, 18)),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  const Icon(
+                  Icon(
                     CupertinoIcons.info_circle_fill,
                     color: Colors.white,
-                    size: 28,
+                    size: r.iconSize(context, mobile: 28, tablet: 36),
                   ),
-                  const SizedBox(width: 10),
+                  SizedBox(width: r.wp(context, 10)),
 
                   /// ✅ Dynamic text
                   Flexible(
@@ -252,10 +232,10 @@ void showSnackError(BuildContext context, String name) {
                       maxLines: 2,
                       softWrap: true,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontFamily: 'Geist',
                         fontWeight: FontWeight.w800,
-                        fontSize: 16,
+                        fontSize: r.sp(context, 16),
                         color: Colors.white,
                         height: 1.2,
                       ),

@@ -11,6 +11,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:ai_interior/utils/responsive_utils.dart';
+import 'package:ai_interior/features/home/presentation/home_screen.dart';
+
 
 import '../../../bloc/exteroir_design_create/exterior_design_create_bloc.dart';
 import '../../../models/exterior_design_create_model_response.dart';
@@ -221,7 +224,6 @@ final List<ColorPalette> palettes = [
     ],
   ),
 ];
-
 class ExteriorColorPaletteScreen extends StatefulWidget {
   const ExteriorColorPaletteScreen({super.key});
 
@@ -312,50 +314,57 @@ class _ExteriorColorPaletteScreenState
           backgroundColor: const Color(0xFFF5F3EF),
           body:
               state is ExteriorDeignCreateLoadingState
-                  ? Column(
-                    children: [
-                      SizedBox(height: 300),
-                      Image.asset("assets/gifs/loading.gif", height: 393),
-                      SizedBox(height: 10),
-                      Text(
-                        "Bringing your vision to life...",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w400,
-                          color: Color.fromRGBO(90, 106, 117, 1),
-                          letterSpacing: -0.3,
+                  ? Center(
+                      child: SingleChildScrollView(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Image.asset(
+                              "assets/gifs/loading.gif",
+                              height: r.hp(context, 300),
+                            ),
+                            r.verticalSpace(context, 20),
+                            Text(
+                              "Bringing your vision to life...",
+                              style: TextStyle(
+                                fontSize: r.sp(context, 16),
+                                fontWeight: FontWeight.w400,
+                                color: const Color.fromRGBO(90, 106, 117, 1),
+                                letterSpacing: -0.3,
+                              ),
+                            ),
+                            r.verticalSpace(context, 40),
+                            Padding(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: r.wp(context, 30),
+                              ),
+                              child: Text(
+                                "Keep the app open & don’t lock your device. This may take around 10 seconds.",
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: r.sp(context, 14),
+                                  fontWeight: FontWeight.w400,
+                                  color: const Color.fromRGBO(90, 106, 117, 1),
+                                  letterSpacing: -0.3,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      SizedBox(height: 150),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 30.0),
-                        child: Text(
-                          "Keep the app open & don’t lock your device. This may take around 10 seconds.",
-                          textAlign: TextAlign.center,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w400,
-                            color: Color.fromRGBO(90, 106, 117, 1),
-                            letterSpacing: -0.3,
-                          ),
-                        ),
-                      ),
-                    ],
-                  )
+                    )
                   : SafeArea(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildAppBar(),
-                        _buildProgressBar(),
-                        _buildTitle(),
-                        Expanded(child: _buildList()),
-                        _buildGenerateButton(),
-                      ],
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildAppBar(),
+                          _buildProgressBar(),
+                          _buildTitle(),
+                          Expanded(child: _buildList()),
+                          _buildGenerateButton(),
+                        ],
+                      ),
                     ),
-                  ),
         );
       },
     );
@@ -365,10 +374,13 @@ class _ExteriorColorPaletteScreenState
 
   Widget _buildProgressBar() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: EdgeInsets.symmetric(
+        horizontal: r.wp(context, 10),
+        vertical: r.hp(context, 6),
+      ),
       child: LinearProgressIndicator(
         value: 1,
-        minHeight: 3,
+        minHeight: r.hp(context, 3),
         backgroundColor: const Color(0xFFE0DDD8),
         valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF3A7D7B)),
       ),
@@ -376,68 +388,85 @@ class _ExteriorColorPaletteScreenState
   }
 
   Widget _buildAppBar() {
+    final hPad = r.wp(context, 16);
+    final titleFontSize = r.sp(context, 36);
+    final backBtnSize = r.adaptiveValue(context, mobile: 36, tablet: 48);
+    final backIconSize = r.adaptiveValue(context, mobile: 20, tablet: 28);
+
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+      padding: EdgeInsets.fromLTRB(hPad, r.hp(context, 8), hPad, 0),
       child: Row(
         children: [
           GestureDetector(
             onTap: () {
               Navigator.of(context).pop();
             },
-            child: const SizedBox(
-              width: 36,
-              height: 36,
+            child: SizedBox(
+              width: backBtnSize,
+              height: backBtnSize,
               child: Icon(
                 Icons.arrow_back_ios_rounded,
-                size: 20,
-                color: Color(0xFF1A1A1A),
+                size: backIconSize,
+                color: const Color(0xFF1A1A1A),
               ),
             ),
           ),
-          const Expanded(
+          Expanded(
             child: Center(
-              child: Text(
-                'Exterior Design',
-                style: TextStyle(
-                  fontSize: 36,
-                  fontFamily: 'Georgia',
-                  fontWeight: FontWeight.w500,
-                  color: Color(0xFF1A1A1A),
-                  letterSpacing: -0.3,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  'Exterior Design',
+                  maxLines: 1,
+                  style: TextStyle(
+                    fontSize: titleFontSize,
+                    fontFamily: 'Georgia',
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF1A1A1A),
+                    letterSpacing: -0.3,
+                  ),
                 ),
               ),
             ),
           ),
           // Coin badge
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            padding: EdgeInsets.symmetric(
+              horizontal: r.wp(context, 10),
+              vertical: r.hp(context, 5),
+            ),
             decoration: BoxDecoration(
               color: const Color(0xFFFFF3E8),
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(r.radius(context, 20)),
               border: Border.all(
                 color: const Color(0xFFE8873A).withOpacity(0.3),
               ),
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  '200',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF1A1A1A),
-                    letterSpacing: -0.2,
-                  ),
-                ),
-                const SizedBox(width: 4),
-                CustomImageview(
-                  imagePath: "assets/images/credit.png",
-                  height: 25,
-                  width: 25,
-                  fit: BoxFit.contain,
-                ),
-              ],
+            child: ValueListenableBuilder<String>(
+              valueListenable: creditsNotifier,
+              builder: (context, credits, _) {
+                return Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      credits,
+                      style: TextStyle(
+                        fontSize: r.sp(context, 14),
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF1A1A1A),
+                        letterSpacing: -0.2,
+                      ),
+                    ),
+                    r.horizontalSpace(context, 4),
+                    CustomImageview(
+                      imagePath: "assets/images/credit.png",
+                      height: r.wp(context, 25),
+                      width: r.wp(context, 25),
+                      fit: BoxFit.contain,
+                    ),
+                  ],
+                );
+              },
             ),
           ),
         ],
@@ -449,11 +478,16 @@ class _ExteriorColorPaletteScreenState
 
   Widget _buildTitle() {
     return Padding(
-      padding: EdgeInsets.fromLTRB(16, 10, 16, 8),
+      padding: EdgeInsets.fromLTRB(
+        r.wp(context, 16),
+        r.hp(context, 10),
+        r.wp(context, 16),
+        r.hp(context, 8),
+      ),
       child: Text(
         'Choose colors for your room',
         style: TextStyle(
-          fontSize: 20,
+          fontSize: r.sp(context, 20),
           fontWeight: FontWeight.w600,
           color: AppColors.fontColor,
           letterSpacing: -0.4,
@@ -467,7 +501,13 @@ class _ExteriorColorPaletteScreenState
 
   Widget _buildList() {
     return ListView.separated(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      padding: r.symmetricPadding(
+        context,
+        horizontalMobile: 12,
+        horizontalTablet: 24,
+        verticalMobile: 4,
+        verticalTablet: 8,
+      ),
       itemCount: palettes.length,
       separatorBuilder: (_, __) => const SizedBox(height: 0),
       itemBuilder: (context, index) {
@@ -491,11 +531,14 @@ class _ExteriorColorPaletteScreenState
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
         curve: Curves.easeInOut,
-        margin: const EdgeInsets.symmetric(vertical: 3),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        margin: EdgeInsets.symmetric(vertical: r.hp(context, 3)),
+        padding: EdgeInsets.symmetric(
+          horizontal: r.wp(context, 14),
+          vertical: r.hp(context, 10),
+        ),
         decoration: BoxDecoration(
           color: isSelected ? const Color(0xFFEDE8E0) : const Color(0xFFFAF8F5),
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(r.radius(context, 14)),
           border: Border.all(
             color:
                 isSelected
@@ -521,14 +564,14 @@ class _ExteriorColorPaletteScreenState
               child: Text(
                 palette.name,
                 style: TextStyle(
-                  fontSize: 14.5,
+                  fontSize: r.sp(context, 14.5),
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                   color: const Color(0xFF2A2420),
                   letterSpacing: -0.1,
                 ),
               ),
             ),
-            const SizedBox(width: 8),
+            r.horizontalSpace(context, 8),
             // Color swatches / smart icon
             palette.isSmart
                 ? _buildSmartIcon()
@@ -542,9 +585,10 @@ class _ExteriorColorPaletteScreenState
   // ── Smart Tones AI icon ───────────────────────────────────────────────────
 
   Widget _buildSmartIcon() {
+    final sizeVal = r.adaptiveValue(context, mobile: 42, tablet: 52);
     return Container(
-      width: 42,
-      height: 42,
+      width: sizeVal,
+      height: sizeVal,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         gradient: const LinearGradient(
@@ -564,7 +608,7 @@ class _ExteriorColorPaletteScreenState
         alignment: Alignment.center,
         children: [
           // Colourful cube icon approximation using overlapping shapes
-          CustomPaint(size: const Size(24, 24), painter: _CubePainter()),
+          CustomPaint(size: Size(r.wp(context, 24), r.wp(context, 24)), painter: _CubePainter()),
         ],
       ),
     );
@@ -574,8 +618,8 @@ class _ExteriorColorPaletteScreenState
 
   Widget _buildSwatches(List<Color> colors) {
     // Circles overlap by 8 px; lay them right-to-left so left circle is on top
-    const double size = 34.0;
-    const double overlap = 10.0;
+    final double size = r.adaptiveValue(context, mobile: 34.0, tablet: 44.0);
+    final double overlap = r.adaptiveValue(context, mobile: 10.0, tablet: 14.0);
 
     final totalWidth = size + (colors.length - 1) * (size - overlap);
 
@@ -607,7 +651,10 @@ class _ExteriorColorPaletteScreenState
 
   Widget _buildGenerateButton() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      padding: EdgeInsets.symmetric(
+        horizontal: r.wp(context, 20),
+        vertical: r.hp(context, 12),
+      ),
       child: GestureDetector(
         onTap: () async {
           if (isSubscribed == true) {
@@ -632,10 +679,10 @@ class _ExteriorColorPaletteScreenState
         },
         child: Container(
           width: double.infinity,
-          height: 58,
+          height: r.hp(context, 58),
           decoration: BoxDecoration(
             color: const Color(0xFFE8C9A0),
-            borderRadius: BorderRadius.circular(32),
+            borderRadius: BorderRadius.circular(r.radius(context, 32)),
             boxShadow: [
               BoxShadow(
                 color: const Color(0xFFE8C9A0).withOpacity(0.5),
@@ -645,12 +692,12 @@ class _ExteriorColorPaletteScreenState
             ],
           ),
           alignment: Alignment.center,
-          child: const Text(
+          child: Text(
             'Generate',
             style: TextStyle(
-              fontSize: 18,
+              fontSize: r.sp(context, 18),
               fontWeight: FontWeight.w600,
-              color: Color(0xFF5A3E1B),
+              color: const Color(0xFF5A3E1B),
               letterSpacing: 0.3,
             ),
           ),

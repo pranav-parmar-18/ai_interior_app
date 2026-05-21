@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:ai_interior/utils/responsive_utils.dart';
 
 class SnapTipsScreen extends StatefulWidget {
   const SnapTipsScreen({super.key});
@@ -30,32 +31,84 @@ class SnapTipsScreen extends StatefulWidget {
 class _SnapTipsScreenState extends State<SnapTipsScreen> {
   @override
   Widget build(BuildContext context) {
+    
+    final bool isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
         child: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildCloseButton(),
-              _buildHeader(),
-              const SizedBox(height: 20),
-              _buildTipsCard(),
-              const SizedBox(height: 28),
-              _buildPhotoSection(
-                label: 'Good Photo Examples',
-                isGood: true,
-                imageUrls: SnapTipsScreen._goodPhotos,
-              ),
-              const SizedBox(height: 20),
-              _buildPhotoSection(
-                label: 'Bad Photos Examples',
-                isGood: false,
-                imageUrls: SnapTipsScreen._badPhotos,
-              ),
-              const SizedBox(height: 32),
-            ],
+          child: Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: isLandscape ? r.wp(context, 3) : 0,
+            ),
+            child: isLandscape
+                ? Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Left Column: Close button, Header, and Tips Card
+                      Expanded(
+                        flex: 11,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildCloseButton(),
+                            _buildHeader(),
+                            SizedBox(height: r.hp(context, 2.5)),
+                            _buildTipsCard(),
+                            SizedBox(height: r.hp(context, 4)),
+                          ],
+                        ),
+                      ),
+                      // Horizontal divider space
+                      SizedBox(width: r.wp(context, 4)),
+                      // Right Column: Good / Bad Photo Sections
+                      Expanded(
+                        flex: 12,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            SizedBox(height: r.hp(context, 8)), // offset to align with header height nicely
+                            _buildPhotoSection(
+                              label: 'Good Photo Examples',
+                              isGood: true,
+                              imageUrls: SnapTipsScreen._goodPhotos,
+                            ),
+                            SizedBox(height: r.hp(context, 3.5)),
+                            _buildPhotoSection(
+                              label: 'Bad Photos Examples',
+                              isGood: false,
+                              imageUrls: SnapTipsScreen._badPhotos,
+                            ),
+                            SizedBox(height: r.hp(context, 4)),
+                          ],
+                        ),
+                      ),
+                    ],
+                  )
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildCloseButton(),
+                      _buildHeader(),
+                      SizedBox(height: r.hp(context, 2.5)),
+                      _buildTipsCard(),
+                      SizedBox(height: r.hp(context, 3.5)),
+                      _buildPhotoSection(
+                        label: 'Good Photo Examples',
+                        isGood: true,
+                        imageUrls: SnapTipsScreen._goodPhotos,
+                      ),
+                      SizedBox(height: r.hp(context, 3.5)),
+                      _buildPhotoSection(
+                        label: 'Bad Photos Examples',
+                        isGood: false,
+                        imageUrls: SnapTipsScreen._badPhotos,
+                      ),
+                      SizedBox(height: r.hp(context, 4)),
+                    ],
+                  ),
           ),
         ),
       ),
@@ -67,12 +120,16 @@ class _SnapTipsScreenState extends State<SnapTipsScreen> {
     return Align(
       alignment: Alignment.centerRight,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(0, 12, 16, 0),
+        padding: EdgeInsets.fromLTRB(0, r.hp(context, 1.5), r.wp(context, 4), 0),
         child: GestureDetector(
           onTap: () {
             Navigator.of(context).pop();
           },
-          child: const Icon(Icons.close, size: 26, color: Color(0xFF1A1A1A)),
+          child: Icon(
+            Icons.close,
+            size: r.adaptiveValue(context, mobile: 26.0, tablet: 32.0),
+            color: const Color(0xFF1A1A1A),
+          ),
         ),
       ),
     );
@@ -80,41 +137,42 @@ class _SnapTipsScreenState extends State<SnapTipsScreen> {
 
   // ── Header row: icon + title ─────────────────────────────────────────────
   Widget _buildHeader() {
+    final double avatarSize = r.adaptiveValue(context, mobile: 64.0, tablet: 80.0);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 6, 20, 0),
+      padding: EdgeInsets.fromLTRB(r.wp(context, 5), r.hp(context, 1), r.wp(context, 5), 0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           // Camera icon in rounded square container
           Container(
-            width: 64,
-            height: 64,
+            width: avatarSize,
+            height: avatarSize,
             decoration: BoxDecoration(
               color: const Color(0xFFEEEEEE),
-              borderRadius: BorderRadius.circular(18),
+              borderRadius: BorderRadius.circular(r.adaptiveValue(context, mobile: 18.0, tablet: 22.0)),
             ),
             child: Stack(
               alignment: Alignment.center,
               children: [
-                const Icon(
+                Icon(
                   Icons.camera_alt_rounded,
-                  size: 34,
-                  color: Color(0xFF2A2A2A),
+                  size: r.adaptiveValue(context, mobile: 34.0, tablet: 42.0),
+                  color: const Color(0xFF2A2A2A),
                 ),
                 // Small yellow star/sparkle badge
                 Positioned(
-                  bottom: 10,
-                  right: 10,
+                  bottom: r.adaptiveValue(context, mobile: 10.0, tablet: 12.0),
+                  right: r.adaptiveValue(context, mobile: 10.0, tablet: 12.0),
                   child: Container(
-                    width: 16,
-                    height: 16,
+                    width: r.adaptiveValue(context, mobile: 16.0, tablet: 20.0),
+                    height: r.adaptiveValue(context, mobile: 16.0, tablet: 20.0),
                     decoration: const BoxDecoration(
                       color: Color(0xFFFFCC00),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.star_rounded,
-                      size: 10,
+                      size: r.adaptiveValue(context, mobile: 10.0, tablet: 12.0),
                       color: Colors.white,
                     ),
                   ),
@@ -122,15 +180,15 @@ class _SnapTipsScreenState extends State<SnapTipsScreen> {
               ],
             ),
           ),
-          const SizedBox(width: 14),
+          SizedBox(width: r.wp(context, 4)),
           // Title
-          const Expanded(
+          Expanded(
             child: Text(
               'Snap Tips for Best Results',
               style: TextStyle(
-                fontSize: 26,
+                fontSize: r.adaptiveValue(context, mobile: 24.0, tablet: 30.0),
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF0A0A0A),
+                color: const Color(0xFF0A0A0A),
                 letterSpacing: -0.5,
                 height: 1.2,
               ),
@@ -144,13 +202,13 @@ class _SnapTipsScreenState extends State<SnapTipsScreen> {
   // ── Tips card ────────────────────────────────────────────────────────────
   Widget _buildTipsCard() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: EdgeInsets.symmetric(horizontal: r.wp(context, 4)),
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
+        padding: EdgeInsets.fromLTRB(r.wp(context, 5), r.hp(context, 2.2), r.wp(context, 5), r.hp(context, 2.5)),
         decoration: BoxDecoration(
           color: const Color(0xFFF4F4F4),
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(r.adaptiveValue(context, mobile: 18.0, tablet: 22.0)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -163,16 +221,16 @@ class _SnapTipsScreenState extends State<SnapTipsScreen> {
 
   Widget _buildTipItem(String text) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: EdgeInsets.only(bottom: r.hp(context, 1.2)),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Bullet dot
           Padding(
-            padding: const EdgeInsets.only(top: 6, right: 10),
+            padding: EdgeInsets.only(top: r.hp(context, 0.8), right: r.wp(context, 2.5)),
             child: Container(
-              width: 6,
-              height: 6,
+              width: r.adaptiveValue(context, mobile: 6.0, tablet: 8.0),
+              height: r.adaptiveValue(context, mobile: 6.0, tablet: 8.0),
               decoration: const BoxDecoration(
                 shape: BoxShape.circle,
                 color: Color(0xFF1A1A1A),
@@ -182,10 +240,10 @@ class _SnapTipsScreenState extends State<SnapTipsScreen> {
           Expanded(
             child: Text(
               text,
-              style: const TextStyle(
-                fontSize: 15.5,
+              style: TextStyle(
+                fontSize: r.adaptiveValue(context, mobile: 15.0, tablet: 18.0),
                 fontWeight: FontWeight.w400,
-                color: Color(0xFF1A1A1A),
+                color: const Color(0xFF1A1A1A),
                 height: 1.45,
                 letterSpacing: -0.1,
               ),
@@ -203,15 +261,15 @@ class _SnapTipsScreenState extends State<SnapTipsScreen> {
     required List<String> imageUrls,
   }) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: EdgeInsets.symmetric(horizontal: r.wp(context, 4)),
       child: Stack(
         clipBehavior: Clip.none,
         children: [
           // Photo grid — has extra top padding for the floating label
           Padding(
-            padding: const EdgeInsets.only(top: 18),
+            padding: EdgeInsets.only(top: r.hp(context, 2.2)),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(18),
+              borderRadius: BorderRadius.circular(r.adaptiveValue(context, mobile: 18.0, tablet: 22.0)),
               child: Row(
                 children:
                     imageUrls.map((url) {
@@ -228,9 +286,9 @@ class _SnapTipsScreenState extends State<SnapTipsScreen> {
             right: 0,
             child: Center(
               child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 7,
+                padding: EdgeInsets.symmetric(
+                  horizontal: r.wp(context, 3.5),
+                  vertical: r.hp(context, 1),
                 ),
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -248,8 +306,8 @@ class _SnapTipsScreenState extends State<SnapTipsScreen> {
                   children: [
                     // Coloured icon circle
                     Container(
-                      width: 22,
-                      height: 22,
+                      width: r.adaptiveValue(context, mobile: 22.0, tablet: 28.0),
+                      height: r.adaptiveValue(context, mobile: 22.0, tablet: 28.0),
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color:
@@ -259,17 +317,17 @@ class _SnapTipsScreenState extends State<SnapTipsScreen> {
                       ),
                       child: Icon(
                         isGood ? Icons.check_rounded : Icons.close_rounded,
-                        size: 14,
+                        size: r.adaptiveValue(context, mobile: 14.0, tablet: 18.0),
                         color: Colors.white,
                       ),
                     ),
-                    const SizedBox(width: 7),
+                    SizedBox(width: r.wp(context, 2)),
                     Text(
                       label,
-                      style: const TextStyle(
-                        fontSize: 14,
+                      style: TextStyle(
+                        fontSize: r.adaptiveValue(context, mobile: 13.5, tablet: 16.5),
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF1A1A1A),
+                        color: const Color(0xFF1A1A1A),
                         letterSpacing: -0.1,
                       ),
                     ),
@@ -317,10 +375,10 @@ class _NetworkImageTile extends StatelessWidget {
         errorBuilder:
             (context, error, stack) => Container(
               color: const Color(0xFFDDDDDD),
-              child: const Icon(
+              child: Icon(
                 Icons.image_not_supported_rounded,
-                color: Color(0xFFAAAAAA),
-                size: 32,
+                color: const Color(0xFFAAAAAA),
+                size: r.adaptiveValue(context, mobile: 32.0, tablet: 40.0),
               ),
             ),
       ),
