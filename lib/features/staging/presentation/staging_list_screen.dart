@@ -32,7 +32,13 @@ class StagingRoomSelectionScreen extends StatefulWidget {
 
 class _StagingRoomSelectionScreenState
     extends State<StagingRoomSelectionScreen> {
-  String? _selectedRoom;
+  String? _selectedRoom = 'Living Room';
+
+  @override
+  void initState() {
+    super.initState();
+    stgRoomType = 'living room';
+  }
 
   final List<RoomItem> rooms = const [
     RoomItem(

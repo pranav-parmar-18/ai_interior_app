@@ -62,8 +62,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
+
+    SharedPreferences.getInstance().then((prefs) {
+      final localCredits = prefs.getString('credits');
+      if (localCredits != null) {
+        creditsNotifier.value = localCredits;
+      }
+    });
 
     getDeviceId().then((value) {
       _createUserBloc.add(
@@ -128,9 +134,13 @@ class _HomeScreenState extends State<HomeScreen> {
         listener: (context, state) {
           if (state is CreateUserSuccessState) {
             createUserModelResponse = state.login;
-            setCredits(createUserModelResponse?.credits.toString() ?? "");
-            creditsNotifier.value =
-                createUserModelResponse?.credits.toString() ?? "";
+            final userId = createUserModelResponse?.data?.id?.toString() ?? "";
+            final credits = createUserModelResponse?.credits?.toString() ?? "0";
+            setCredits(credits);
+            creditsNotifier.value = credits;
+            SharedPreferences.getInstance().then((prefs) {
+              prefs.setString('user_id', userId);
+            });
           } else if (state is CreateUserExceptionState ||
               state is CreateUserExceptionState) {}
         },

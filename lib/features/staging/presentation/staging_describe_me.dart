@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ai_interior/utils/responsive_utils.dart';
 
+import 'staging_ash_list_screen.dart';
 import 'staging_plaate.dart';
 
 class StagingDescribeVisionScreen extends StatefulWidget {
@@ -299,6 +300,7 @@ class _StagingDescribeVisionScreenState
       ),
       child: GestureDetector(
         onTap: () async {
+          stgAsh = _controller.text;
           await Future.delayed(const Duration(seconds: 1));
           if (mounted) {
             Navigator.of(context).pushNamed(StagingColorPaletteScreen.routeName);

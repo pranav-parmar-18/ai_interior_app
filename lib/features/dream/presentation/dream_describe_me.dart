@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ai_interior/utils/responsive_utils.dart';
 
+import 'dream_ash_list_screen.dart';
 import 'dream_plaate.dart';
 
 
@@ -285,6 +286,7 @@ class _DreamDescribeVisionScreenState
       padding: EdgeInsets.fromLTRB(r.wp(context, 22), r.hp(context, 8), r.wp(context, 22), botPad > 0 ? botPad : r.hp(context, 22)),
       child: GestureDetector(
         onTap: () async {
+          dreamASH = _controller.text;
           await Future.delayed(const Duration(seconds: 1));
           if (mounted) {
             Navigator.of(context).pushNamed(DreamColorPaletteScreen.routeName);

@@ -290,6 +290,12 @@ class _ExteriorColorPaletteScreenState
       listener: (context, state) {
         if (state is ExteriorDeignCreateSuccessState) {
           interiorDesignCreateModelResponse = state.login;
+          int currentCredits = int.tryParse(creditsNotifier.value) ?? 0;
+          final newCredits = (currentCredits - 50).clamp(0, 999999).toString();
+          creditsNotifier.value = newCredits;
+          SharedPreferences.getInstance().then((prefs) {
+            prefs.setString('credits', newCredits);
+          });
           Navigator.of(context).pushNamed(
             ExteriorOutputScreen.routeName,
             arguments: {
@@ -304,7 +310,10 @@ class _ExteriorColorPaletteScreenState
             },
           );
         } else if (state is ExteriorDeignCreateFailureState) {
-          showSnackError(context, "Please try once again");
+          showSnackError(
+            context,
+            state.message.isNotEmpty ? state.message : "Please try once again",
+          );
         } else if (state is ExteriorDeignCreateExceptionState) {
           showSnackError(context, "Please try once again");
         }
@@ -661,11 +670,13 @@ class _ExteriorColorPaletteScreenState
             final imageFile = await assetToFile(
               'assets/images/interior/interior_home.png',
             );
+            final prefs = await SharedPreferences.getInstance();
+            final userId = prefs.getString('user_id') ?? '342';
 
             _interiorDeignCreateBloc.add(
               ExteriorDeignCreateDataEvent(
                 login: {
-                  "user_id": 342,
+                  "user_id": int.tryParse(userId) ?? 342,
                   "colors": _selectedPalette,
                   "design_asthetic": extAsh,
                   "space_type": extSpaceType,

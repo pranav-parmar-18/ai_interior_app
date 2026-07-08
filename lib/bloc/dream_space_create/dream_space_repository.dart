@@ -28,11 +28,17 @@ class DreamSpaceCreateRepository {
       if (response.statusCode == 200) {
         final responseJsonMap =
             jsonDecode(response.body) as Map<String, dynamic>;
-        final responseData = CommonModelResponse.fromJson(responseJsonMap);
-        print("LOGIN Success: ${response.body}");
-        _makeSongResponse = responseData;
-        _message = "Success";
-        _success = true;
+        if (responseJsonMap['status'] == true) {
+          final responseData = CommonModelResponse.fromJson(responseJsonMap);
+          print("LOGIN Success: ${response.body}");
+          _makeSongResponse = responseData;
+          _message = "Success";
+          _success = true;
+        } else {
+          _message = responseJsonMap['message']?.toString() ?? "Failed";
+          _success = false;
+          print("LOGIN Failed (Status false): ${response.body}");
+        }
       } else {
         if (kDebugMode) {
           print("API FAILED : ${response.body}");

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ai_interior/utils/responsive_utils.dart';
+import 'package:ai_interior/features/style_transfer/presentation/style_transfer_screeen.dart';
 
 class StyleOutputScreen extends StatefulWidget {
   const StyleOutputScreen({super.key});
@@ -28,9 +29,15 @@ class _StyleOutputScreenState extends State<StyleOutputScreen> {
     final topPad = mq.padding.top;
     final botPad = mq.padding.bottom;
 
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle.light, // white status bar icons over photo
-      child: Scaffold(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        Navigator.of(context).popUntil((route) => route.isFirst);
+      },
+      child: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: SystemUiOverlayStyle.light, // white status bar icons over photo
+        child: Scaffold(
         backgroundColor: const Color(0xFFF2EFEA),
         body: Column(
           children: [
@@ -57,9 +64,13 @@ class _StyleOutputScreenState extends State<StyleOutputScreen> {
             ),
 
             // ── Apply Style button ─────────────────────────────────
-            _ApplyButton(botPad: botPad),
+            _ApplyButton(
+              botPad: botPad,
+              imgUrl: data["image"]?.toString() ?? "",
+            ),
           ],
         ),
+      ),
       ),
     );
   }
@@ -121,7 +132,7 @@ class _PhotoSection extends StatelessWidget {
             top: topPad + r.hp(context, 10),
             left: r.wp(context, 16),
             child: GestureDetector(
-              onTap: () => Navigator.maybePop(context),
+              onTap: () => Navigator.of(context).popUntil((route) => route.isFirst),
               child: Icon(
                 Icons.chevron_left_rounded,
                 size: r.wp(context, 32),
@@ -155,7 +166,7 @@ class _InfoTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.symmetric(
-        horizontal: r.wp(context, 14),
+        horizontal: r.wp(context, 16),
         vertical: r.hp(context, 14),
       ),
       decoration: BoxDecoration(
@@ -163,9 +174,9 @@ class _InfoTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(r.wp(context, 16)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: r.wp(context, 8),
-            offset: Offset(0, r.hp(context, 2)),
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -173,15 +184,15 @@ class _InfoTile extends StatelessWidget {
         children: [
           // Icon container
           Container(
-            width: r.wp(context, 46),
-            height: r.wp(context, 46),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF2EFEA),
-              borderRadius: BorderRadius.circular(r.wp(context, 11)),
+            width: r.wp(context, 44),
+            height: r.wp(context, 44),
+            decoration: const BoxDecoration(
+              color: Color(0xFFF7F7F7),
+              shape: BoxShape.circle,
             ),
             child: Center(child: iconWidget),
           ),
-          r.horizontalSpace(context, 13),
+          r.horizontalSpace(context, 14),
 
           // Label + value
           Expanded(
@@ -192,19 +203,21 @@ class _InfoTile extends StatelessWidget {
                   label,
                   style: TextStyle(
                     fontSize: r.sp(context, 12.5),
-                    fontWeight: FontWeight.w500,
-                    color: const Color(0xFF9C9690),
+                    fontWeight: FontWeight.w400,
+                    color: const Color(0xFF7A7A7A),
                     height: 1.2,
+                    fontFamily: 'Poppins',
                   ),
                 ),
-                r.verticalSpace(context, 3),
+                r.verticalSpace(context, 4),
                 Text(
                   value,
                   style: TextStyle(
-                    fontSize: r.sp(context, 17),
+                    fontSize: r.sp(context, 15.5),
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFF1A1816),
-                    letterSpacing: -0.2,
+                    color: const Color(0xFF1E1E1E),
+                    letterSpacing: -0.1,
+                    fontFamily: 'Poppins',
                   ),
                 ),
               ],
@@ -378,8 +391,9 @@ class _BuildingIconPainter extends CustomPainter {
 // ─────────────────────────────────────────────────────────────────────────────
 class _ApplyButton extends StatefulWidget {
   final double botPad;
+  final String imgUrl;
 
-  const _ApplyButton({required this.botPad});
+  const _ApplyButton({required this.botPad, required this.imgUrl});
 
   @override
   State<_ApplyButton> createState() => _ApplyButtonState();
@@ -401,7 +415,12 @@ class _ApplyButtonState extends State<_ApplyButton> {
         onTapDown: (_) => setState(() => _pressed = true),
         onTapUp: (_) => setState(() => _pressed = false),
         onTapCancel: () => setState(() => _pressed = false),
-        onTap: () {},
+        onTap: () {
+          Navigator.of(context).pushNamed(
+            StyleTransferScreen.routeName,
+            arguments: {"styleReference": widget.imgUrl},
+          );
+        },
         child: AnimatedScale(
           scale: _pressed ? 0.97 : 1.0,
           duration: const Duration(milliseconds: 80),

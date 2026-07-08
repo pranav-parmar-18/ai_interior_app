@@ -85,15 +85,25 @@ class SmartStagingCreateRepository {
         final responseJson =
         jsonDecode(response.body) as Map<String, dynamic>;
 
-        _makeSongResponse =
-            SmartStagingCreateModelResponse.fromJson(responseJson);
-        _message = "Success";
-        _success = true;
+        if (responseJson['status'] == true) {
+          _makeSongResponse =
+              SmartStagingCreateModelResponse.fromJson(responseJson);
+          _message = "Success";
+          _success = true;
 
-        if (kDebugMode) {
-          print("SUCCESS: ${response.body}");
+          if (kDebugMode) {
+            print("SUCCESS: ${response.body}");
+          }
+        } else {
+          _message = responseJson['message']?.toString() ?? "Failed";
+          _success = false;
+
+          if (kDebugMode) {
+            print("FAILED (Status false): ${response.body}");
+          }
         }
       } else {
+        _message = 'Failed to create staging design';
         if (kDebugMode) {
           print("FAILED: ${response.body}");
         }

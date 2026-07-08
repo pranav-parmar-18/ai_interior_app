@@ -15,6 +15,7 @@ import '../../../models/interior_design_create_model_response.dart';
 import '../../../theme/app_colors.dart';
 import '../../exterior/presentation/exterior_screen.dart';
 import '../../home/presentation/home_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dream_output_screen.dart';
 
 class ColorPalette {
@@ -240,6 +241,12 @@ class _DreamColorPaletteScreenState
       listener: (context, state) {
         if (state is InteriorDeignCreateSuccessState) {
           interiorDesignCreateModelResponse = state.login;
+          int currentCredits = int.tryParse(creditsNotifier.value) ?? 0;
+          final newCredits = (currentCredits - 50).clamp(0, 999999).toString();
+          creditsNotifier.value = newCredits;
+          SharedPreferences.getInstance().then((prefs) {
+            prefs.setString('credits', newCredits);
+          });
           Navigator.of(context).pushNamed(
             DreamOutputScreen.routeName,
             arguments: {
@@ -254,7 +261,10 @@ class _DreamColorPaletteScreenState
             },
           );
         } else if (state is InteriorDeignCreateFailureState) {
-          showSnackError(context, "Please try once again");
+          showSnackError(
+            context,
+            state.message.isNotEmpty ? state.message : "Please try once again",
+          );
         } else if (state is InteriorDeignCreateExceptionState) {
           showSnackError(context, "Please try once again");
         }
@@ -575,11 +585,13 @@ class _DreamColorPaletteScreenState
           final imageFile = await assetToFile(
             'assets/images/interior/interior_home.png',
           );
+          final prefs = await SharedPreferences.getInstance();
+          final userId = prefs.getString('user_id') ?? '342';
 
           _interiorDeignCreateBloc.add(
             InteriorDeignCreateDataEvent(
               login: {
-                "user_id": 342,
+                "user_id": int.tryParse(userId) ?? 342,
                 "colors": "retro",
                 "design_asthetic": dreamASH,
                 "space_type": dreamSpaceType,

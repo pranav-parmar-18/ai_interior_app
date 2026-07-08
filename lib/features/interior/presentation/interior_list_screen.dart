@@ -33,7 +33,13 @@ class InteriorRoomSelectionScreen extends StatefulWidget {
 
 class _InteriorRoomSelectionScreenState
     extends State<InteriorRoomSelectionScreen> {
-  String? _selectedRoom;
+  String? _selectedRoom = 'Living Room';
+
+  @override
+  void initState() {
+    super.initState();
+    intSpaceType = 'living room';
+  }
 
   final List<RoomItem> rooms = const [
     RoomItem(
@@ -178,15 +184,19 @@ class _InteriorRoomSelectionScreenState
               ),
             ),
           ),
+          SizedBox(width: r.wp(context, 8)),
           Expanded(
-            child: Center(
+            child: Align(
+              alignment: Alignment.centerLeft,
               child: Text(
                 'Interior Design',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  fontSize: r.sp(context, 36),
+                  fontSize: r.sp(context, 24),
                   fontFamily: 'Georgia',
                   fontWeight: FontWeight.w500,
-                  color: Color(0xFF1A1A1A),
+                  color: const Color(0xFF1A1A1A),
                   letterSpacing: -0.3,
                 ),
               ),

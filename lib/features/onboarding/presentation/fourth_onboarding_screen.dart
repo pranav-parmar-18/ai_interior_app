@@ -9,6 +9,7 @@ import 'package:ai_interior/utils/responsive_utils.dart';
 import '../../../bloc/create_user/create_user_bloc.dart';
 import '../../../services/device_indentification_service.dart';
 import '../../main/presentaion/main_screen.dart';
+import '../../home/presentation/home_screen.dart';
 
 class OnboardingFourScreen extends StatefulWidget {
   const OnboardingFourScreen({super.key});
@@ -165,6 +166,12 @@ class _OnboardingFourScreenState extends State<OnboardingFourScreen> {
             createUserModelResponse = state.login;
             setUserId(createUserModelResponse?.data?.id.toString() ?? "");
             setIsOnboardingDone();
+            SharedPreferences.getInstance().then((prefs) {
+              final credits = createUserModelResponse?.credits?.toString() ?? "0";
+              prefs.setBool('credits_initialized', true);
+              prefs.setString('credits', credits);
+              creditsNotifier.value = credits;
+            });
             Navigator.of(
               context,
             ).pushNamedAndRemoveUntil(MainScreen.routeName, (route) => false);
@@ -272,6 +279,12 @@ class _ImageGrid extends StatelessWidget {
           createUserModelResponse = state.login;
           setUserId(createUserModelResponse?.data?.id.toString() ?? "");
           setIsOnboardingDone();
+          SharedPreferences.getInstance().then((prefs) {
+            final credits = createUserModelResponse?.credits?.toString() ?? "0";
+            prefs.setBool('credits_initialized', true);
+            prefs.setString('credits', credits);
+            creditsNotifier.value = credits;
+          });
           Navigator.of(
             context,
           ).pushNamedAndRemoveUntil(MainScreen.routeName, (route) => false);

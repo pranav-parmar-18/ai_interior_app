@@ -34,7 +34,7 @@ class CustomBottomBar extends StatelessWidget {
         icon: "assets/images/recents.png",
         activeIcon: "assets/images/recents.png",
         type: BottomBarEnum.Recents,
-        title: "Resents",
+        title: "Recents",
       ),
     ];
 
@@ -43,7 +43,6 @@ class CustomBottomBar extends StatelessWidget {
     );
 
     // Responsive sizes
-    final containerWidth = r.adaptiveValue(context, mobile: 60, tablet: 85);
     final containerHeight = r.adaptiveValue(context, mobile: 70, tablet: 100);
     final selectedIconSize = r.adaptiveValue(context, mobile: 33, tablet: 44);
     final unselectedIconSize = r.adaptiveValue(context, mobile: 30, tablet: 40);
@@ -73,7 +72,6 @@ class CustomBottomBar extends StatelessWidget {
           final item = bottomMenuList[index];
           return BottomNavigationBarItem(
             icon: SizedBox(
-              width: containerWidth,
               height: containerHeight,
               child: Center(
                 child: Column(

@@ -34,7 +34,13 @@ class ExteriorAshSelectionScreen extends StatefulWidget {
 
 class _ExteriorAshSelectionScreenState
     extends State<ExteriorAshSelectionScreen> {
-  String? _selectedRoom;
+  String? _selectedRoom = 'Modern';
+
+  @override
+  void initState() {
+    super.initState();
+    extAsh = 'modern';
+  }
 
   final List<RoomItem> rooms = const [
     RoomItem(

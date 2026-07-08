@@ -92,7 +92,7 @@ class _InteriorDesignScreenState extends State<InteriorDesignScreen> {
   // ─────────────────────────────────────────────
   Widget _buildAppBar() {
     final hPad = r.wp(context, 16);
-    final titleFontSize = r.sp(context, 36);
+    final titleFontSize = r.sp(context, 24);
     final creditsFontSize = r.sp(context, 16);
     final iconSize = r.adaptiveValue(context, mobile: 25, tablet: 35);
     final backBtnSize = r.adaptiveValue(context, mobile: 36, tablet: 48);
@@ -116,10 +116,14 @@ class _InteriorDesignScreenState extends State<InteriorDesignScreen> {
               ),
             ),
           ),
+          SizedBox(width: r.wp(context, 8)),
           Expanded(
-            child: Center(
+            child: Align(
+              alignment: Alignment.centerLeft,
               child: Text(
                 'Interior Design',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   fontSize: titleFontSize,
                   fontFamily: 'Georgia',

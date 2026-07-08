@@ -11,6 +11,8 @@ import '../../../services/subscription_manager.dart';
 import '../../subscription/presentation/subscription_screen.dart';
 import '../../subscription/presentation/subscription_screen_three.dart';
 import '../../subscription/presentation/subscription_screen_two.dart';
+import '../../home/presentation/home_screen.dart';
+import '../../main/presentaion/main_screen.dart';
 
 class ReplaceDescribeVisionScreen extends StatefulWidget {
   const ReplaceDescribeVisionScreen({super.key});
@@ -105,9 +107,21 @@ class _ReplaceDescribeVisionScreenState
         bloc: _smartReplaceCreateBloc,
         listener: (context, state) {
           if (state is SmartReplaceCreateSuccessState) {
+            int currentCredits = int.tryParse(creditsNotifier.value) ?? 0;
+            final newCredits = (currentCredits - 50).clamp(0, 999999).toString();
+            creditsNotifier.value = newCredits;
+            SharedPreferences.getInstance().then((prefs) {
+              prefs.setString('credits', newCredits);
+            });
             Navigator.of(context).pushNamed(ReplaceOutputScreen.routeName);
-          } else if (state is SmartReplaceCreateFailureState ||
-               state is SmartReplaceCreateExceptionState) {}
+          } else if (state is SmartReplaceCreateFailureState) {
+            showSnackError(
+              context,
+              state.message.isNotEmpty ? state.message : "Please try once again",
+            );
+          } else if (state is SmartReplaceCreateExceptionState) {
+            showSnackError(context, "Please try once again");
+          }
         },
         builder: (context, state) {
           return Scaffold(

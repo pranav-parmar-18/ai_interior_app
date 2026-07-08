@@ -289,6 +289,12 @@ class _StagingColorPaletteScreenState extends State<StagingColorPaletteScreen> {
       listener: (context, state) {
         if (state is SmartStagingCreateSuccessState) {
           interiorDesignCreateModelResponse = state.login;
+          int currentCredits = int.tryParse(creditsNotifier.value) ?? 0;
+          final newCredits = (currentCredits - 50).clamp(0, 999999).toString();
+          creditsNotifier.value = newCredits;
+          SharedPreferences.getInstance().then((prefs) {
+            prefs.setString('credits', newCredits);
+          });
           Navigator.of(context).pushNamed(
             StagingOutputScreen.routeName,
             arguments: {
@@ -303,7 +309,10 @@ class _StagingColorPaletteScreenState extends State<StagingColorPaletteScreen> {
             },
           );
         } else if (state is SmartStagingCreateFailureState) {
-          showSnackError(context, "Please try once again");
+          showSnackError(
+            context,
+            state.message.isNotEmpty ? state.message : "Please try once again",
+          );
         } else if (state is SmartStagingCreateExceptionState) {
           showSnackError(context, "Please try once again");
         }
@@ -656,11 +665,13 @@ class _StagingColorPaletteScreenState extends State<StagingColorPaletteScreen> {
             final imageFile = await assetToFile(
               'assets/images/interior/interior_home.png',
             );
+            final prefs = await SharedPreferences.getInstance();
+            final userId = prefs.getString('user_id') ?? '342';
 
             _interiorDeignCreateBloc.add(
               SmartStagingCreateDataEvent(
                 login: {
-                  "user_id": 342,
+                  "user_id": int.tryParse(userId) ?? 342,
                   "colors": _selectedPalette,
                   "design_asthetic": stgAsh.toLowerCase(),
                   "space_type": stgRoomType.toLowerCase(),

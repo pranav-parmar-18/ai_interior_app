@@ -980,6 +980,7 @@ import 'package:ai_interior/utils/responsive_utils.dart';
 
 import '../../../models/add_credit_model_response.dart';
 import '../../home/presentation/home_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../main/presentaion/main_screen.dart';
 
 // ─── Color tokens ─────────────────────────────────────────────────────────────
@@ -1201,6 +1202,16 @@ class _CreditsScreenState extends State<CreditsScreen> {
         listener: (context, state) {
           if (state is AddCreditsSuccessState) {
             _addCreditResponse = state.categoryModalResponse;
+            final addedCreditStr = _addCreditResponse?.result?.credit;
+            if (addedCreditStr != null) {
+              int currentCredits = int.tryParse(creditsNotifier.value) ?? 0;
+              int addedCredits = int.tryParse(addedCreditStr) ?? 0;
+              final newCredits = (currentCredits + addedCredits).toString();
+              creditsNotifier.value = newCredits;
+              SharedPreferences.getInstance().then((prefs) {
+                prefs.setString('credits', newCredits);
+              });
+            }
             setState(() { _selectedIndex = 0; });
             Navigator.of(context).pop();
           }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../utils/responsive_utils.dart';
+import 'interior_ash_list_screen.dart';
 import 'interior_plaate.dart';
 
 class InteriorDescribeVisionScreen extends StatefulWidget {
@@ -289,6 +290,7 @@ class _InteriorDescribeVisionScreenState
       ),
       child: GestureDetector(
         onTap: () async {
+          intAshType = _controller.text;
           await Future.delayed(const Duration(seconds: 1));
           Navigator.of(context).pushNamed(InteriorColorPaletteScreen.routeName);
         },

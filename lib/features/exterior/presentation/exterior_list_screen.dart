@@ -33,7 +33,13 @@ class ExteriorRoomSelectionScreen extends StatefulWidget {
 
 class _ExteriorRoomSelectionScreenState
     extends State<ExteriorRoomSelectionScreen> {
-  String? _selectedRoom;
+  String? _selectedRoom = 'House';
+
+  @override
+  void initState() {
+    super.initState();
+    extSpaceType = 'house';
+  }
 
   final List<RoomItem> rooms = const [
     RoomItem(

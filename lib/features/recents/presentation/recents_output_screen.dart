@@ -8,6 +8,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ai_interior/utils/responsive_utils.dart';
+import 'package:ai_interior/features/style_transfer/presentation/style_transfer_screeen.dart';
 
 class RecentOutputScreen extends StatefulWidget {
   const RecentOutputScreen({super.key});
@@ -80,35 +81,35 @@ class _RecentOutputScreenState extends State<RecentOutputScreen> {
                                       value:
                                           data["spaceType"]
                                               .toString()
-                                              .toUpperCase(),
+                                              .toTitleCase(),
                                       trailing: null,
                                     ),
                                     SizedBox(height: r.hp(context, 10)),
                                     _InfoTile(
                                       iconWidget: Icon(
                                         Icons.style_outlined,
-                                        size: r.wp(context, 26),
-                                        color: const Color(0xFF5A5550),
+                                        size: r.wp(context, 24),
+                                        color: const Color(0xFF7A7A7A),
                                       ),
                                       label: 'Design Aesthetic',
                                       value:
                                           data["designAsth"]
                                               .toString()
-                                              .toUpperCase(),
+                                              .toTitleCase(),
                                       trailing: null,
                                     ),
                                     SizedBox(height: r.hp(context, 10)),
                                     _InfoTile(
                                       iconWidget: Icon(
                                         Icons.palette_outlined,
-                                        size: r.wp(context, 26),
-                                        color: const Color(0xFF5A5550),
+                                        size: r.wp(context, 24),
+                                        color: const Color(0xFF7A7A7A),
                                       ),
                                       label: 'Color Palette',
                                       value:
                                           data["color"]
                                               .toString()
-                                              .toUpperCase(),
+                                              .toTitleCase(),
                                       trailing: const _ColorSwatches(),
                                     ),
                                     SizedBox(height: r.hp(context, 16)),
@@ -534,30 +535,33 @@ class _InfoTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: r.wp(context, 14), vertical: r.hp(context, 14)),
+      padding: EdgeInsets.symmetric(
+        horizontal: r.wp(context, 16),
+        vertical: r.hp(context, 14),
+      ),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(r.wp(context, 16)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Row(
         children: [
           Container(
-            width: r.wp(context, 46),
-            height: r.wp(context, 46),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF2EFEA),
-              borderRadius: BorderRadius.circular(r.wp(context, 11)),
+            width: r.wp(context, 44),
+            height: r.wp(context, 44),
+            decoration: const BoxDecoration(
+              color: Color(0xFFF7F7F7),
+              shape: BoxShape.circle,
             ),
             child: Center(child: iconWidget),
           ),
-          SizedBox(width: r.wp(context, 13)),
+          SizedBox(width: r.wp(context, 14)),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -566,19 +570,21 @@ class _InfoTile extends StatelessWidget {
                   label,
                   style: TextStyle(
                     fontSize: r.sp(context, 12.5),
-                    fontWeight: FontWeight.w500,
-                    color: const Color(0xFF9C9690),
+                    fontWeight: FontWeight.w400,
+                    color: const Color(0xFF7A7A7A),
                     height: 1.2,
+                    fontFamily: 'Poppins',
                   ),
                 ),
-                SizedBox(height: r.hp(context, 3)),
+                SizedBox(height: r.hp(context, 4)),
                 Text(
                   value,
                   style: TextStyle(
-                    fontSize: r.sp(context, 17),
+                    fontSize: r.sp(context, 15.5),
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFF1A1816),
-                    letterSpacing: -0.2,
+                    color: const Color(0xFF1E1E1E),
+                    letterSpacing: -0.1,
+                    fontFamily: 'Poppins',
                   ),
                 ),
               ],
@@ -751,8 +757,9 @@ class _BuildingIconPainter extends CustomPainter {
 // ─────────────────────────────────────────────────────────────────────────────
 class _ApplyButton extends StatefulWidget {
   final double botPad;
+  final String imgUrl;
 
-  const _ApplyButton({required this.botPad});
+  const _ApplyButton({required this.botPad, required this.imgUrl});
 
   @override
   State<_ApplyButton> createState() => _ApplyButtonState();
@@ -774,7 +781,12 @@ class _ApplyButtonState extends State<_ApplyButton> {
         onTapDown: (_) => setState(() => _pressed = true),
         onTapUp: (_) => setState(() => _pressed = false),
         onTapCancel: () => setState(() => _pressed = false),
-        onTap: () {},
+        onTap: () {
+          Navigator.of(context).pushNamed(
+            StyleTransferScreen.routeName,
+            arguments: {"styleReference": widget.imgUrl},
+          );
+        },
         child: AnimatedScale(
           scale: _pressed ? 0.97 : 1.0,
           duration: const Duration(milliseconds: 80),

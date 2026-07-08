@@ -33,7 +33,13 @@ class InteriorAshSelectionScreen extends StatefulWidget {
 
 class _InteriorAshSelectionScreenState
     extends State<InteriorAshSelectionScreen> {
-  String? _selectedRoom;
+  String? _selectedRoom = 'Minimalistic';
+
+  @override
+  void initState() {
+    super.initState();
+    intAshType = 'minimalistic';
+  }
 
   final List<RoomItem> rooms = const [
     RoomItem(
@@ -178,15 +184,19 @@ class _InteriorAshSelectionScreenState
               ),
             ),
           ),
+          SizedBox(width: r.wp(context, 8)),
           Expanded(
-            child: Center(
+            child: Align(
+              alignment: Alignment.centerLeft,
               child: Text(
                 'Interior Design',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  fontSize: r.sp(context, 36),
+                  fontSize: r.sp(context, 24),
                   fontFamily: 'Georgia',
                   fontWeight: FontWeight.w500,
-                  color: Color(0xFF1A1A1A),
+                  color: const Color(0xFF1A1A1A),
                   letterSpacing: -0.3,
                 ),
               ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ai_interior/utils/responsive_utils.dart';
 
+import 'exterior_ash_list_screen.dart';
 import 'exterior_plaate.dart';
 
 class ExteriorDescribeVisionScreen extends StatefulWidget {
@@ -306,6 +307,7 @@ class _ExteriorDescribeVisionScreenState
       ),
       child: GestureDetector(
         onTap: () async {
+          extAsh = _controller.text;
           await Future.delayed(const Duration(seconds: 1));
           Navigator.of(context).pushNamed(ExteriorColorPaletteScreen.routeName);
         },

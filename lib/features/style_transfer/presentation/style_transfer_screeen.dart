@@ -10,8 +10,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:ai_interior/utils/responsive_utils.dart';
+import 'package:flutter/services.dart' show rootBundle;
 
 import '../../../models/create_style_transfer_model_response.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
 import '../../home/presentation/home_screen.dart';
 import '../../main/presentaion/main_screen.dart';
 
@@ -28,6 +32,42 @@ class StyleTransferScreen extends StatefulWidget {
 
 class _StyleTransferScreenState extends State<StyleTransferScreen> {
   int _selectedTemplate = -1;
+  File? refImage;
+  String? styleReferenceUrl;
+  bool _isLoadingStyleReference = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final args = ModalRoute.of(context)?.settings.arguments;
+    if (args is Map<String, dynamic> && args.containsKey("styleReference") && styleReferenceUrl == null) {
+      styleReferenceUrl = args["styleReference"] as String?;
+      if (styleReferenceUrl != null && styleReferenceUrl!.isNotEmpty) {
+        _downloadStyleReference(styleReferenceUrl!);
+      }
+    }
+  }
+
+  Future<void> _downloadStyleReference(String url) async {
+    setState(() {
+      _isLoadingStyleReference = true;
+    });
+    try {
+      final response = await http.get(Uri.parse(url));
+      final directory = await getTemporaryDirectory();
+      final file = File("${directory.path}/temp_style_ref.jpg");
+      await file.writeAsBytes(response.bodyBytes);
+      setState(() {
+        refImage = file;
+        _isLoadingStyleReference = false;
+      });
+    } catch (e) {
+      print("Error downloading style reference: $e");
+      setState(() {
+        _isLoadingStyleReference = false;
+      });
+    }
+  }
 
   final CreateStyleTransferBloc _createStyleTransferBloc =
       CreateStyleTransferBloc();
@@ -59,12 +99,24 @@ class _StyleTransferScreenState extends State<StyleTransferScreen> {
         listener: (context, state) {
           if (state is CreateStyleTransferSuccessState) {
             createStyleTransferResponse = state.login;
+            int currentCredits = int.tryParse(creditsNotifier.value) ?? 0;
+            final newCredits = (currentCredits - 50).clamp(0, 999999).toString();
+            creditsNotifier.value = newCredits;
+            SharedPreferences.getInstance().then((prefs) {
+              prefs.setString('credits', newCredits);
+            });
             Navigator.of(context).pushNamed(StyleOutputScreen.routeName, arguments: {
               "image":
               createStyleTransferResponse?.data?.outputImage ?? "",
             });
-          } else if (state is CreateStyleTransferFailureState ||
-              state is CreateStyleTransferExceptionState) {}
+          } else if (state is CreateStyleTransferFailureState) {
+            showSnackError(
+              context,
+              state.message.isNotEmpty ? state.message : "Please try once again",
+            );
+          } else if (state is CreateStyleTransferExceptionState) {
+            showSnackError(context, "Please try once again");
+          }
         },
         builder: (context, state) {
           return Column(
@@ -92,24 +144,51 @@ class _StyleTransferScreenState extends State<StyleTransferScreen> {
                       SizedBox(height: r.hp(context, 14)),
                       _buildTemplateGrid(),
                       SizedBox(height: r.hp(context, 14)),
-                      Container(
-                        width: double.maxFinite,
-                        margin: EdgeInsets.symmetric(horizontal: r.wp(context, 15)),
-                        padding: EdgeInsets.symmetric(
-                          horizontal: r.wp(context, 10),
-                          vertical: r.hp(context, 15),
+                      GestureDetector(
+                        onTap: () => showMediaSourcePicker(
+                          context,
+                          onFilePicked: (file) => setState(() => refImage = file),
                         ),
-                        decoration: BoxDecoration(
-                          color: const Color.fromRGBO(255, 255, 255, 1),
-                          borderRadius: BorderRadius.circular(r.wp(context, 16)),
-                        ),
-                        child: Text(
-                          "Upload a style reference",
-                          style: TextStyle(
-                            fontSize: r.sp(context, 16),
-                            fontWeight: FontWeight.w500,
-                            color: const Color.fromRGBO(46, 46, 46, 1),
-                            letterSpacing: -0.2,
+                        child: Container(
+                          width: double.maxFinite,
+                          margin: EdgeInsets.symmetric(horizontal: r.wp(context, 15)),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: r.wp(context, 15),
+                            vertical: r.hp(context, 15),
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color.fromRGBO(255, 255, 255, 1),
+                            borderRadius: BorderRadius.circular(r.wp(context, 16)),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.04),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  _isLoadingStyleReference
+                                      ? "Downloading style reference..."
+                                      : (refImage != null
+                                          ? "Style Reference: ${refImage!.path.split('/').last}"
+                                          : "Upload a style reference"),
+                                  style: TextStyle(
+                                    fontSize: r.sp(context, 16),
+                                    fontWeight: FontWeight.w500,
+                                    color: const Color.fromRGBO(46, 46, 46, 1),
+                                    letterSpacing: -0.2,
+                                  ),
+                                ),
+                              ),
+                              if (_isLoadingStyleReference)
+                                const CupertinoActivityIndicator()
+                              else if (refImage != null)
+                                const Icon(Icons.check_circle_rounded, color: Color(0xFF3A7D7B)),
+                            ],
                           ),
                         ),
                       ),
@@ -535,16 +614,67 @@ class _StyleTransferScreenState extends State<StyleTransferScreen> {
     }
   }
 
+  String _getSpaceType(int index) {
+    switch (index) {
+      case 0: return 'Living Room';
+      case 1: return 'Bedroom';
+      case 2: return 'Bathroom';
+      case 3: return 'Dining';
+      case 4: return 'Kitchen';
+      case 5: return 'Office';
+      case 6: return 'Playroom';
+      default: return 'Living Room';
+    }
+  }
+
   Widget _buildNextButton() {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: r.wp(context, 20)),
       child: GestureDetector(
-        onTap: () {
+        onTap: () async {
+          File? roomFile = picked;
+          if (roomFile == null && _selectedTemplate >= 0) {
+            final assetPath = "assets/images/interior/interior_${_selectedTemplate + 1}.jpg";
+            try {
+              final byteData = await rootBundle.load(assetPath);
+              final directory = await getTemporaryDirectory();
+              final file = File("${directory.path}/temp_template_room.jpg");
+              await file.writeAsBytes(byteData.buffer.asUint8List(
+                byteData.offsetInBytes,
+                byteData.lengthInBytes,
+              ));
+              roomFile = file;
+            } catch (e) {
+              showSnackError(context, "Error loading template image: $e");
+              return;
+            }
+          }
+
+          if (roomFile == null) {
+            showSnackError(context, "Please upload a photo of your room or choose a template");
+            return;
+          }
+          if (refImage == null) {
+            showSnackError(context, "Please upload a style reference");
+            return;
+          }
+          final prefs = await SharedPreferences.getInstance();
+          final userId = prefs.getString('user_id') ?? '342';
+          
+          final selectedIdx = _selectedTemplate >= 0 ? _selectedTemplate : 0;
+          final colorVal = _templateColors[selectedIdx % _templateColors.length];
+          final spaceTypeVal = _getSpaceType(selectedIdx);
+
           _createStyleTransferBloc.add(
             CreateStyleTransferDataEvent(
-              login: const {"user_id": "342"},
-              image: File(""),
-              refImage: File(""),
+              login: {
+                "user_id": userId,
+                "colors": colorVal,
+                "design_asthetic": "Modern",
+                "space_type": spaceTypeVal,
+              },
+              image: roomFile,
+              refImage: refImage!,
             ),
           );
         },

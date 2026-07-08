@@ -291,6 +291,12 @@ class _InteriorColorPaletteScreenState
           print(
             "IMAGE ##: ${interiorDesignCreateModelResponse?.data?.outputImage ?? ""}",
           );
+          int currentCredits = int.tryParse(creditsNotifier.value) ?? 0;
+          final newCredits = (currentCredits - 50).clamp(0, 999999).toString();
+          creditsNotifier.value = newCredits;
+          SharedPreferences.getInstance().then((prefs) {
+            prefs.setString('credits', newCredits);
+          });
           Navigator.of(context).pushNamed(
             InteriorOutputScreen.routeName,
             arguments: {
@@ -306,7 +312,10 @@ class _InteriorColorPaletteScreenState
             },
           );
         } else if (state is InteriorDeignCreateFailureState) {
-          showSnackError(context, "Please try once again");
+          showSnackError(
+            context,
+            state.message.isNotEmpty ? state.message : "Please try once again",
+          );
         } else if (state is InteriorDeignCreateExceptionState) {
           showSnackError(context, "Please try once again");
         }
@@ -391,7 +400,7 @@ class _InteriorColorPaletteScreenState
 
   Widget _buildAppBar() {
     final hPad = r.wp(context, 16);
-    final titleFontSize = r.sp(context, 36);
+    final titleFontSize = r.sp(context, 24);
     final creditsFontSize = r.sp(context, 16);
     final iconSize = r.adaptiveValue(context, mobile: 25, tablet: 35);
     final backBtnSize = r.adaptiveValue(context, mobile: 36, tablet: 48);
@@ -415,10 +424,14 @@ class _InteriorColorPaletteScreenState
               ),
             ),
           ),
+          SizedBox(width: r.wp(context, 8)),
           Expanded(
-            child: Center(
+            child: Align(
+              alignment: Alignment.centerLeft,
               child: Text(
                 'Interior Design',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   fontSize: titleFontSize,
                   fontFamily: 'Georgia',
@@ -662,11 +675,13 @@ class _InteriorColorPaletteScreenState
             final imageFile = await assetToFile(
               'assets/images/interior/interior_home.png',
             );
+            final prefs = await SharedPreferences.getInstance();
+            final userId = prefs.getString('user_id') ?? '342';
 
             _interiorDeignCreateBloc.add(
               InteriorDeignCreateDataEvent(
                 login: {
-                  "user_id": 342,
+                  "user_id": int.tryParse(userId) ?? 342,
                   "colors": _selectedPalette?.toLowerCase(),
                   "design_asthetic": intAshType,
                   "space_type": intSpaceType,

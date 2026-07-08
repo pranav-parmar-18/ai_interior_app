@@ -32,7 +32,13 @@ class StagingAshSelectionScreen extends StatefulWidget {
 
 class _StagingAshSelectionScreenState
     extends State<StagingAshSelectionScreen> {
-  String? _selectedRoom;
+  String? _selectedRoom = 'Minimalistic';
+
+  @override
+  void initState() {
+    super.initState();
+    stgAsh = 'minimalistic';
+  }
 
   final List<RoomItem> rooms = const [
     RoomItem(

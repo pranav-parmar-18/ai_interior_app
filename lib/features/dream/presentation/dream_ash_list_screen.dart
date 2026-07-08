@@ -33,7 +33,13 @@ class DreamAshSelectionScreen extends StatefulWidget {
 
 class _DreamAshSelectionScreenState
     extends State<DreamAshSelectionScreen> {
-  String? _selectedRoom;
+  String? _selectedRoom = 'Minimalistic';
+
+  @override
+  void initState() {
+    super.initState();
+    dreamASH = 'minimalistic';
+  }
 
   final List<RoomItem> rooms = const [
     RoomItem(
