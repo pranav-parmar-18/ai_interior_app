@@ -671,17 +671,17 @@ class _InteriorColorPaletteScreenState
       ),
       child: GestureDetector(
         onTap: () async {
-          if (isSubscribed == false) {
+          if (isSubscribed == true) {
             final imageFile = await assetToFile(
               'assets/images/interior/interior_home.png',
             );
             final prefs = await SharedPreferences.getInstance();
-            final userId = prefs.getString('user_id') ?? '342';
+            final userId = prefs.getString('user_id') ?? '0';
 
             _interiorDeignCreateBloc.add(
               InteriorDeignCreateDataEvent(
                 login: {
-                  "user_id": int.tryParse(userId) ?? 342,
+                  "user_id": int.tryParse(userId) ?? 0,
                   "colors": _selectedPalette?.toLowerCase(),
                   "design_asthetic": intAshType,
                   "space_type": intSpaceType,

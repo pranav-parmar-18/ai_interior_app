@@ -74,6 +74,7 @@ class _MainScreenState extends State<MainScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Color.fromRGBO(13, 13, 16, 1),
+      extendBody: true,
       body: ValueListenableBuilder<int>(
         valueListenable: selectedIndex,
         builder: (context, index, child) {

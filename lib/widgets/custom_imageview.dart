@@ -102,18 +102,19 @@ class CustomImageview extends StatelessWidget {
             : Icon(Icons.error),
       );
     }
-    if (imagePath!.endsWith('.png') || imagePath!.endsWith('.jpg') || imagePath!.endsWith('.jpeg')) {
-      return Image.asset(
-        imagePath!,
+    final file = File(imagePath!);
+    if (imagePath!.startsWith('/') || imagePath!.startsWith('file://') || file.existsSync()) {
+      return Image.file(
+        file,
         height: height,
         width: width,
         fit: fit ?? BoxFit.cover,
         color: color,
       );
     }
-    if (File(imagePath!).existsSync()) {
-      return Image.file(
-        File(imagePath!),
+    if (imagePath!.endsWith('.png') || imagePath!.endsWith('.jpg') || imagePath!.endsWith('.jpeg')) {
+      return Image.asset(
+        imagePath!,
         height: height,
         width: width,
         fit: fit ?? BoxFit.cover,

@@ -18,6 +18,10 @@ import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import '../../home/presentation/home_screen.dart';
 import '../../main/presentaion/main_screen.dart';
+import '../../subscription/presentation/subscription_screen.dart';
+import '../../subscription/presentation/subscription_screen_two.dart';
+import '../../subscription/presentation/subscription_screen_three.dart';
+import '../../../services/subscription_manager.dart';
 
 File? picked;
 
@@ -35,6 +39,46 @@ class _StyleTransferScreenState extends State<StyleTransferScreen> {
   File? refImage;
   String? styleReferenceUrl;
   bool _isLoadingStyleReference = false;
+  bool? isSubscribed;
+
+  @override
+  void initState() {
+    super.initState();
+    isSubscriptionActive();
+  }
+
+  void openSubscriptionScreen(BuildContext context) {
+    final nextIndex = SubscriptionScreenManager().getNextIndex();
+
+    final screens = [
+      SubscriptionScreen(),
+      SubscriptionScreenTwo(),
+      SubscriptionScreenThree(),
+    ];
+
+    Navigator.push(
+      context,
+      CupertinoPageRoute(builder: (_) => screens[nextIndex]),
+    );
+  }
+
+  Future<bool> isSubscriptionActive() async {
+    final prefs = await SharedPreferences.getInstance();
+    final data = prefs.getString('subscription_info');
+    if (data == null) {
+      setState(() {
+        isSubscribed = false;
+      });
+      return false;
+    }
+
+    final sub = SubscriptionInfo.fromJson(data);
+    setState(() {
+      isSubscribed = sub?.isActive ?? false;
+    });
+
+    return sub?.isActive ?? false;
+  }
 
   @override
   void didChangeDependencies() {
@@ -119,6 +163,51 @@ class _StyleTransferScreenState extends State<StyleTransferScreen> {
           }
         },
         builder: (context, state) {
+          if (state is CreateStyleTransferLoadingState) {
+            return Scaffold(
+              backgroundColor: const Color(0xFFF5F3EF),
+              body: Center(
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Image.asset(
+                        "assets/gifs/loading.gif",
+                        height: r.hp(context, 300),
+                      ),
+                      r.verticalSpace(context, 20),
+                      Text(
+                        "Bringing your vision to life...",
+                        style: TextStyle(
+                          fontSize: r.sp(context, 16),
+                          fontWeight: FontWeight.w400,
+                          color: const Color.fromRGBO(90, 106, 117, 1),
+                          letterSpacing: -0.3,
+                        ),
+                      ),
+                      r.verticalSpace(context, 40),
+                      Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: r.wp(context, 30),
+                        ),
+                        child: Text(
+                          "Keep the app open & don’t lock your device. This may take around 10 seconds.",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: r.sp(context, 14),
+                            fontWeight: FontWeight.w400,
+                            color: const Color.fromRGBO(90, 106, 117, 1),
+                            letterSpacing: -0.3,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }
+
           return Column(
             children: [
               // ── Status bar spacer + AppBar ──────────────────────────────
@@ -632,51 +721,55 @@ class _StyleTransferScreenState extends State<StyleTransferScreen> {
       padding: EdgeInsets.symmetric(horizontal: r.wp(context, 20)),
       child: GestureDetector(
         onTap: () async {
-          File? roomFile = picked;
-          if (roomFile == null && _selectedTemplate >= 0) {
-            final assetPath = "assets/images/interior/interior_${_selectedTemplate + 1}.jpg";
-            try {
-              final byteData = await rootBundle.load(assetPath);
-              final directory = await getTemporaryDirectory();
-              final file = File("${directory.path}/temp_template_room.jpg");
-              await file.writeAsBytes(byteData.buffer.asUint8List(
-                byteData.offsetInBytes,
-                byteData.lengthInBytes,
-              ));
-              roomFile = file;
-            } catch (e) {
-              showSnackError(context, "Error loading template image: $e");
+          if (isSubscribed == true) {
+            File? roomFile = picked;
+            if (roomFile == null && _selectedTemplate >= 0) {
+              final assetPath = "assets/images/interior/interior_${_selectedTemplate + 1}.jpg";
+              try {
+                final byteData = await rootBundle.load(assetPath);
+                final directory = await getTemporaryDirectory();
+                final file = File("${directory.path}/temp_template_room.jpg");
+                await file.writeAsBytes(byteData.buffer.asUint8List(
+                  byteData.offsetInBytes,
+                  byteData.lengthInBytes,
+                ));
+                roomFile = file;
+              } catch (e) {
+                showSnackError(context, "Error loading template image: $e");
+                return;
+              }
+            }
+
+            if (roomFile == null) {
+              showSnackError(context, "Please upload a photo of your room or choose a template");
               return;
             }
-          }
+            if (refImage == null) {
+              showSnackError(context, "Please upload a style reference");
+              return;
+            }
+            final prefs = await SharedPreferences.getInstance();
+            final userId = prefs.getString('user_id') ?? '0';
+            
+            final selectedIdx = _selectedTemplate >= 0 ? _selectedTemplate : 0;
+            final colorVal = _templateColors[selectedIdx % _templateColors.length];
+            final spaceTypeVal = _getSpaceType(selectedIdx);
 
-          if (roomFile == null) {
-            showSnackError(context, "Please upload a photo of your room or choose a template");
-            return;
+            _createStyleTransferBloc.add(
+              CreateStyleTransferDataEvent(
+                login: {
+                  "user_id": userId,
+                  "colors": colorVal,
+                  "design_asthetic": "Modern",
+                  "space_type": spaceTypeVal,
+                },
+                image: roomFile,
+                refImage: refImage!,
+              ),
+            );
+          } else {
+            openSubscriptionScreen(context);
           }
-          if (refImage == null) {
-            showSnackError(context, "Please upload a style reference");
-            return;
-          }
-          final prefs = await SharedPreferences.getInstance();
-          final userId = prefs.getString('user_id') ?? '342';
-          
-          final selectedIdx = _selectedTemplate >= 0 ? _selectedTemplate : 0;
-          final colorVal = _templateColors[selectedIdx % _templateColors.length];
-          final spaceTypeVal = _getSpaceType(selectedIdx);
-
-          _createStyleTransferBloc.add(
-            CreateStyleTransferDataEvent(
-              login: {
-                "user_id": userId,
-                "colors": colorVal,
-                "design_asthetic": "Modern",
-                "space_type": spaceTypeVal,
-              },
-              image: roomFile,
-              refImage: refImage!,
-            ),
-          );
         },
         child: Container(
           width: double.infinity,

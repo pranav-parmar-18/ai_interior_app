@@ -1,3 +1,4 @@
+import 'dart:ui' as ui;
 import 'package:ai_interior/features/main/presentaion/main_screen.dart';
 import 'package:ai_interior/utils/responsive_utils.dart';
 import 'package:ai_interior/widgets/custom_imageview.dart';
@@ -5,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../theme/theme.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 
 enum BottomBarEnum { Home, Explore, Recents }
 
@@ -42,82 +44,81 @@ class CustomBottomBar extends StatelessWidget {
       (element) => element.type == selectedTab,
     );
 
-    // Responsive sizes
-    final containerHeight = r.adaptiveValue(context, mobile: 70, tablet: 100);
-    final selectedIconSize = r.adaptiveValue(context, mobile: 33, tablet: 44);
-    final unselectedIconSize = r.adaptiveValue(context, mobile: 30, tablet: 40);
-    final selectedIconWidth = r.adaptiveValue(context, mobile: 30, tablet: 40);
-    final unselectedIconWidth = r.adaptiveValue(context, mobile: 25, tablet: 35);
-    final selectedFontSize = r.sp(context, 15);
-    final unselectedFontSize = r.sp(context, 11);
+    // Responsive sizes - scaled up slightly to make the bar larger
+    final containerHeight = 64.0; // height: 64px
+    final selectedIconSize = r.adaptiveValue(context, mobile: 26, tablet: 36);
+    final unselectedIconSize = r.adaptiveValue(context, mobile: 24, tablet: 34);
+    final selectedIconWidth = r.adaptiveValue(context, mobile: 26, tablet: 36);
+    final unselectedIconWidth = r.adaptiveValue(context, mobile: 24, tablet: 34);
+    final selectedFontSize = r.sp(context, 12);
+    final unselectedFontSize = r.sp(context, 12);
 
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(r.wp(context, 15)),
-          topRight: Radius.circular(r.wp(context, 15)),
-        ),
-      ),
-      child: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        currentIndex: selectedIndex,
-        backgroundColor: Colors.white,
-        showSelectedLabels: false,
-        showUnselectedLabels: false,
-        selectedFontSize: 0,
-        elevation: 0,
-        items: List.generate(bottomMenuList.length, (index) {
-          bool isSelected = selectedIndex == index;
-          final item = bottomMenuList[index];
-          return BottomNavigationBarItem(
-            icon: SizedBox(
-              height: containerHeight,
-              child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    CustomImageview(
-                      imagePath: isSelected ? item.activeIcon : item.icon,
-                      height: isSelected ? selectedIconSize : unselectedIconSize,
-                      width: isSelected ? selectedIconWidth : unselectedIconWidth,
-                      fit: BoxFit.contain,
-                      color:
-                          isSelected
-                              ? Color.fromRGBO(50, 116, 127, 1)
-                              : Color.fromRGBO(168, 168, 168, 1),
-                    ),
-                    SizedBox(height: r.hp(context, 5)),
-                    Text(
-                      item.title ?? "",
-                      textAlign: TextAlign.center,
-                      overflow: TextOverflow.ellipsis,
-                      style:
-                          isSelected
-                              ? TextStyle(
-                                fontSize: selectedFontSize,
-                                fontFamily: 'Poppins',
-                                fontWeight: FontWeight.w500,
-                                color: Color.fromRGBO(50, 116, 127, 1),
-                              )
-                              : TextStyle(
-                                color: Color.fromRGBO(168, 168, 168, 1),
-                                fontSize: unselectedFontSize,
-                                fontFamily: 'Poppins',
-                                fontWeight: FontWeight.w500,
-                              ),
-                    ),
-                  ],
-                ),
+    final tabPillWidth = 102.0 * bottomMenuList.length;
+    final horizontalPaddingVal = r.wp(context, 10);
+    final barWidth = tabPillWidth + horizontalPaddingVal * 2;
+
+    return Align(
+      alignment: Alignment.bottomCenter,
+      child: SizedBox(
+        width: barWidth,
+        child: GlassTabBar.bottom(
+          selectedIndex: selectedIndex,
+          onTabSelected: (index) {
+            HapticFeedback.lightImpact();
+            onChanged?.call(bottomMenuList[index].type);
+          },
+          settings: LiquidGlassSettings(
+            glassColor: const Color(0xFFE8E7E7).withOpacity(0.8),
+            blur: 0.9,
+          ),
+          tabs: bottomMenuList.map((item) {
+            return GlassTab(
+              icon: CustomImageview(
+                imagePath: item.icon,
+                height: unselectedIconSize,
+                width: unselectedIconWidth,
+                fit: BoxFit.contain,
+                color: Color.fromRGBO(89, 89, 89, 1.0), // Inactive tab color rgba(148, 148, 148, 1)
               ),
-            ),
-            label: '',
-          );
-        }),
-        onTap: (index) {
-          HapticFeedback.lightImpact();
-          onChanged?.call(bottomMenuList[index].type);
-        },
+              activeIcon: CustomImageview(
+                imagePath: item.activeIcon,
+                height: selectedIconSize,
+                width: selectedIconWidth,
+                fit: BoxFit.contain,
+                color: const Color.fromRGBO(50, 116, 127, 1), // Active tab color rgba(50, 116, 127, 1)
+              ),
+              label: item.title,
+            );
+          }).toList(),
+          selectedLabelStyle: TextStyle(
+            fontSize: selectedFontSize,
+            fontFamily: 'Poppins',
+            fontWeight: FontWeight.w500,
+          ),
+          unselectedLabelStyle: TextStyle(
+            fontSize: unselectedFontSize,
+            fontFamily: 'Poppins',
+            fontWeight: FontWeight.w500,
+          ),
+          selectedLabelColor: const Color.fromRGBO(50, 116, 127, 1),
+          unselectedLabelColor: Color.fromRGBO(89, 89, 89, 1.0), // Inactive tab color rgba(148, 148, 148, 1)
+          selectedIconColor: const Color.fromRGBO(50, 116, 127, 1),
+          unselectedIconColor:Color.fromRGBO(89, 89, 89, 1.0), // Inactive tab color rgba(148, 148, 148, 1)
+          barHeight: containerHeight,
+          tabWidth: 102.0, // Scaled tab button width
+          tabPadding: const EdgeInsets.only(top: 6, bottom: 7, left: 8, right: 8), // Padding from Figma specs
+          iconLabelSpacing: 3.0, // gap: 3px
+          horizontalPadding: horizontalPaddingVal, // Horizontal padding around the pill
+          verticalPadding: r.hp(context, 10), // Vertical floating space
+          magnification: 1.0,
+          quality: GlassQuality.standard,
+          glowOpacity: 0.05,
+          glowBlurRadius: 8,
+          glowSpreadRadius: 1,
+          indicatorColor: const Color(0xFFE2DDD5), // light grey/beige indicator from mockup
+          indicatorBorderRadius: 24,
+          indicatorExpansion: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+        ),
       ),
     );
   }

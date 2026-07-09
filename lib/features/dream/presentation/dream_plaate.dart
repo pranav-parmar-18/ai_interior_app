@@ -17,6 +17,11 @@ import '../../exterior/presentation/exterior_screen.dart';
 import '../../home/presentation/home_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dream_output_screen.dart';
+import 'package:flutter/cupertino.dart';
+import '../../subscription/presentation/subscription_screen.dart';
+import '../../subscription/presentation/subscription_screen_two.dart';
+import '../../subscription/presentation/subscription_screen_three.dart';
+import '../../../services/subscription_manager.dart';
 
 class ColorPalette {
   final String name;
@@ -229,6 +234,47 @@ class DreamColorPaletteScreen extends StatefulWidget {
 
 class _DreamColorPaletteScreenState
     extends State<DreamColorPaletteScreen> {
+  bool? isSubscribed;
+
+  @override
+  void initState() {
+    super.initState();
+    isSubscriptionActive();
+  }
+
+  void openSubscriptionScreen(BuildContext context) {
+    final nextIndex = SubscriptionScreenManager().getNextIndex();
+
+    final screens = [
+      SubscriptionScreen(),
+      SubscriptionScreenTwo(),
+      SubscriptionScreenThree(),
+    ];
+
+    Navigator.push(
+      context,
+      CupertinoPageRoute(builder: (_) => screens[nextIndex]),
+    );
+  }
+
+  Future<bool> isSubscriptionActive() async {
+    final prefs = await SharedPreferences.getInstance();
+    final data = prefs.getString('subscription_info');
+    if (data == null) {
+      setState(() {
+        isSubscribed = false;
+      });
+      return false;
+    }
+
+    final sub = SubscriptionInfo.fromJson(data);
+    setState(() {
+      isSubscribed = sub?.isActive ?? false;
+    });
+
+    return sub?.isActive ?? false;
+  }
+
   final InteriorDeignCreateBloc _interiorDeignCreateBloc =
       InteriorDeignCreateBloc();
   InteriorDesignCreateModelResponse? interiorDesignCreateModelResponse;
@@ -582,23 +628,27 @@ class _DreamColorPaletteScreenState
       padding: EdgeInsets.symmetric(horizontal: r.wp(context, 20), vertical: r.hp(context, 12)),
       child: GestureDetector(
         onTap: () async {
-          final imageFile = await assetToFile(
-            'assets/images/interior/interior_home.png',
-          );
-          final prefs = await SharedPreferences.getInstance();
-          final userId = prefs.getString('user_id') ?? '342';
+          if (isSubscribed == true) {
+            final imageFile = await assetToFile(
+              'assets/images/interior/interior_home.png',
+            );
+            final prefs = await SharedPreferences.getInstance();
+            final userId = prefs.getString('user_id') ?? '0';
 
-          _interiorDeignCreateBloc.add(
-            InteriorDeignCreateDataEvent(
-              login: {
-                "user_id": int.tryParse(userId) ?? 342,
-                "colors": "retro",
-                "design_asthetic": dreamASH,
-                "space_type": dreamSpaceType,
-              },
-              image: extpicked != null ? extpicked ?? File("") : imageFile,
-            ),
-          );
+            _interiorDeignCreateBloc.add(
+              InteriorDeignCreateDataEvent(
+                login: {
+                  "user_id": int.tryParse(userId) ?? 0,
+                  "colors": "retro",
+                  "design_asthetic": dreamASH,
+                  "space_type": dreamSpaceType,
+                },
+                image: extpicked != null ? extpicked ?? File("") : imageFile,
+              ),
+            );
+          } else {
+            openSubscriptionScreen(context);
+          }
         },
         child: Container(
           width: double.infinity,

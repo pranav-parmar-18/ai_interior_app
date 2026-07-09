@@ -8,12 +8,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
+
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
 FlutterLocalNotificationsPlugin();
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await LiquidGlassWidgets.initialize();
   try {
     // Prevent duplicate initialization
     if (Firebase.apps.isEmpty) {
@@ -78,7 +81,7 @@ Future<void> main() async {
 
   Bloc.observer = SimpleBlocObserver();
   runApp(
-    MyApp(),
+    LiquidGlassWidgets.wrap(child: MyApp()),
   );
 }
 

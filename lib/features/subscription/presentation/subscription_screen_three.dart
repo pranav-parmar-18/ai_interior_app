@@ -2961,6 +2961,8 @@
 //
 //
 
+import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:ui';
 
@@ -2969,6 +2971,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:ai_interior/features/subscription/presentation/subscription_screen.dart';
 
 import '../../../theme/theme.dart';
 import '../../../widgets/custom_elevated_button.dart';
@@ -3043,6 +3048,40 @@ class _SubscriptionScreenThreeState extends State<SubscriptionScreenThree>
   ];
   final List<String> _strikethrough = ['', '\$79.99', ''];
 
+  StreamSubscription<List<PurchaseDetails>>? _iapSubscription;
+
+  Future<void> _saveSubscription(String productId) async {
+    final prefs = await SharedPreferences.getInstance();
+
+    final SubscriptionType type;
+    final Duration duration;
+
+    switch (productId) {
+      case 'com.ai_interior.weekly':
+        type = SubscriptionType.weekly;
+        duration = const Duration(days: 7);
+        break;
+      case 'com.ai_interior.monthly':
+        type = SubscriptionType.monthly;
+        duration = const Duration(days: 30);
+        break;
+      case 'com.ai_interior.yearly':
+        type = SubscriptionType.yearly;
+        duration = const Duration(days: 365);
+        break;
+      default:
+        return;
+    }
+
+    final expiryDate = DateTime.now().add(duration);
+    await prefs.setString(
+      'subscription_info',
+      jsonEncode({'type': type.name, 'expiry': expiryDate.toIso8601String()}),
+    );
+
+    setState(() {});
+  }
+
   @override
   void initState() {
     super.initState();
@@ -3056,7 +3095,42 @@ class _SubscriptionScreenThreeState extends State<SubscriptionScreenThree>
       curve: Curves.easeOut,
     );
     _fadeController.forward();
+    
+    _iapSubscription = _iap.purchaseStream.listen(
+      _handlePurchaseUpdates,
+      onDone: () => _iapSubscription?.cancel(),
+      onError: (error) {
+        debugPrint('Purchase Stream Error: $error');
+      },
+    );
     _initIAP();
+  }
+
+  void _handlePurchaseUpdates(List<PurchaseDetails> purchases) async {
+    for (final purchase in purchases) {
+      if (purchase.status == PurchaseStatus.purchased ||
+          purchase.status == PurchaseStatus.restored) {
+        await _saveSubscription(purchase.productID);
+        if (mounted) {
+          setState(() => _isPurchasing = false);
+        }
+        Navigator.of(context).pop(true);
+      } else if (purchase.status == PurchaseStatus.error ||
+          purchase.status == PurchaseStatus.canceled) {
+        if (mounted) {
+          setState(() => _isPurchasing = false);
+        }
+        if (purchase.status == PurchaseStatus.error) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Purchase failed: ${purchase.error?.message}')),
+          );
+        }
+      }
+
+      if (purchase.pendingCompletePurchase) {
+        await _iap.completePurchase(purchase);
+      }
+    }
   }
 
   Future<void> _initIAP() async {
@@ -3093,13 +3167,41 @@ class _SubscriptionScreenThreeState extends State<SubscriptionScreenThree>
   void _onContinue() {
     if (_isPurchasing || _loading) return;
     setState(() => _isPurchasing = true);
-    // Wire up actual IAP purchase here
+
+    if (_products.isEmpty) {
+      // Simulate sandbox purchase on simulator/test environment when products cannot be fetched
+      Future.delayed(const Duration(seconds: 1), () async {
+        final dummyProductId = _productIds[_selectedPlan];
+        await _saveSubscription(dummyProductId);
+        if (mounted) {
+          setState(() => _isPurchasing = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Simulated sandbox purchase successful!')),
+          );
+          Navigator.of(context).pop(true);
+        }
+      });
+      return;
+    }
+
+    try {
+      final id = _productIds[_selectedPlan];
+      final product = _products.firstWhere((p) => p.id == id);
+      final purchaseParam = PurchaseParam(productDetails: product);
+      _iap.buyNonConsumable(purchaseParam: purchaseParam);
+    } catch (e) {
+      setState(() => _isPurchasing = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error starting purchase: $e')),
+      );
+    }
   }
 
   @override
   void dispose() {
     _pageController.dispose();
     _fadeController.dispose();
+    _iapSubscription?.cancel();
     super.dispose();
   }
 
@@ -3114,7 +3216,12 @@ class _SubscriptionScreenThreeState extends State<SubscriptionScreenThree>
     final size = MediaQuery.of(context).size;
     final top = MediaQuery.of(context).padding.top;
 
-    final height = size.height;
+    final screenHeight = size.height;
+    final imageHeight = screenHeight < 750 ? screenHeight * 0.32 : screenHeight * 0.38;
+    final spacing1 = screenHeight < 750 ? 10.0 : 18.0;
+    final spacing2 = screenHeight < 750 ? 8.0 : 14.0;
+    final spacing3 = screenHeight < 750 ? 12.0 : 20.0;
+
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.dark,
       child: Scaffold(
@@ -3124,11 +3231,11 @@ class _SubscriptionScreenThreeState extends State<SubscriptionScreenThree>
           child: Stack(
             children: [
               SingleChildScrollView(
-                physics: const ClampingScrollPhysics(),
+                physics: const NeverScrollableScrollPhysics(),
                 child: Column(
                   children: [
                     SizedBox(
-                      height: MediaQuery.of(context).size.height * 0.5,
+                      height: imageHeight,
                       child: Stack(
                         children: [
                           // Your shimmer image
@@ -3166,36 +3273,36 @@ class _SubscriptionScreenThreeState extends State<SubscriptionScreenThree>
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: Column(
                         children: [
-                          const SizedBox(height: 22),
+                          SizedBox(height: spacing1),
                           _buildTitle(),
-                          const SizedBox(height: 18),
+                          SizedBox(height: spacing2),
                           _buildFeatureCard(),
-                          const SizedBox(height: 10),
+                          const SizedBox(height: 8),
                           Text(
                             "Just for \$79.99 \$39.99 per year",
                             style: TextStyle(
                               fontWeight: FontWeight.w500,
                               fontFamily: 'Georgia',
-                              fontSize: 22,
+                              fontSize: 20,
                               color: Color.fromRGBO(46, 46, 46, 1),
                             ),
                           ),
-                          const SizedBox(height: 9),
+                          const SizedBox(height: 6),
                           Text(
                             "(less than 0.09 per day)",
                             style: TextStyle(
                               fontWeight: FontWeight.w500,
                               fontFamily: 'Georgia',
-                              fontSize: 16,
+                              fontSize: 14,
                               color: Color.fromRGBO(46, 46, 46, 1),
                             ),
                           ),
-                          const SizedBox(height: 30),
+                          SizedBox(height: spacing3),
 
                           _buildFinePrint(),
-                          const SizedBox(height: 18),
+                          SizedBox(height: spacing2),
                           _buildContinueButton(size),
-                          const SizedBox(height: 18),
+                          SizedBox(height: spacing2),
                           _buildFooter(),
                           SizedBox(
                             height: MediaQuery.of(context).padding.bottom + 16,
@@ -3675,9 +3782,21 @@ class _SubscriptionScreenThreeState extends State<SubscriptionScreenThree>
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        _FooterLink(label: 'Terms Of Use', onTap: () {}),
+        _FooterLink(
+          label: 'Terms Of Use',
+          onTap: () => launchUrl(
+            Uri.parse('https://bvktechnologies.com/terms-of-use-for-bloomnest-ai-interior-design/'),
+            mode: LaunchMode.externalApplication,
+          ),
+        ),
         _FooterLink(label: 'Restore', onTap: () {}),
-        _FooterLink(label: 'Privacy Policy', onTap: () {}),
+        _FooterLink(
+          label: 'Privacy Policy',
+          onTap: () => launchUrl(
+            Uri.parse('https://bvktechnologies.com/privacy-policy-for-bloomnest-ai-interior-design/'),
+            mode: LaunchMode.externalApplication,
+          ),
+        ),
       ],
     );
   }

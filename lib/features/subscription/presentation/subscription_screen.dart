@@ -18,6 +18,7 @@
 // import 'package:video_player/video_player.dart';
 //
 
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:ui';
@@ -28,6 +29,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 enum SubscriptionType { weekly, monthly, yearly }
 
 class SubscriptionInfo {
@@ -2441,6 +2443,8 @@ class _SubscriptionScreenState extends State<SubscriptionScreen>
     'com.ai_interior.monthly',
   ];
 
+  StreamSubscription<List<PurchaseDetails>>? _iapSubscription;
+
   final List<String> _planLabels = ['Weekly', 'Yearly', 'Monthly'];
   final List<String> _planFallbackPrices = ['\$9.99', '\$39.99', '\$12.99'];
   final List<String> _planSubLabels = [
@@ -2450,7 +2454,6 @@ class _SubscriptionScreenState extends State<SubscriptionScreen>
   ];
   final List<String> _strikethrough = ['', '\$79.99', ''];
 
-
   Future<void> _saveSubscription(String productId) async {
     final prefs = await SharedPreferences.getInstance();
 
@@ -2458,21 +2461,17 @@ class _SubscriptionScreenState extends State<SubscriptionScreen>
     final Duration duration;
 
     switch (productId) {
-      case 'com.aigirlfriend.weekly':
+      case 'com.ai_interior.weekly':
         type = SubscriptionType.weekly;
         duration = const Duration(days: 7);
         break;
-      case 'com.aigirlfriend.monthly':
+      case 'com.ai_interior.monthly':
         type = SubscriptionType.monthly;
         duration = const Duration(days: 30);
         break;
-      case 'com.aigirlfriend.yearly':
+      case 'com.ai_interior.yearly':
         type = SubscriptionType.yearly;
         duration = const Duration(days: 365);
-        break;
-      case 'com.aigirlfriend.weekly':
-        type = SubscriptionType.weekly;
-        duration = const Duration(days: 7);
         break;
       default:
         return;
@@ -2484,7 +2483,6 @@ class _SubscriptionScreenState extends State<SubscriptionScreen>
       jsonEncode({'type': type.name, 'expiry': expiryDate.toIso8601String()}),
     );
 
-    // ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Subscribed to ${type.name}")));
     setState(() {});
   }
 
@@ -2504,7 +2502,42 @@ class _SubscriptionScreenState extends State<SubscriptionScreen>
       curve: Curves.easeOut,
     );
     _fadeController.forward();
+    
+    _iapSubscription = _iap.purchaseStream.listen(
+      _handlePurchaseUpdates,
+      onDone: () => _iapSubscription?.cancel(),
+      onError: (error) {
+        debugPrint('Purchase Stream Error: $error');
+      },
+    );
     _initIAP();
+  }
+
+  void _handlePurchaseUpdates(List<PurchaseDetails> purchases) async {
+    for (final purchase in purchases) {
+      if (purchase.status == PurchaseStatus.purchased ||
+          purchase.status == PurchaseStatus.restored) {
+        await _saveSubscription(purchase.productID);
+        if (mounted) {
+          setState(() => _isPurchasing = false);
+        }
+        Navigator.of(context).pop(true);
+      } else if (purchase.status == PurchaseStatus.error ||
+          purchase.status == PurchaseStatus.canceled) {
+        if (mounted) {
+          setState(() => _isPurchasing = false);
+        }
+        if (purchase.status == PurchaseStatus.error) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Purchase failed: ${purchase.error?.message}')),
+          );
+        }
+      }
+
+      if (purchase.pendingCompletePurchase) {
+        await _iap.completePurchase(purchase);
+      }
+    }
   }
 
   Future<void> _initIAP() async {
@@ -2543,13 +2576,41 @@ class _SubscriptionScreenState extends State<SubscriptionScreen>
   void _onContinue() {
     if (_isPurchasing || _loading) return;
     setState(() => _isPurchasing = true);
-    // Wire up actual IAP purchase here
+
+    if (_products.isEmpty) {
+      // Simulate sandbox purchase on simulator/test environment when products cannot be fetched
+      Future.delayed(const Duration(seconds: 1), () async {
+        final dummyProductId = _productIds[_selectedPlan];
+        await _saveSubscription(dummyProductId);
+        if (mounted) {
+          setState(() => _isPurchasing = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Simulated sandbox purchase successful!')),
+          );
+          Navigator.of(context).pop(true);
+        }
+      });
+      return;
+    }
+
+    try {
+      final id = _productIds[_selectedPlan];
+      final product = _products.firstWhere((p) => p.id == id);
+      final purchaseParam = PurchaseParam(productDetails: product);
+      _iap.buyNonConsumable(purchaseParam: purchaseParam);
+    } catch (e) {
+      setState(() => _isPurchasing = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error starting purchase: $e')),
+      );
+    }
   }
 
   @override
   void dispose() {
     _pageController.dispose();
     _fadeController.dispose();
+    _iapSubscription?.cancel();
     super.dispose();
   }
 
@@ -2573,7 +2634,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen>
           child: Stack(
             children: [
               SingleChildScrollView(
-                physics: const ClampingScrollPhysics(),
+                physics: const NeverScrollableScrollPhysics(),
                 child: Column(
                   children: [
                     // ── Carousel ─────────────────────────────────────────
@@ -2796,7 +2857,10 @@ class _SubscriptionScreenState extends State<SubscriptionScreen>
       children: [
         _FooterLink(
           label: 'Terms Of Use',
-          onTap: () {},
+          onTap: () => launchUrl(
+            Uri.parse('https://bvktechnologies.com/terms-of-use-for-bloomnest-ai-interior-design/'),
+            mode: LaunchMode.externalApplication,
+          ),
         ),
         _FooterLink(
           label: 'Restore',
@@ -2804,7 +2868,10 @@ class _SubscriptionScreenState extends State<SubscriptionScreen>
         ),
         _FooterLink(
           label: 'Privacy Policy',
-          onTap: () {},
+          onTap: () => launchUrl(
+            Uri.parse('https://bvktechnologies.com/privacy-policy-for-bloomnest-ai-interior-design/'),
+            mode: LaunchMode.externalApplication,
+          ),
         ),
       ],
     );

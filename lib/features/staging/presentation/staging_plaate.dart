@@ -666,12 +666,12 @@ class _StagingColorPaletteScreenState extends State<StagingColorPaletteScreen> {
               'assets/images/interior/interior_home.png',
             );
             final prefs = await SharedPreferences.getInstance();
-            final userId = prefs.getString('user_id') ?? '342';
+            final userId = prefs.getString('user_id') ?? '0';
 
             _interiorDeignCreateBloc.add(
               SmartStagingCreateDataEvent(
                 login: {
-                  "user_id": int.tryParse(userId) ?? 342,
+                  "user_id": int.tryParse(userId) ?? 0,
                   "colors": _selectedPalette,
                   "design_asthetic": stgAsh.toLowerCase(),
                   "space_type": stgRoomType.toLowerCase(),

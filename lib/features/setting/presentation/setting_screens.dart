@@ -566,6 +566,7 @@
 import 'package:ai_interior/features/credit/presentataion/credit_screen.dart';
 import 'package:ai_interior/features/setting/presentation/language_screen.dart';
 import 'package:ai_interior/widgets/custom_imageview.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -706,7 +707,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         color: const Color(0xFF1A1A1A),
                       ),
                       label: 'Terms & Conditions',
-                      onTap: () {},
+                      onTap: () => launchUrl(
+                        Uri.parse('https://bvktechnologies.com/terms-of-use-for-bloomnest-ai-interior-design/'),
+                        mode: LaunchMode.externalApplication,
+                      ),
                     ),
                     _SettingsItem(
                       icon: Icon(
@@ -715,7 +719,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         color: const Color(0xFF1A1A1A),
                       ),
                       label: 'Privacy Policy',
-                      onTap: () {},
+                      onTap: () => launchUrl(
+                        Uri.parse('https://bvktechnologies.com/privacy-policy-for-bloomnest-ai-interior-design/'),
+                        mode: LaunchMode.externalApplication,
+                      ),
                       isLast: true,
                     ),
                   ],

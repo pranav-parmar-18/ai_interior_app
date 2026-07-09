@@ -671,12 +671,12 @@ class _ExteriorColorPaletteScreenState
               'assets/images/interior/interior_home.png',
             );
             final prefs = await SharedPreferences.getInstance();
-            final userId = prefs.getString('user_id') ?? '342';
+            final userId = prefs.getString('user_id') ?? '0';
 
             _interiorDeignCreateBloc.add(
               ExteriorDeignCreateDataEvent(
                 login: {
-                  "user_id": int.tryParse(userId) ?? 342,
+                  "user_id": int.tryParse(userId) ?? 0,
                   "colors": _selectedPalette,
                   "design_asthetic": extAsh,
                   "space_type": extSpaceType,

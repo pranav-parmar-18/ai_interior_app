@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ai_interior/utils/responsive_utils.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 
 import '../../../bloc/get_all_exterior_designs/get_all_exterior_designs_bloc.dart';
 import '../../../models/get_all_interrior_design_model_response.dart';
@@ -104,16 +105,16 @@ class _DreamSpaceScreenState extends State<DreamSpaceScreen>
       }
       if (_tabController.index == 0) {
         _getAllInteriorDesignBloc.add(
-          GetAllInteriorDesignDataEvent(data: {"space_type": "kitchen"}),
+          GetAllInteriorDesignDataEvent(data: {"space_type": ""}),
         );
       } else {
         _getAllExteriorDesignBloc.add(
-          GetAllExteriorDesignDataEvent(data: {"space_type": "school"}),
+          GetAllExteriorDesignDataEvent(data: {"space_type": "garden"}),
         );
       }
     });
     _getAllInteriorDesignBloc.add(
-      GetAllInteriorDesignDataEvent(data: {"space_type": "school"}),
+      GetAllInteriorDesignDataEvent(data: {"space_type": ""}),
     );
   }
 
@@ -131,28 +132,28 @@ class _DreamSpaceScreenState extends State<DreamSpaceScreen>
 
     return BlocConsumer<GetAllInteriorDesignBloc, GetAllInteriorDesignState>(
       bloc: _getAllInteriorDesignBloc,
-      listener: (context, state) {
-        if (state is GetAllInteriorDesignSuccessState) {
-          interiorDesignModelResponse = state.exploreSongResponse;
-        } else if (state is GetAllInteriorDesignExceptionState) {
-          showSnackError(context, state.message);
+      listener: (context, intState) {
+        if (intState is GetAllInteriorDesignSuccessState) {
+          interiorDesignModelResponse = intState.exploreSongResponse;
+        } else if (intState is GetAllInteriorDesignExceptionState) {
+          showSnackError(context, intState.message);
         }
       },
-      builder: (context, state) {
+      builder: (context, intState) {
         return BlocConsumer<
           GetAllExteriorDesignBloc,
           GetAllExteriorDesignState
         >(
           bloc: _getAllExteriorDesignBloc,
-          listener: (context, state) {
-            if (state is GetAllExteriorDesignSuccessState) {
-              exteriorDesignModelResponse = state.exploreSongResponse;
-            } else if (state is GetAllExteriorDesignExceptionState ||
-                state is GetAllExteriorDesignFailureState) {
+          listener: (context, extState) {
+            if (extState is GetAllExteriorDesignSuccessState) {
+              exteriorDesignModelResponse = extState.exploreSongResponse;
+            } else if (extState is GetAllExteriorDesignExceptionState ||
+                extState is GetAllExteriorDesignFailureState) {
               showSnackError(context, "");
             }
           },
-          builder: (context, state) {
+          builder: (context, extState) {
             return AnnotatedRegion<SystemUiOverlayStyle>(
               value: SystemUiOverlayStyle.dark,
               child: Scaffold(
@@ -172,7 +173,14 @@ class _DreamSpaceScreenState extends State<DreamSpaceScreen>
                       Expanded(
                         child: TabBarView(
                           controller: _tabController,
-                          children: [_buildGrid(), _buildGridNew()],
+                          children: [
+                            intState is GetAllInteriorDesignLoadingState
+                                ? const Center(child: CircularProgressIndicator(color: Color(0xFF3A7D7B)))
+                                : _buildGrid(),
+                            extState is GetAllExteriorDesignLoadingState
+                                ? const Center(child: CircularProgressIndicator(color: Color(0xFF3A7D7B)))
+                                : _buildGridNew(),
+                          ],
                         ),
                       ),
                     ],
@@ -305,55 +313,36 @@ class _DreamSpaceScreenState extends State<DreamSpaceScreen>
     );
   }
 
-  // ── Flutter TabBar with pill-shaped sliding indicator ──────────────────
   Widget _buildTabBar() {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: r.wp(context, 20)),
-      child: Container(
+      child: GlassSegmentedControl(
+        segments: const [
+          GlassTab(label: 'Interior'),
+          GlassTab(label: 'Exterior'),
+        ],
+        selectedIndex: _tabController.index,
+        onSegmentSelected: (index) {
+          _tabController.animateTo(index);
+          setState(() {});
+        },
         height: r.hp(context, 52),
-        decoration: BoxDecoration(
-          color: const Color(0xFFECE8E0),
-          borderRadius: BorderRadius.circular(r.wp(context, 30)),
+        borderRadius: r.wp(context, 30),
+        indicatorColor: const Color(0xFFE8C898),
+        backgroundColor: const Color(0xFFECE8E0),
+        selectedTextStyle: TextStyle(
+          fontSize: r.sp(context, 17),
+          color: const Color(0xFF5A3E18),
+          fontWeight: FontWeight.w600,
+          fontFamily: 'Georgia',
         ),
-        child: TabBar(
-          controller: _tabController,
-
-          // ── Pill indicator ──────────────────────────────────────
-          indicator: BoxDecoration(
-            color: const Color(0xFFE8C898),
-            borderRadius: BorderRadius.circular(r.wp(context, 26)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.09),
-                blurRadius: r.wp(context, 8),
-                offset: Offset(0, r.hp(context, 2)),
-              ),
-            ],
-          ),
-          indicatorSize: TabBarIndicatorSize.tab,
-          indicatorPadding: EdgeInsets.all(r.wp(context, 4)),
-
-          // ── Remove default underline & ripple ───────────────────
-          dividerColor: Colors.transparent,
-          splashFactory: NoSplash.splashFactory,
-          overlayColor: WidgetStateProperty.all(Colors.transparent),
-
-          // ── Label styles ────────────────────────────────────────
-          labelColor: const Color(0xFF5A3E18),
-          unselectedLabelColor: const Color(0xFF7A7068),
-          labelStyle: TextStyle(
-            fontSize: r.sp(context, 17),
-            fontWeight: FontWeight.w600,
-            fontFamily: 'Georgia',
-          ),
-          unselectedLabelStyle: TextStyle(
-            fontSize: r.sp(context, 17),
-            fontWeight: FontWeight.w600,
-            fontFamily: 'Georgia',
-          ),
-
-          tabs: const [Tab(text: 'Interior'), Tab(text: 'Exterior')],
+        unselectedTextStyle: TextStyle(
+          fontSize: r.sp(context, 17),
+          color: const Color(0xFF7A7068),
+          fontWeight: FontWeight.w600,
+          fontFamily: 'Georgia',
         ),
+        quality: GlassQuality.standard,
       ),
     );
   }
@@ -370,7 +359,28 @@ class _DreamSpaceScreenState extends State<DreamSpaceScreen>
         itemBuilder: (_, i) {
           final sel = _catIdx == i;
           return GestureDetector(
-            onTap: () => setState(() => _catIdx = i),
+            onTap: () {
+              setState(() {
+                _catIdx = i;
+              });
+              final spaceType = _cats[i].toLowerCase() == 'all'
+                  ? ''
+                  : _cats[i].toLowerCase().trim().replaceAll(RegExp(r'\s+'), '_');
+
+              if (_tabController.index == 0) {
+                _getAllInteriorDesignBloc.add(
+                  GetAllInteriorDesignDataEvent(
+                    data: {"space_type": spaceType},
+                  ),
+                );
+              } else {
+                _getAllExteriorDesignBloc.add(
+                  GetAllExteriorDesignDataEvent(
+                    data: {"space_type": spaceType},
+                  ),
+                );
+              }
+            },
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 180),
               padding: EdgeInsets.symmetric(horizontal: r.wp(context, 18)),

@@ -10,6 +10,7 @@ import '../../../widgets/custom_imageview.dart';
 import '../../credit/presentataion/credit_screen.dart';
 import '../../home/presentation/home_screen.dart';
 import '../../main/presentaion/main_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../setting/presentation/setting_screens.dart';
 
 class RecentsScreen extends StatefulWidget {
@@ -27,7 +28,14 @@ class _RecentsScreenState extends State<RecentsScreen> {
   @override
   void initState() {
     super.initState();
-    _recentListBloc.add(RecentListDataEvent(data: {"user_id": 2}));
+    _loadRecents();
+  }
+
+  Future<void> _loadRecents() async {
+    final prefs = await SharedPreferences.getInstance();
+    final userIdStr = prefs.getString('user_id') ?? '2';
+    final userId = int.tryParse(userIdStr) ?? 2;
+    _recentListBloc.add(RecentListDataEvent(data: {"user_id": userId}));
   }
 
   @override
@@ -54,10 +62,11 @@ class _RecentsScreenState extends State<RecentsScreen> {
               children: [
                 Expanded(
                   child: Center(
-                    child:
-                        recentListModelResponse?.data?.data != null
+                    child: state is RecentListLoadingState
+                        ? const CircularProgressIndicator(color: Color(0xFF3A7D7B))
+                        : (recentListModelResponse?.data?.data != null
                             ? _buildGrid()
-                            : _buildEmptyState(),
+                            : _buildEmptyState()),
                   ),
                 ),
               ],

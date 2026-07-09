@@ -132,9 +132,9 @@ class _InteriorOutputScreenState extends State<InteriorOutputScreen> {
                       _gerEnhancmentResponseBloc.add(
                         GerEnhancmentResponseDataEvent(
                           data: {
-                            "user_id": int.tryParse(_userId) ?? 342,
+                            "user_id": int.tryParse(_userId) ?? 0,
                             "module_id": 1,
-                            "id": int.tryParse(data["id"]?.toString() ?? "") ?? 432,
+                            "id": int.tryParse(data["id"]?.toString() ?? "") ?? 0,
                             "task_id": imageEnhanceResponse?.data?.id ?? "",
                           },
                         ),
@@ -172,9 +172,9 @@ class _InteriorOutputScreenState extends State<InteriorOutputScreen> {
                                         _imageEnhanceBloc.add(
                                           ImageEnhanceDataEvent(
                                             login: {
-                                              "user_id": int.tryParse(_userId) ?? 342,
+                                              "user_id": int.tryParse(_userId) ?? 0,
                                               "module_id": 1,
-                                              "id": int.tryParse(data["id"]?.toString() ?? "") ?? 432,
+                                              "id": int.tryParse(data["id"]?.toString() ?? "") ?? 0,
                                             },
                                           ),
                                         );
