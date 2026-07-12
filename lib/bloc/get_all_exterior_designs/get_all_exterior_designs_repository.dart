@@ -39,15 +39,20 @@ class GetAllExteriorDesignRepository {
 
   Future<void> getAllInteriorDesign(Map<String, dynamic> data) async {
     try {
-      SharedPreferences preferences = await SharedPreferences.getInstance();
-      String accessToken = preferences.getString('access_token') ?? "";
-
       const String url = '${ProjectConstant.baseUrl}exterior/all';
-      String jsonPayload = jsonEncode(data);
       String verifyHeader = generateVerifyHeader('');
 
+      final queryParameters = <String, String>{};
+      data.forEach((key, value) {
+        final queryValue = value?.toString().trim() ?? '';
+        if (queryValue.isNotEmpty) queryParameters[key] = queryValue;
+      });
+      final uri = Uri.parse(url).replace(
+        queryParameters: queryParameters.isEmpty ? null : queryParameters,
+      );
+
       final response = await http.get(
-        Uri.parse(url),
+        uri,
         headers: {'verify': verifyHeader},
       );
 

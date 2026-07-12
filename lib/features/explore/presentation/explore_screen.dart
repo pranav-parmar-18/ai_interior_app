@@ -81,18 +81,10 @@ class _ExploreScreenState extends State<ExploreScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this)..addListener(() {
-      if (!_tabController.indexIsChanging) {
-        setState(() => _catIdx = 0);
-      }
-      if (_tabController.index == 0) {
-        _getAllInteriorDesignBloc.add(
-          GetAllInteriorDesignDataEvent(data: {"space_type": ""}),
-        );
-      } else {
-        _getAllExteriorDesignBloc.add(
-          GetAllExteriorDesignDataEvent(data: {"space_type": "garden"}),
-        );
-      }
+      if (_tabController.indexIsChanging) return;
+
+      setState(() => _catIdx = 0);
+      _loadDesignsForSelectedCategory();
     });
     _getAllInteriorDesignBloc.add(
       GetAllInteriorDesignDataEvent(data: {"space_type": ""}),
@@ -102,7 +94,54 @@ class _ExploreScreenState extends State<ExploreScreen>
   @override
   void dispose() {
     _tabController.dispose();
+    _getAllInteriorDesignBloc.close();
+    _getAllExteriorDesignBloc.close();
     super.dispose();
+  }
+
+  String _spaceTypeForCategory(String category, {required bool isInterior}) {
+    if (category == 'All') return '';
+    if (isInterior && category == 'Dining') return 'dining room';
+    return category.toLowerCase();
+  }
+
+  void _loadDesignsForSelectedCategory() {
+    final isInterior = _tabController.index == 0;
+    final spaceType = _spaceTypeForCategory(
+      _cats[_catIdx],
+      isInterior: isInterior,
+    );
+
+    if (isInterior) {
+      _getAllInteriorDesignBloc.add(
+        GetAllInteriorDesignDataEvent(data: {"space_type": spaceType}),
+      );
+    } else {
+      _getAllExteriorDesignBloc.add(
+        GetAllExteriorDesignDataEvent(data: {"space_type": spaceType}),
+      );
+    }
+  }
+
+  String _normalizeSpaceType(String value) {
+    return value.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
+  }
+
+  bool _matchesCategory(
+    String? value,
+    String category, {
+    required bool isInterior,
+  }) {
+    final expected = _normalizeSpaceType(
+      _spaceTypeForCategory(category, isInterior: isInterior),
+    );
+    if (expected.isEmpty) return true;
+
+    final actual = _normalizeSpaceType(value ?? '');
+    if (actual.isEmpty) return false;
+    return actual == expected ||
+        actual.contains(expected) ||
+        expected.contains(actual);
   }
 
   @override
@@ -224,23 +263,7 @@ class _ExploreScreenState extends State<ExploreScreen>
               setState(() {
                 _catIdx = i;
               });
-              final spaceType = _cats[i].toLowerCase() == 'all'
-                  ? ''
-                  : _cats[i].toLowerCase().trim().replaceAll(RegExp(r'\s+'), '_');
-
-              if (_tabController.index == 0) {
-                _getAllInteriorDesignBloc.add(
-                  GetAllInteriorDesignDataEvent(
-                    data: {"space_type": spaceType},
-                  ),
-                );
-              } else {
-                _getAllExteriorDesignBloc.add(
-                  GetAllExteriorDesignDataEvent(
-                    data: {"space_type": spaceType},
-                  ),
-                );
-              }
+              _loadDesignsForSelectedCategory();
             },
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 180),
@@ -275,6 +298,22 @@ class _ExploreScreenState extends State<ExploreScreen>
   }
 
   Widget _buildGrid() {
+    final selectedCategory = _interiorCats[_catIdx];
+    final designs = interiorDesignModelResponse?.data
+            ?.where(
+              (design) => _matchesCategory(
+                design.spaceType,
+                selectedCategory,
+                isInterior: true,
+              ),
+            )
+            .toList() ??
+        [];
+
+    if (designs.isEmpty) {
+      return _buildEmptyState(selectedCategory);
+    }
+
     return GridView.builder(
       padding: EdgeInsets.symmetric(horizontal: r.wp(context, 14), vertical: r.hp(context, 10)),
       physics: const BouncingScrollPhysics(),
@@ -284,22 +323,38 @@ class _ExploreScreenState extends State<ExploreScreen>
         mainAxisSpacing: r.hp(context, 10),
         childAspectRatio: r.gridAspectRatio(context, mobile: 0.75, tablet: 0.8),
       ),
-      itemCount: interiorDesignModelResponse?.data?.length ?? 0,
+      itemCount: designs.length,
       itemBuilder: (context, index) {
+        final design = designs[index];
         return _RoomCard(
-          data: interiorDesignModelResponse?.data?[index].outputImage ?? "",
-          color: interiorDesignModelResponse?.data?[index].colors ?? "",
-          prompt: interiorDesignModelResponse?.data?[index].prompt ?? "",
-          spaceType: interiorDesignModelResponse?.data?[index].spaceType ?? "",
-          image: interiorDesignModelResponse?.data?[index].outputImage ?? "",
-          designAsth:
-              interiorDesignModelResponse?.data?[index].designAsthetic ?? "",
+          data: design.outputImage ?? "",
+          color: design.colors ?? "",
+          prompt: design.prompt ?? "",
+          spaceType: design.spaceType ?? "",
+          image: design.outputImage ?? "",
+          designAsth: design.designAsthetic ?? "",
         );
       },
     );
   }
 
   Widget _buildGridNew() {
+    final selectedCategory = _exteriorCats[_catIdx];
+    final designs = exteriorDesignModelResponse?.data
+            ?.where(
+              (design) => _matchesCategory(
+                design.spaceType,
+                selectedCategory,
+                isInterior: false,
+              ),
+            )
+            .toList() ??
+        [];
+
+    if (designs.isEmpty) {
+      return _buildEmptyState(selectedCategory);
+    }
+
     return GridView.builder(
       padding: EdgeInsets.symmetric(horizontal: r.wp(context, 14), vertical: r.hp(context, 10)),
       physics: const BouncingScrollPhysics(),
@@ -309,18 +364,36 @@ class _ExploreScreenState extends State<ExploreScreen>
         mainAxisSpacing: r.hp(context, 10),
         childAspectRatio: r.gridAspectRatio(context, mobile: 0.75, tablet: 0.8),
       ),
-      itemCount: exteriorDesignModelResponse?.data?.length ?? 0,
+      itemCount: designs.length,
       itemBuilder: (context, index) {
+        final design = designs[index];
         return _RoomCard(
-          data: exteriorDesignModelResponse?.data?[index].outputImage ?? "",
-          color: exteriorDesignModelResponse?.data?[index].colors ?? "",
-          prompt: exteriorDesignModelResponse?.data?[index].prompt ?? "",
-          spaceType: exteriorDesignModelResponse?.data?[index].spaceType ?? "",
-          image: exteriorDesignModelResponse?.data?[index].outputImage ?? "",
-          designAsth:
-              exteriorDesignModelResponse?.data?[index].designAsthetic ?? "",
+          data: design.outputImage ?? "",
+          color: design.colors ?? "",
+          prompt: design.prompt ?? "",
+          spaceType: design.spaceType ?? "",
+          image: design.outputImage ?? "",
+          designAsth: design.designAsthetic ?? "",
         );
       },
+    );
+  }
+
+  Widget _buildEmptyState(String category) {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.all(r.wp(context, 24)),
+        child: Text(
+          category == 'All'
+              ? 'No designs available yet.'
+              : 'No $category designs available yet.',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: r.sp(context, 16),
+            color: const Color(0xFF7A7068),
+          ),
+        ),
+      ),
     );
   }
 

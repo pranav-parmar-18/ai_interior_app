@@ -294,7 +294,7 @@ class _InteriorRoomSelectionScreenState
           mainAxisSpacing: r.hp(context, 10),
           childAspectRatio: r.gridAspectRatio(context, mobile: 1.05, tablet: 1.2),
         ),
-        itemCount: 6,
+        itemCount: rooms.length,
         itemBuilder: (context, index) {
           return _buildRoomCard(rooms[index], index);
         },

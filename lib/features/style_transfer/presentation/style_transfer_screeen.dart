@@ -84,7 +84,9 @@ class _StyleTransferScreenState extends State<StyleTransferScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     final args = ModalRoute.of(context)?.settings.arguments;
-    if (args is Map<String, dynamic> && args.containsKey("styleReference") && styleReferenceUrl == null) {
+    if (args is Map<String, dynamic> &&
+        args.containsKey("styleReference") &&
+        styleReferenceUrl == null) {
       styleReferenceUrl = args["styleReference"] as String?;
       if (styleReferenceUrl != null && styleReferenceUrl!.isNotEmpty) {
         _downloadStyleReference(styleReferenceUrl!);
@@ -144,19 +146,24 @@ class _StyleTransferScreenState extends State<StyleTransferScreen> {
           if (state is CreateStyleTransferSuccessState) {
             createStyleTransferResponse = state.login;
             int currentCredits = int.tryParse(creditsNotifier.value) ?? 0;
-            final newCredits = (currentCredits - 50).clamp(0, 999999).toString();
+            final newCredits =
+                (currentCredits - 50).clamp(0, 999999).toString();
             creditsNotifier.value = newCredits;
             SharedPreferences.getInstance().then((prefs) {
               prefs.setString('credits', newCredits);
             });
-            Navigator.of(context).pushNamed(StyleOutputScreen.routeName, arguments: {
-              "image":
-              createStyleTransferResponse?.data?.outputImage ?? "",
-            });
+            Navigator.of(context).pushNamed(
+              StyleOutputScreen.routeName,
+              arguments: {
+                "image": createStyleTransferResponse?.data?.outputImage ?? "",
+              },
+            );
           } else if (state is CreateStyleTransferFailureState) {
             showSnackError(
               context,
-              state.message.isNotEmpty ? state.message : "Please try once again",
+              state.message.isNotEmpty
+                  ? state.message
+                  : "Please try once again",
             );
           } else if (state is CreateStyleTransferExceptionState) {
             showSnackError(context, "Please try once again");
@@ -234,20 +241,26 @@ class _StyleTransferScreenState extends State<StyleTransferScreen> {
                       _buildTemplateGrid(),
                       SizedBox(height: r.hp(context, 14)),
                       GestureDetector(
-                        onTap: () => showMediaSourcePicker(
-                          context,
-                          onFilePicked: (file) => setState(() => refImage = file),
-                        ),
+                        onTap:
+                            () => showMediaSourcePicker(
+                              context,
+                              onFilePicked:
+                                  (file) => setState(() => refImage = file),
+                            ),
                         child: Container(
                           width: double.maxFinite,
-                          margin: EdgeInsets.symmetric(horizontal: r.wp(context, 15)),
+                          margin: EdgeInsets.symmetric(
+                            horizontal: r.wp(context, 15),
+                          ),
                           padding: EdgeInsets.symmetric(
                             horizontal: r.wp(context, 15),
                             vertical: r.hp(context, 15),
                           ),
                           decoration: BoxDecoration(
                             color: const Color.fromRGBO(255, 255, 255, 1),
-                            borderRadius: BorderRadius.circular(r.wp(context, 16)),
+                            borderRadius: BorderRadius.circular(
+                              r.wp(context, 16),
+                            ),
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.black.withOpacity(0.04),
@@ -276,7 +289,10 @@ class _StyleTransferScreenState extends State<StyleTransferScreen> {
                               if (_isLoadingStyleReference)
                                 const CupertinoActivityIndicator()
                               else if (refImage != null)
-                                const Icon(Icons.check_circle_rounded, color: Color(0xFF3A7D7B)),
+                                const Icon(
+                                  Icons.check_circle_rounded,
+                                  color: Color(0xFF3A7D7B),
+                                ),
                             ],
                           ),
                         ),
@@ -288,7 +304,10 @@ class _StyleTransferScreenState extends State<StyleTransferScreen> {
 
               // ── Next button ─────────────────────────────────────────────
               _buildNextButton(),
-              SizedBox(height: MediaQuery.of(context).padding.bottom + r.hp(context, 8)),
+              SizedBox(
+                height:
+                    MediaQuery.of(context).padding.bottom + r.hp(context, 8),
+              ),
             ],
           );
         },
@@ -301,7 +320,12 @@ class _StyleTransferScreenState extends State<StyleTransferScreen> {
   // ─────────────────────────────────────────────
   Widget _buildAppBar() {
     return Padding(
-      padding: EdgeInsets.fromLTRB(r.wp(context, 16), r.hp(context, 8), r.wp(context, 16), 0),
+      padding: EdgeInsets.fromLTRB(
+        r.wp(context, 16),
+        r.hp(context, 8),
+        r.wp(context, 16),
+        0,
+      ),
       child: Row(
         children: [
           GestureDetector(
@@ -322,8 +346,10 @@ class _StyleTransferScreenState extends State<StyleTransferScreen> {
             child: Center(
               child: Text(
                 'Style Transfer',
+                maxLines: 1,
+                softWrap: false,
                 style: TextStyle(
-                  fontSize: r.sp(context, 36),
+                  fontSize: r.sp(context, 26),
                   fontFamily: 'Georgia',
                   fontWeight: FontWeight.w500,
                   color: const Color(0xFF1A1A1A),
@@ -334,7 +360,10 @@ class _StyleTransferScreenState extends State<StyleTransferScreen> {
           ),
           // Coin badge
           Container(
-            padding: EdgeInsets.symmetric(horizontal: r.wp(context, 10), vertical: r.hp(context, 5)),
+            padding: EdgeInsets.symmetric(
+              horizontal: r.wp(context, 10),
+              vertical: r.hp(context, 5),
+            ),
             decoration: BoxDecoration(
               color: const Color(0xFFFFF3E8),
               borderRadius: BorderRadius.circular(r.wp(context, 20)),
@@ -351,7 +380,10 @@ class _StyleTransferScreenState extends State<StyleTransferScreen> {
                     return Text(
                       creditsNotifier.value.toString(),
                       style: TextStyle(
-                        fontSize: r.isIPad(context) ? r.sp(context, 50) : r.sp(context, 16),
+                        fontSize:
+                            r.isIPad(context)
+                                ? r.sp(context, 50)
+                                : r.sp(context, 16),
                         fontWeight: FontWeight.w700,
                         color: const Color(0xFF1A1A1A),
                         letterSpacing: -0.2,
@@ -417,7 +449,10 @@ class _StyleTransferScreenState extends State<StyleTransferScreen> {
   // ─────────────────────────────────────────────
   Widget _buildProgressBar() {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: r.wp(context, 10), vertical: r.hp(context, 6)),
+      padding: EdgeInsets.symmetric(
+        horizontal: r.wp(context, 10),
+        vertical: r.hp(context, 6),
+      ),
       child: LinearProgressIndicator(
         value: 0.25,
         minHeight: r.hp(context, 3),
@@ -582,7 +617,12 @@ class _StyleTransferScreenState extends State<StyleTransferScreen> {
       padding: EdgeInsets.symmetric(horizontal: r.wp(context, 20)),
       child: Row(
         children: [
-          Expanded(child: Container(height: r.hp(context, 1), color: const Color(0xFFD8D4CE))),
+          Expanded(
+            child: Container(
+              height: r.hp(context, 1),
+              color: const Color(0xFFD8D4CE),
+            ),
+          ),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: r.wp(context, 14)),
             child: Text(
@@ -595,7 +635,12 @@ class _StyleTransferScreenState extends State<StyleTransferScreen> {
               ),
             ),
           ),
-          Expanded(child: Container(height: r.hp(context, 1), color: const Color(0xFFD8D4CE))),
+          Expanded(
+            child: Container(
+              height: r.hp(context, 1),
+              color: const Color(0xFFD8D4CE),
+            ),
+          ),
         ],
       ),
     );
@@ -705,14 +750,22 @@ class _StyleTransferScreenState extends State<StyleTransferScreen> {
 
   String _getSpaceType(int index) {
     switch (index) {
-      case 0: return 'Living Room';
-      case 1: return 'Bedroom';
-      case 2: return 'Bathroom';
-      case 3: return 'Dining';
-      case 4: return 'Kitchen';
-      case 5: return 'Office';
-      case 6: return 'Playroom';
-      default: return 'Living Room';
+      case 0:
+        return 'Living Room';
+      case 1:
+        return 'Bedroom';
+      case 2:
+        return 'Bathroom';
+      case 3:
+        return 'Dining';
+      case 4:
+        return 'Kitchen';
+      case 5:
+        return 'Office';
+      case 6:
+        return 'Playroom';
+      default:
+        return 'Living Room';
     }
   }
 
@@ -724,15 +777,18 @@ class _StyleTransferScreenState extends State<StyleTransferScreen> {
           if (isSubscribed == true) {
             File? roomFile = picked;
             if (roomFile == null && _selectedTemplate >= 0) {
-              final assetPath = "assets/images/interior/interior_${_selectedTemplate + 1}.jpg";
+              final assetPath =
+                  "assets/images/interior/interior_${_selectedTemplate + 1}.jpg";
               try {
                 final byteData = await rootBundle.load(assetPath);
                 final directory = await getTemporaryDirectory();
                 final file = File("${directory.path}/temp_template_room.jpg");
-                await file.writeAsBytes(byteData.buffer.asUint8List(
-                  byteData.offsetInBytes,
-                  byteData.lengthInBytes,
-                ));
+                await file.writeAsBytes(
+                  byteData.buffer.asUint8List(
+                    byteData.offsetInBytes,
+                    byteData.lengthInBytes,
+                  ),
+                );
                 roomFile = file;
               } catch (e) {
                 showSnackError(context, "Error loading template image: $e");
@@ -741,7 +797,10 @@ class _StyleTransferScreenState extends State<StyleTransferScreen> {
             }
 
             if (roomFile == null) {
-              showSnackError(context, "Please upload a photo of your room or choose a template");
+              showSnackError(
+                context,
+                "Please upload a photo of your room or choose a template",
+              );
               return;
             }
             if (refImage == null) {
@@ -750,9 +809,10 @@ class _StyleTransferScreenState extends State<StyleTransferScreen> {
             }
             final prefs = await SharedPreferences.getInstance();
             final userId = prefs.getString('user_id') ?? '0';
-            
+
             final selectedIdx = _selectedTemplate >= 0 ? _selectedTemplate : 0;
-            final colorVal = _templateColors[selectedIdx % _templateColors.length];
+            final colorVal =
+                _templateColors[selectedIdx % _templateColors.length];
             final spaceTypeVal = _getSpaceType(selectedIdx);
 
             _createStyleTransferBloc.add(

@@ -9,6 +9,7 @@ import 'interior_describe_me.dart';
 import 'interior_plaate.dart';
 
 String intAshType = "";
+
 class RoomItem {
   final String name;
   final String imageUrl;
@@ -79,61 +80,85 @@ class _InteriorAshSelectionScreenState
       fallbackIcon: Icons.local_laundry_service_rounded,
     ),
     RoomItem(
-      name: 'Home Office',
+      name: 'Mid Century',
       imageUrl:
           'https://images.unsplash.com/photo-1593642632559-0c6d3fc62b89?w=400&q=80',
       fallbackIcon: Icons.computer_rounded,
     ),
     RoomItem(
-      name: 'Study Room',
+      name: 'Airbnb',
       imageUrl:
           'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80',
       fallbackIcon: Icons.menu_book_rounded,
     ),
     RoomItem(
-      name: 'Dorm Room',
+      name: 'Cozy',
       imageUrl:
           'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=400&q=80',
       fallbackIcon: Icons.hotel_rounded,
     ),
     RoomItem(
-      name: 'Gaming Room',
+      name: 'Rustic',
       imageUrl:
           'https://images.unsplash.com/photo-1616588589676-62b3bd4ff6d2?w=400&q=80',
       fallbackIcon: Icons.sports_esports_rounded,
     ),
     RoomItem(
-      name: 'Attic',
+      name: 'Luxury',
       imageUrl:
           'https://images.unsplash.com/photo-1595846519845-68e298c2edd8?w=400&q=80',
       fallbackIcon: Icons.roofing_rounded,
     ),
     RoomItem(
-      name: 'Toilet',
+      name: 'Bohemian',
       imageUrl:
           'https://images.unsplash.com/photo-1564540586988-aa4e53c3d799?w=400&q=80',
       fallbackIcon: Icons.wc_rounded,
     ),
     RoomItem(
-      name: 'Coffee Shop',
+      name: 'Tropical',
       imageUrl:
           'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=400&q=80',
       fallbackIcon: Icons.coffee_rounded,
     ),
     RoomItem(
-      name: 'Restaurant',
+      name: 'Industrial',
       imageUrl:
           'https://images.unsplash.com/photo-1514190051997-0f6f39ca5cde?w=400&q=80',
       fallbackIcon: Icons.restaurant_rounded,
     ),
     RoomItem(
-      name: 'Office',
+      name: 'Japanese',
       imageUrl:
           'https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&q=80',
       fallbackIcon: Icons.business_rounded,
     ),
     RoomItem(
-      name: 'Other',
+      name: 'Vintage',
+      imageUrl:
+          'https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&q=80',
+      fallbackIcon: Icons.business_rounded,
+    ),
+    RoomItem(
+      name: 'French Country',
+      imageUrl:
+          'https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&q=80',
+      fallbackIcon: Icons.business_rounded,
+    ),
+    RoomItem(
+      name: 'Mediterranean',
+      imageUrl:
+          'https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&q=80',
+      fallbackIcon: Icons.business_rounded,
+    ),
+    RoomItem(
+      name: 'Ancient Egyptian',
+      imageUrl:
+          'https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&q=80',
+      fallbackIcon: Icons.business_rounded,
+    ),
+    RoomItem(
+      name: 'Art Deco',
       imageUrl:
           'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=400&q=80',
       fallbackIcon: Icons.add_home_rounded,
@@ -292,9 +317,13 @@ class _InteriorAshSelectionScreenState
           crossAxisCount: r.gridColumns(context),
           crossAxisSpacing: r.wp(context, 10),
           mainAxisSpacing: r.hp(context, 10),
-          childAspectRatio: r.gridAspectRatio(context, mobile: 1.05, tablet: 1.2),
+          childAspectRatio: r.gridAspectRatio(
+            context,
+            mobile: 1.05,
+            tablet: 1.2,
+          ),
         ),
-        itemCount: 6,
+        itemCount: rooms.length,
         itemBuilder: (context, index) {
           return _buildRoomCard(rooms[index], index);
         },
@@ -330,9 +359,10 @@ class _InteriorAshSelectionScreenState
           ),
           boxShadow: [
             BoxShadow(
-              color: isSelected
-                  ? const Color(0xFFE8873A).withValues(alpha: 0.25)
-                  : Colors.black.withValues(alpha: 0.08),
+              color:
+                  isSelected
+                      ? const Color(0xFFE8873A).withValues(alpha: 0.25)
+                      : Colors.black.withValues(alpha: 0.08),
               blurRadius: isSelected ? 12 : 8,
               offset: const Offset(0, 3),
               spreadRadius: isSelected ? 1 : 0,
@@ -340,54 +370,57 @@ class _InteriorAshSelectionScreenState
           ],
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(isSelected ? cardRadius - 2.5 : cardRadius),
+          borderRadius: BorderRadius.circular(
+            isSelected ? cardRadius - 2.5 : cardRadius,
+          ),
           child: Stack(
             fit: StackFit.expand,
             children: [
               // Room image
               index == 0
                   ? GestureDetector(
-                      onTap: () {
-                        Navigator.of(
-                          context,
-                        ).pushNamed(InteriorDescribeVisionScreen.routeName);
-                      },
-                      child: Container(
-                        color: const Color.fromRGBO(255, 255, 255, 0.6),
-                        child: Center(
-                          child: Image.asset(
-                            "assets/gifs/describe_me.gif",
-                            height: gifSize,
-                            width: gifSize,
-                          ),
+                    onTap: () {
+                      Navigator.of(
+                        context,
+                      ).pushNamed(InteriorDescribeVisionScreen.routeName);
+                    },
+                    child: Container(
+                      color: const Color.fromRGBO(255, 255, 255, 0.6),
+                      child: Center(
+                        child: Image.asset(
+                          "assets/gifs/describe_me.gif",
+                          height: gifSize,
+                          width: gifSize,
                         ),
                       ),
-                    )
-                  : Image.asset(
-                      "assets/images/interior/ash_${index + 1}.png",
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          decoration: const BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [
-                                Color(0xFFF0EDE8),
-                                Color(0xFFE5E0D8),
-                              ],
-                            ),
-                          ),
-                          child: Center(
-                            child: Icon(
-                              room.fallbackIcon,
-                              size: r.adaptiveValue(context, mobile: 42, tablet: 56),
-                              color: const Color(0xFFAA9880),
-                            ),
-                          ),
-                        );
-                      },
                     ),
+                  )
+                  : Image.asset(
+                    "assets/images/interior/ash_${index + 1}.png",
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        decoration: const BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [Color(0xFFF0EDE8), Color(0xFFE5E0D8)],
+                          ),
+                        ),
+                        child: Center(
+                          child: Icon(
+                            room.fallbackIcon,
+                            size: r.adaptiveValue(
+                              context,
+                              mobile: 42,
+                              tablet: 56,
+                            ),
+                            color: const Color(0xFFAA9880),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
 
               // Gradient overlay at bottom
               Positioned(

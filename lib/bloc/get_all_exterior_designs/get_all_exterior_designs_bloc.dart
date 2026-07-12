@@ -4,9 +4,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
 import '../../models/get_all_exterior_design_model_response.dart';
-import '../../models/get_all_interrior_design_model_response.dart';
 
 part 'get_all_exterior_designs_event.dart';
 

@@ -163,7 +163,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
 
-                    const SliverToBoxAdapter(child: SizedBox(height: 12)),
+                    const SliverToBoxAdapter(
+                      child: SizedBox(height: 90),
+                    ),
                   ],
                 ),
               ),
@@ -333,7 +335,14 @@ class _FeatureCard extends StatelessWidget {
                 width: double.infinity,
                 child: Stack(
                   fit: StackFit.expand,
-                  children: [CustomImageview(imagePath: item.imagePath)],
+                  children: [
+                    CustomImageview(
+                      imagePath: item.imagePath,
+                      width: double.infinity,
+                      height: imageHeight,
+                      fit: BoxFit.fill,
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -355,6 +364,7 @@ class _FeatureCard extends StatelessWidget {
                   imagePath: item.icon,
                   height: iconSize,
                   width: iconSize,
+                  fit: BoxFit.contain,
                 ),
                 SizedBox(width: r.wp(context, 10)),
                 Expanded(
