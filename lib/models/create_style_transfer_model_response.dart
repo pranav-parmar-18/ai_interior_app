@@ -40,12 +40,12 @@ class Data {
   });
 
   factory Data.fromJson(Map<String, dynamic> json) => Data(
-    userId: json["user_id"],
-    inputImage: json["input_image"],
-    outputImage: json["output_image"],
-    updatedAt: json["updated_at"] == null ? null : DateTime.parse(json["updated_at"]),
-    createdAt: json["created_at"] == null ? null : DateTime.parse(json["created_at"]),
-    id: json["id"],
+    userId: json["user_id"]?.toString(),
+    inputImage: json["input_image"]?.toString(),
+    outputImage: json["output_image"]?.toString(),
+    updatedAt: json["updated_at"] == null ? null : DateTime.tryParse(json["updated_at"].toString()),
+    createdAt: json["created_at"] == null ? null : DateTime.tryParse(json["created_at"].toString()),
+    id: json["id"] is int ? json["id"] as int : int.tryParse(json["id"]?.toString() ?? ""),
   );
 
   Map<String, dynamic> toJson() => {

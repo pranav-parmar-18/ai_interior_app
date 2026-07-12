@@ -38,7 +38,7 @@ class _MainScreenState extends State<MainScreen> {
     _screens.addAll([
       HomeScreen(),
       ExploreScreen(),
-      RecentsScreen(),
+      RecentsScreen(selectedIndex: selectedIndex),
     ]);
   }
 

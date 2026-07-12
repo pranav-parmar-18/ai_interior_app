@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:ai_interior/bloc/delete_record/delete_record_bloc.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:ai_interior/utils/responsive_utils.dart';
 import 'package:ai_interior/features/style_transfer/presentation/style_transfer_screeen.dart';
 import 'package:ai_interior/bloc/get_all_designs/get_all_designs_bloc.dart';
@@ -54,12 +55,14 @@ class _InteriorOutputScreenState extends State<InteriorOutputScreen> {
     });
   }
 
+  int _moduleId = 1;
+
   @override
   void didChangeDependencies() {
-    // TODO: implement didChangeDependencies
     super.didChangeDependencies();
-    data = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>;
-    print("IMAGE : ${data["image"]}");
+    data = (ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?) ?? {};
+    _moduleId = int.tryParse(data["module_id"]?.toString() ?? "") ?? 1;
+    print("IMAGE : ${data["image"]} | MODULE_ID : $_moduleId");
   }
 
   Future<void> shareNetworkImage({
@@ -110,16 +113,31 @@ class _InteriorOutputScreenState extends State<InteriorOutputScreen> {
         bloc: _publishRecordBloc,
         listener: (context, state) {
           if (state is PublishRecordSuccessState) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Design published successfully!')),
+            );
           } else if (state is PublishRecordFailureState ||
-              state is PublishRecordExceptionState) {}
+              state is PublishRecordExceptionState) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Publish failed. Please try again.')),
+            );
+          }
         },
         builder: (context, state) {
           return BlocConsumer<DeleteRecordBloc, DeleteRecordState>(
             bloc: _deleteRecordBloc,
             listener: (context, state) {
               if (state is DeleteRecordSuccessState) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Design deleted successfully!')),
+                );
+                Navigator.of(context).pop();
               } else if (state is DeleteRecordExceptionState ||
-                  state is DeleteRecordFailureState) {}
+                  state is DeleteRecordFailureState) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Delete failed. Please try again.')),
+                );
+              }
             },
             builder: (context, state) {
               return BlocConsumer<ImageEnhanceBloc, ImageEnhanceState>(
@@ -133,7 +151,7 @@ class _InteriorOutputScreenState extends State<InteriorOutputScreen> {
                         GerEnhancmentResponseDataEvent(
                           data: {
                             "user_id": int.tryParse(_userId) ?? 0,
-                            "module_id": 1,
+                            "module_id": _moduleId,
                             "id": int.tryParse(data["id"]?.toString() ?? "") ?? 0,
                             "task_id": imageEnhanceResponse?.data?.id ?? "",
                           },
@@ -245,13 +263,13 @@ class _InteriorOutputScreenState extends State<InteriorOutputScreen> {
                             children: [
                               _buildOutputAction(
                                 context,
-                                imagePath: "assets/images/output_1.png",
+                                icon: Icons.refresh_rounded,
                                 label: "Regenerate",
                                 onTap: () => _showRegenerateAlert(context),
                               ),
                               _buildOutputAction(
                                 context,
-                                imagePath: "assets/images/output_2.png",
+                                icon: Icons.download_rounded,
                                 label: "Save",
                                 onTap: () => shareNetworkImage(
                                   context: context,
@@ -260,13 +278,13 @@ class _InteriorOutputScreenState extends State<InteriorOutputScreen> {
                               ),
                               _buildOutputAction(
                                 context,
-                                imagePath: "assets/images/output_3.png",
+                                icon: Icons.more_horiz_rounded,
                                 label: "Publish",
                                 onTap: () => showPublishSheet(context),
                               ),
                               _buildOutputAction(
                                 context,
-                                imagePath: "assets/images/output_4.png",
+                                icon: Icons.share_outlined,
                                 label: "Share",
                                 onTap: () => shareNetworkImage(
                                   context: context,
@@ -275,7 +293,7 @@ class _InteriorOutputScreenState extends State<InteriorOutputScreen> {
                               ),
                               _buildOutputAction(
                                 context,
-                                imagePath: "assets/images/output_5.png",
+                                icon: Icons.delete_outline_rounded,
                                 label: "Delete",
                                 onTap: () => _showDeleteAlert(context),
                               ),
@@ -326,18 +344,14 @@ class _InteriorOutputScreenState extends State<InteriorOutputScreen> {
 
                   final publishData = {
                     "user_id": userId,
-                    "module_id": 1,
+                    "module_id": _moduleId,
                     "id": data["id"],
                   };
 
-                  debugPrint("Publish Record DataEvent payload: $publishData");
+                  debugPrint("Delete Record DataEvent payload: $publishData");
 
-                  debugPrint("user_id: $userId");
-                  debugPrint("module_id: 1");
-                  debugPrint("id: ${data["id"]}");
-
-                  _publishRecordBloc.add(
-                    PublishRecordDataEvent(login: publishData),
+                  _deleteRecordBloc.add(
+                    DeleteRecordDataEvent(login: publishData),
                   );
                 },
                 child: const Text('Delete'),
@@ -365,7 +379,7 @@ class _InteriorOutputScreenState extends State<InteriorOutputScreen> {
                 isDefaultAction: true,
                 onPressed: () {
                   Navigator.pop(context);
-                  // TODO: handle regenerate
+                  Navigator.pop(context);
                 },
                 child: const Text('Regenerate'),
               ),
@@ -447,15 +461,11 @@ class _InteriorOutputScreenState extends State<InteriorOutputScreen> {
 
                 final publishData = {
                   "user_id": userId,
-                  "module_id": 1,
+                  "module_id": _moduleId,
                   "id": data["id"],
                 };
 
                 debugPrint("PublishRecordDataEvent payload: $publishData");
-
-                debugPrint("user_id: $userId");
-                debugPrint("module_id: 1");
-                debugPrint("id: ${data["id"]}");
 
                 _publishRecordBloc.add(
                   PublishRecordDataEvent(login: publishData),
@@ -496,25 +506,28 @@ class _InteriorOutputScreenState extends State<InteriorOutputScreen> {
 
   Widget _buildOutputAction(
     BuildContext context, {
-    required String imagePath,
+    required IconData icon,
     required String label,
     required VoidCallback onTap,
   }) {
-    final iconSize = r.adaptiveValue(context, mobile: 40, tablet: 50);
+    final buttonSize = r.adaptiveValue(context, mobile: 52.0, tablet: 64.0);
+    final iconSize = r.adaptiveValue(context, mobile: 24.0, tablet: 30.0);
     final fontSize = r.sp(context, 12);
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          CustomImageview(
-            imagePath: imagePath,
-            height: iconSize,
-            width: iconSize,
-          ),
-          r.verticalSpace(context, 6),
-          Text(
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        GlassIconButton(
+          icon: Icon(icon, color: const Color(0xFF1A1A1A)),
+          onPressed: onTap,
+          size: buttonSize,
+          iconSize: iconSize,
+          useOwnLayer: true,
+        ),
+        r.verticalSpace(context, 6),
+        GestureDetector(
+          onTap: onTap,
+          child: Text(
             label,
             style: TextStyle(
               fontSize: fontSize,
@@ -522,8 +535,8 @@ class _InteriorOutputScreenState extends State<InteriorOutputScreen> {
               color: const Color.fromRGBO(46, 46, 46, 1),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
@@ -539,6 +552,45 @@ class _PhotoSection extends StatelessWidget {
     required this.img,
   });
 
+  Widget buildSmartImage(String img) {
+    try {
+      if (img.startsWith('http') || img.startsWith('https')) {
+        return Image.network(
+          img,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => _errorContainer(),
+        );
+      } else if (img.startsWith('assets/')) {
+        return Image.asset(
+          img,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => _errorContainer(),
+        );
+      } else {
+        return Image.file(
+          File(img),
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => _errorContainer(),
+        );
+      }
+    } catch (_) {
+      return _errorContainer();
+    }
+  }
+
+  Widget _errorContainer() {
+    return Container(
+      color: const Color(0xFF8AAAC8),
+      child: const Center(
+        child: Icon(
+          Icons.location_city_outlined,
+          size: 60,
+          color: Colors.white54,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -547,21 +599,7 @@ class _PhotoSection extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          Image.network(
-            img,
-            fit: BoxFit.cover,
-            errorBuilder:
-                (_, __, ___) => Container(
-                  color: const Color(0xFF8AAAC8),
-                  child: Center(
-                    child: Icon(
-                      Icons.location_city_outlined,
-                      size: r.wp(context, 60),
-                      color: Colors.white54,
-                    ),
-                  ),
-                ),
-          ),
+          buildSmartImage(img),
           Positioned(
             left: 0,
             right: 0,

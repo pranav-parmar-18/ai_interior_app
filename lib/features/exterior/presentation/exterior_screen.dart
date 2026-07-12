@@ -1,3 +1,4 @@
+import '../../credit/presentataion/credit_screen.dart';
 import 'dart:io';
 
 import 'package:ai_interior/features/snap_trip/presentation/snap_trip_screen.dart';
@@ -8,6 +9,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../../home/presentation/home_screen.dart';
+import '../../main/presentaion/main_screen.dart';
 import 'exterior_list_screen.dart';
 
 import 'package:image_picker/image_picker.dart';
@@ -73,7 +75,7 @@ class _ExteriorDesignScreenState extends State<ExteriorDesignScreen> {
 
   Widget _buildAppBar() {
     final hPad = r.wp(context, 16);
-    final titleFontSize = r.sp(context, 36);
+    final titleFontSize = r.sp(context, 24);
     final iconSize = r.adaptiveValue(context, mobile: 25, tablet: 35);
     final backBtnSize = r.adaptiveValue(context, mobile: 36, tablet: 48);
     final backIconSize = r.adaptiveValue(context, mobile: 20, tablet: 28);
@@ -97,9 +99,12 @@ class _ExteriorDesignScreenState extends State<ExteriorDesignScreen> {
             ),
           ),
           Expanded(
-            child: Center(
+            child: Align(
+              alignment: Alignment.centerLeft,
               child: Text(
                 'Exterior Design',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   fontSize: titleFontSize,
                   fontFamily: 'Georgia',
@@ -111,43 +116,48 @@ class _ExteriorDesignScreenState extends State<ExteriorDesignScreen> {
             ),
           ),
           // Coin badge
-          Container(
-            padding: EdgeInsets.symmetric(
-              horizontal: r.wp(context, 10),
-              vertical: r.hp(context, 5),
-            ),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFFF3E8),
-              borderRadius: BorderRadius.circular(r.wp(context, 20)),
-              border: Border.all(
-                color: const Color(0xFFE8873A).withOpacity(0.3),
+          GestureDetector(
+            onTap: () {
+              Navigator.of(context).pushNamed(CreditsScreen.routeName);
+            },
+            child: Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: r.wp(context, 10),
+                vertical: r.hp(context, 5),
               ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ValueListenableBuilder<String>(
-                  valueListenable: creditsNotifier,
-                  builder: (context, val, child) {
-                    return Text(
-                      creditsNotifier.value.toString(),
-                      style: TextStyle(
-                        fontSize: r.sp(context, 14),
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF1A1A1A),
-                        letterSpacing: -0.2,
-                      ),
-                    );
-                  },
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFF3E8),
+                borderRadius: BorderRadius.circular(r.wp(context, 20)),
+                border: Border.all(
+                  color: const Color(0xFFE8873A).withOpacity(0.3),
                 ),
-                SizedBox(width: r.wp(context, 4)),
-                CustomImageview(
-                  imagePath: "assets/images/credit.png",
-                  height: iconSize,
-                  width: iconSize,
-                  fit: BoxFit.contain,
-                ),
-              ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ValueListenableBuilder<String>(
+                    valueListenable: creditsNotifier,
+                    builder: (context, val, child) {
+                      return Text(
+                        creditsNotifier.value.toString(),
+                        style: TextStyle(
+                          fontSize: r.sp(context, 14),
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF1A1A1A),
+                          letterSpacing: -0.2,
+                        ),
+                      );
+                    },
+                  ),
+                  SizedBox(width: r.wp(context, 4)),
+                  CustomImageview(
+                    imagePath: "assets/images/credit.png",
+                    height: iconSize,
+                    width: iconSize,
+                    fit: BoxFit.contain,
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -273,21 +283,34 @@ class _ExteriorDesignScreenState extends State<ExteriorDesignScreen> {
               children: [
                 extpicked != null
                     ? CustomImageview(imagePath: extpicked!.path)
-                    : ClipRRect(
-                      borderRadius: BorderRadius.vertical(
-                        top: Radius.circular(borderRadius),
-                      ),
-                      child: Container(
-                        width: double.infinity,
-                        height: uploadImageHeight,
-                        color: const Color(0xFFF8F6F2),
-
-                        child: CustomImageview(
-                          imagePath: "assets/images/exterior/exterior_home.png",
-                          fit: BoxFit.contain,
-                        ),
-                      ),
-                    ),
+                    : _selectedTemplate != -1
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(borderRadius),
+                            ),
+                            child: CustomImageview(
+                              imagePath:
+                                  "assets/images/interior/interior_${_selectedTemplate + 1}.jpg",
+                              width: double.infinity,
+                              height: uploadImageHeight,
+                              fit: BoxFit.cover,
+                            ),
+                          )
+                        : ClipRRect(
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(borderRadius),
+                            ),
+                            child: Container(
+                              width: double.infinity,
+                              height: uploadImageHeight,
+                              color: const Color(0xFFF8F6F2),
+                              child: CustomImageview(
+                                imagePath:
+                                    "assets/images/exterior/exterior_home.png",
+                                fit: BoxFit.contain,
+                              ),
+                            ),
+                          ),
 
                 Positioned(
                   top: r.hp(context, 14),
@@ -324,7 +347,10 @@ class _ExteriorDesignScreenState extends State<ExteriorDesignScreen> {
               child: GestureDetector(
                 onTap: () => showMediaSourcePicker(
                   context,
-                  onFilePicked: (file) => setState(() => extpicked = file),
+                  onFilePicked: (file) => setState(() {
+                    extpicked = file;
+                    _selectedTemplate = -1;
+                  }),
                 ),
                 child: Container(
                   height: buttonHeight,
@@ -418,7 +444,10 @@ class _ExteriorDesignScreenState extends State<ExteriorDesignScreen> {
         itemBuilder: (context, i) {
           final selected = _selectedTemplate == i;
           return GestureDetector(
-            onTap: () => setState(() => _selectedTemplate = i),
+            onTap: () => setState(() {
+              _selectedTemplate = i;
+              extpicked = null;
+            }),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               width: itemWidth,
@@ -489,6 +518,10 @@ class _ExteriorDesignScreenState extends State<ExteriorDesignScreen> {
       ),
       child: GestureDetector(
         onTap: () {
+          if (extpicked == null && _selectedTemplate == -1) {
+            showSnackError(context, 'Please upload a photo or choose a template');
+            return;
+          }
           Navigator.of(
             context,
           ).pushNamed(ExteriorRoomSelectionScreen.routeName);

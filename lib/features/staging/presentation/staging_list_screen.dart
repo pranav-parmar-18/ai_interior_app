@@ -183,19 +183,18 @@ class _StagingRoomSelectionScreenState
             ),
           ),
           Expanded(
-            child: Center(
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Text(
-                  'Smart Staging',
-                  maxLines: 1,
-                  style: TextStyle(
-                    fontSize: r.sp(context, 36),
-                    fontFamily: 'Georgia',
-                    fontWeight: FontWeight.w500,
-                    color: const Color(0xFF1A1A1A),
-                    letterSpacing: -0.3,
-                  ),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Smart Staging',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: r.sp(context, 24),
+                  fontFamily: 'Georgia',
+                  fontWeight: FontWeight.w500,
+                  color: const Color(0xFF1A1A1A),
+                  letterSpacing: -0.3,
                 ),
               ),
             ),
@@ -292,7 +291,7 @@ class _StagingRoomSelectionScreenState
           mainAxisSpacing: r.wp(context, 10),
           childAspectRatio: r.gridAspectRatio(context, mobile: 1.05, tablet: 1.1),
         ),
-        itemCount: 6,
+        itemCount: rooms.length,
         itemBuilder: (context, index) {
           return _buildRoomCard(rooms[index], index);
         },
@@ -445,6 +444,10 @@ class _StagingRoomSelectionScreenState
       ),
       child: GestureDetector(
         onTap: () {
+          if (_selectedRoom == null || _selectedRoom!.isEmpty) {
+            showSnackError(context, 'Please select a room type');
+            return;
+          }
           Navigator.of(context).pushNamed(StagingAshSelectionScreen.routeName);
         },
         child: Container(

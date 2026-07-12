@@ -150,7 +150,7 @@ class AppRouter {
       case ExteriorOutputScreen.routeName:
         return CupertinoPageRoute(
           settings: settings,
-          builder: (_) => ExteriorOutputScreen(),
+          builder: (_) => InteriorOutputScreen(),
         );
       case StyleTransferScreen.routeName:
         return CupertinoPageRoute(
@@ -160,7 +160,7 @@ class AppRouter {
       case StyleOutputScreen.routeName:
         return CupertinoPageRoute(
           settings: settings,
-          builder: (_) => StyleOutputScreen(),
+          builder: (_) => InteriorOutputScreen(),
         );
       case StagingDesignScreen.routeName:
         return CupertinoPageRoute(
@@ -191,7 +191,7 @@ class AppRouter {
       case StagingOutputScreen.routeName:
         return CupertinoPageRoute(
           settings: settings,
-          builder: (_) => StagingOutputScreen(),
+          builder: (_) => InteriorOutputScreen(),
         );
       case ReplaceScreen.routeName:
         return CupertinoPageRoute(
@@ -226,7 +226,7 @@ class AppRouter {
       case ReplaceOutputScreen.routeName:
         return CupertinoPageRoute(
           settings: settings,
-          builder: (_) => ReplaceOutputScreen(),
+          builder: (_) => InteriorOutputScreen(),
         );
       case LanguageScreen.routeName:
         return CupertinoPageRoute(
@@ -236,7 +236,7 @@ class AppRouter {
       case DreamOutputScreen.routeName:
         return CupertinoPageRoute(
           settings: settings,
-          builder: (_) => DreamOutputScreen(),
+          builder: (_) => InteriorOutputScreen(),
         );
 
       case SubscriptionScreenTwo.routeName:
@@ -252,7 +252,7 @@ class AppRouter {
       case RecentOutputScreen.routeName:
         return CupertinoPageRoute(
           settings: settings,
-          builder: (_) => RecentOutputScreen(),
+          builder: (_) => InteriorOutputScreen(),
         );
       default:
         return CupertinoPageRoute(

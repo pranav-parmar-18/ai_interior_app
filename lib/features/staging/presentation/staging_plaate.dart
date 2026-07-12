@@ -306,6 +306,8 @@ class _StagingColorPaletteScreenState extends State<StagingColorPaletteScreen> {
               "color": interiorDesignCreateModelResponse?.data?.colors ?? "",
               "designAsth":
                   interiorDesignCreateModelResponse?.data?.designAsthetic ?? "",
+              "id": interiorDesignCreateModelResponse?.data?.id ?? "",
+              "module_id": 4,
             },
           );
         } else if (state is SmartStagingCreateFailureState) {
@@ -416,19 +418,18 @@ class _StagingColorPaletteScreenState extends State<StagingColorPaletteScreen> {
             ),
           ),
           Expanded(
-            child: Center(
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Text(
-                  'Smart Staging',
-                  maxLines: 1,
-                  style: TextStyle(
-                    fontSize: r.sp(context, 36),
-                    fontFamily: 'Georgia',
-                    fontWeight: FontWeight.w500,
-                    color: const Color(0xFF1A1A1A),
-                    letterSpacing: -0.3,
-                  ),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Smart Staging',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: r.sp(context, 24),
+                  fontFamily: 'Georgia',
+                  fontWeight: FontWeight.w500,
+                  color: const Color(0xFF1A1A1A),
+                  letterSpacing: -0.3,
                 ),
               ),
             ),
@@ -661,6 +662,10 @@ class _StagingColorPaletteScreenState extends State<StagingColorPaletteScreen> {
       ),
       child: GestureDetector(
         onTap: () async {
+          if (_selectedPalette == null || _selectedPalette!.isEmpty) {
+            showSnackError(context, 'Please select a color palette');
+            return;
+          }
           if (isSubscribed == true) {
             final imageFile = await assetToFile(
               'assets/images/interior/interior_home.png',

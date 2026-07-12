@@ -28,7 +28,7 @@ class SmartReplaceCreateRepository {
       if (response.statusCode == 200) {
         final responseJsonMap =
             jsonDecode(response.body) as Map<String, dynamic>;
-        if (responseJsonMap['status'] == true) {
+        if (responseJsonMap['status'] == true || responseJsonMap['status'] == 200 || responseJsonMap['status']?.toString() == '200' || responseJsonMap['status']?.toString() == 'true') {
           final responseData = CommonModelResponse.fromJson(responseJsonMap);
           print("LOGIN Success: ${response.body}");
           _makeSongResponse = responseData;

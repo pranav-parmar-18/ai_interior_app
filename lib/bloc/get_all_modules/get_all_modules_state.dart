@@ -14,13 +14,16 @@ class GetAllModulesLoadingState extends GetAllModulesState {
 }
 
 class GetAllModulesSuccessState extends GetAllModulesState {
-  final CommonModelResponse? photoModelResponse;
+  final List<AppModule>? modules;
   final String message;
 
   GetAllModulesSuccessState({
-    required this.photoModelResponse,
+    required this.modules,
     required this.message,
   });
+
+  @override
+  List<Object> get props => [modules ?? [], message];
 }
 
 class GetAllModulesFailureState extends GetAllModulesState {

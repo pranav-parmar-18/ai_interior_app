@@ -86,7 +86,7 @@ class CreateStyleTransferRepository {
       if (response.statusCode == 200) {
         final responseJson = jsonDecode(response.body) as Map<String, dynamic>;
 
-        if (responseJson['status'] == true) {
+        if (responseJson['status'] == true || responseJson['status'] == 200 || responseJson['status']?.toString() == '200' || responseJson['status']?.toString() == 'true') {
           _makeSongResponse = CreateStyleTransferResponse.fromJson(
             responseJson,
           );

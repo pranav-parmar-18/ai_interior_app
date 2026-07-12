@@ -1791,15 +1791,42 @@ class _SubscriptionScreenTwoState extends State<SubscriptionScreenTwo>
     }
   }
 
+  String _priceForScreenTwo(int listIndex) {
+    if (listIndex == 0) {
+      // Yearly
+      return "${_priceFor(1)}/year";
+    } else {
+      // Weekly
+      return "${_priceFor(0)}/week";
+    }
+  }
+
+  String _priceForWeeklyEquivalent() {
+    if (_loading || _products.isEmpty) return "(Less than \$0.77/week)";
+    try {
+      final product = _products.firstWhere((p) => p.id == 'com.ai_interior.yearly');
+      final priceText = product.price;
+      final numericPart = priceText.replaceAll(RegExp(r'[^\d.]'), '');
+      final rawValue = double.tryParse(numericPart) ?? 39.99;
+      final weeklyValue = rawValue / 52.0;
+      final symbolMatch = RegExp(r'^[^\d.]+').firstMatch(priceText);
+      final symbol = symbolMatch != null ? symbolMatch.group(0) : '\$';
+      return "(Less than $symbol${weeklyValue.toStringAsFixed(2)}/week)";
+    } catch (_) {
+      return "(Less than \$0.77/week)";
+    }
+  }
+
   void _onContinue() {
     if (_isPurchasing || _loading) return;
     setState(() => _isPurchasing = true);
 
+    final targetProductId = _selectedIndex == 0 ? 'com.ai_interior.yearly' : 'com.ai_interior.weekly';
+
     if (_products.isEmpty) {
       // Simulate sandbox purchase on simulator/test environment when products cannot be fetched
       Future.delayed(const Duration(seconds: 1), () async {
-        final dummyProductId = _productIds[_selectedPlan];
-        await _saveSubscription(dummyProductId);
+        await _saveSubscription(targetProductId);
         if (mounted) {
           setState(() => _isPurchasing = false);
           ScaffoldMessenger.of(context).showSnackBar(
@@ -1812,8 +1839,7 @@ class _SubscriptionScreenTwoState extends State<SubscriptionScreenTwo>
     }
 
     try {
-      final id = _productIds[_selectedPlan];
-      final product = _products.firstWhere((p) => p.id == id);
+      final product = _products.firstWhere((p) => p.id == targetProductId);
       final purchaseParam = PurchaseParam(productDetails: product);
       _iap.buyNonConsumable(purchaseParam: purchaseParam);
     } catch (e) {
@@ -1870,7 +1896,7 @@ class _SubscriptionScreenTwoState extends State<SubscriptionScreenTwo>
                           _buildFeatureCard(),
                           const SizedBox(height: 18),
                           SizedBox(
-                            height: height * 0.23,
+                            height: height * 0.20,
                             child: ListView.separated(
                               shrinkWrap: true,
                               padding: EdgeInsets.zero,
@@ -1881,7 +1907,7 @@ class _SubscriptionScreenTwoState extends State<SubscriptionScreenTwo>
                               itemBuilder: (context, index) {
                                 return _buildPricingStack(
                                       _list1[index],
-                                      _list2[index],
+                                      _priceForScreenTwo(index),
                                       index == 0,
                                       index,
                                     );
@@ -2018,53 +2044,49 @@ class _SubscriptionScreenTwoState extends State<SubscriptionScreenTwo>
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.end,
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            Align(
-                              alignment: Alignment.center,
-                              child: SizedBox(
-                                width: width * 0.18,
-                                child: Text(
-                                  title,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    color: Color.fromRGBO(46, 46, 46, 1),
-                                    fontSize:
-                                        isIPad(context)
-                                            ? width * 0.025
-                                            : width * 0.032,
-                                    fontFamily: 'Lato',
-                                    fontWeight: FontWeight.w400,
+                            Expanded(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    title,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      color: const Color.fromRGBO(46, 46, 46, 1),
+                                      fontSize: isIPad(context)
+                                          ? width * 0.025
+                                          : width * 0.032,
+                                      fontFamily: 'Lato',
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                   ),
-                                ),
+                                  if (isShow) ...[
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      _priceForWeeklyEquivalent(),
+                                      style: TextStyle(
+                                        color: const Color.fromRGBO(100, 100, 100, 1),
+                                        fontSize: width * 0.026,
+                                        fontFamily: 'Lato',
+                                        fontWeight: FontWeight.w400,
+                                      ),
+                                    ),
+                                  ],
+                                ],
                               ),
                             ),
-                            if (isShow)
-                              Padding(
-                                padding: EdgeInsets.only(
-                                  bottom: height * 0.005,
-                                ),
-                                child: Text(
-                                  "(Less than \$0.77/week)",
-                                  style: TextStyle(
-                                    color: Color.fromRGBO(46, 46, 46, 1),
-                                    fontSize: width * 0.03,
-                                    fontFamily: 'Lato',
-                                    fontWeight: FontWeight.w400,
-                                  ),
-                                ),
-                              ),
-                            Padding(
-                              padding: EdgeInsets.only(bottom: height * 0.005),
-                              child: Text(
-                                _loading ? "" : trallingText,
-                                style: TextStyle(
-                                  color: Color.fromRGBO(46, 46, 46, 1),
-                                  fontSize: width * 0.032,
-                                  fontFamily: 'Lato',
-                                  fontWeight: FontWeight.w400,
-                                ),
+                            const SizedBox(width: 8),
+                            Text(
+                              _loading ? "" : trallingText,
+                              style: TextStyle(
+                                color: const Color.fromRGBO(46, 46, 46, 1),
+                                fontSize: width * 0.032,
+                                fontFamily: 'Lato',
+                                fontWeight: FontWeight.w700,
                               ),
                             ),
                           ],
@@ -2273,7 +2295,7 @@ class _SubscriptionScreenTwoState extends State<SubscriptionScreenTwo>
             text: 'Redesign Your Space with AI ',
             style: TextStyle(
               fontFamily: 'Georgia',
-              fontSize: 26,
+              fontSize: 21,
               fontWeight: FontWeight.w400,
               color: _AppColors.titleText,
               height: 1.35,
@@ -2349,8 +2371,10 @@ class _SubscriptionScreenTwoState extends State<SubscriptionScreenTwo>
 
   // ── Fine print ────────────────────────────────────────────────────────────
   Widget _buildFinePrint() {
+    final priceStr = _selectedIndex == 0 ? _priceFor(1) : _priceFor(0);
+    final period = _selectedIndex == 0 ? 'year' : 'week';
     return Text(
-      'Only ${_priceFor(_selectedPlan)}/week, auto-renew, cancel anytime.',
+      'Only $priceStr/$period, auto-renew, cancel anytime.',
       textAlign: TextAlign.center,
       style: const TextStyle(
         fontSize: 12.5,

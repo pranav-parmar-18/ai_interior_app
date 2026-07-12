@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../main/presentaion/main_screen.dart';
 
 import '../../../utils/responsive_utils.dart';
 import 'interior_ash_list_screen.dart';
@@ -290,9 +291,14 @@ class _InteriorDescribeVisionScreenState
       ),
       child: GestureDetector(
         onTap: () async {
+          if (_controller.text.trim().isEmpty) {
+            showSnackError(context, 'Please enter your vision description');
+            return;
+          }
           intAshType = _controller.text;
           await Future.delayed(const Duration(seconds: 1));
-          Navigator.of(context).pushNamed(InteriorColorPaletteScreen.routeName);
+          if (!mounted) return;
+          Navigator.of(context).pop();
         },
         child: Container(
           width: double.infinity,

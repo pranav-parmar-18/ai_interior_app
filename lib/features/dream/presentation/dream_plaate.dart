@@ -304,6 +304,8 @@ class _DreamColorPaletteScreenState
               "color": interiorDesignCreateModelResponse?.data?.colors ?? "",
               "designAsth":
                   interiorDesignCreateModelResponse?.data?.designAsthetic ?? "",
+              "id": interiorDesignCreateModelResponse?.data?.id ?? "",
+              "module_id": 6,
             },
           );
         } else if (state is InteriorDeignCreateFailureState) {
@@ -409,11 +411,14 @@ class _DreamColorPaletteScreenState
             ),
           ),
           Expanded(
-            child: Center(
+            child: Align(
+              alignment: Alignment.centerLeft,
               child: Text(
                 'Create Space',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  fontSize: r.sp(context, 36),
+                  fontSize: r.sp(context, 24),
                   fontFamily: 'Georgia',
                   fontWeight: FontWeight.w500,
                   color: const Color(0xFF1A1A1A),
@@ -628,6 +633,10 @@ class _DreamColorPaletteScreenState
       padding: EdgeInsets.symmetric(horizontal: r.wp(context, 20), vertical: r.hp(context, 12)),
       child: GestureDetector(
         onTap: () async {
+          if (_selectedPalette == null || _selectedPalette!.isEmpty) {
+            showSnackError(context, 'Please select a color palette');
+            return;
+          }
           if (isSubscribed == true) {
             final imageFile = await assetToFile(
               'assets/images/interior/interior_home.png',

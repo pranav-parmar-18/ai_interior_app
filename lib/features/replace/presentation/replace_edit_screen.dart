@@ -6,10 +6,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:ai_interior/utils/responsive_utils.dart';
+import '../../credit/presentataion/credit_screen.dart';
+import '../../home/presentation/home_screen.dart';
 import 'replace_describe_me.dart';
 
 import '../../../widgets/custom_imageview.dart';
-import '../../interior/presentation/interior_screen.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Screen
@@ -27,7 +28,7 @@ class ReplaceEditScreen extends StatefulWidget {
 }
 
 class _ReplaceEditScreenState extends State<ReplaceEditScreen>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   int _selectedArea = 2;
   double _eraserSize = 0.45;
   double _brushSize = 0.72;
@@ -37,6 +38,14 @@ class _ReplaceEditScreenState extends State<ReplaceEditScreen>
 
   late final AnimationController _fadeCtrl;
   late final Animation<double> _fadeAnim;
+  late final AnimationController _scanCtrl;
+
+  File? _passedPicked;
+  int _passedTemplateIndex = -1;
+  bool _initializedArgs = false;
+  bool _detectingObjects = true;
+  List<String> _detectedObjects = [];
+  int _selectedAreaIndex = 0;
 
   static const _areas = [
     'Mirror', 'Wall', 'Sofa', 'Table', 'Plant', 'Cabinet',
@@ -50,11 +59,59 @@ class _ReplaceEditScreenState extends State<ReplaceEditScreen>
       duration: const Duration(milliseconds: 420),
     )..forward();
     _fadeAnim = CurvedAnimation(parent: _fadeCtrl, curve: Curves.easeOut);
+
+    _scanCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initializedArgs) {
+      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      if (args != null) {
+        _passedPicked = args['picked'] as File?;
+        _passedTemplateIndex = args['templateIndex'] as int? ?? -1;
+      }
+      _initializedArgs = true;
+
+      // Start simulated scan delay
+      Future.delayed(const Duration(milliseconds: 1800), () {
+        if (mounted) {
+          setState(() {
+            _detectingObjects = false;
+            if (_passedTemplateIndex == 0) {
+              _detectedObjects = ['Sofa', 'Table', 'Plant', 'Wall', 'Rug'];
+            } else if (_passedTemplateIndex == 1) {
+              _detectedObjects = ['Bed', 'Pillow', 'Wall', 'Nightstand', 'Lamp'];
+            } else if (_passedTemplateIndex == 2) {
+              _detectedObjects = ['Bathtub', 'Mirror', 'Wall', 'Sink', 'Cabinet'];
+            } else if (_passedTemplateIndex == 3) {
+              _detectedObjects = ['Dining Table', 'Chair', 'Wall', 'Chandelier', 'Plant'];
+            } else if (_passedTemplateIndex == 4) {
+              _detectedObjects = ['Sofa', 'Table', 'Wall', 'Rug', 'Painting'];
+            } else if (_passedTemplateIndex == 5) {
+              _detectedObjects = ['Bed', 'Wall', 'Wardrobe', 'Carpet'];
+            } else if (_passedTemplateIndex == 6) {
+              _detectedObjects = ['Bathtub', 'Wall', 'Shower', 'Mirror'];
+            } else if (_passedTemplateIndex == 7) {
+              _detectedObjects = ['Dining Table', 'Chair', 'Wall', 'Rug'];
+            } else {
+              _detectedObjects = ['Sofa', 'Wall', 'Table', 'Chair', 'Plant', 'Light'];
+            }
+            _selectedAreaIndex = 0;
+          });
+        }
+      });
+    }
   }
 
   @override
   void dispose() {
     _fadeCtrl.dispose();
+    _scanCtrl.dispose();
     super.dispose();
   }
 
@@ -212,35 +269,93 @@ class _ReplaceEditScreenState extends State<ReplaceEditScreen>
   // AppBar
   // ─────────────────────────────────────────────
   Widget _buildAppBar() {
-    final isTablet = r.isTablet(context);
-    final double hPad = MediaQuery.of(context).size.width >= 1024 ? MediaQuery.of(context).size.width * 0.1 : (isTablet ? 32.0 : 20.0);
+    final hPad = r.wp(context, 16);
+    final backBtnSize = r.adaptiveValue(context, mobile: 36, tablet: 48);
+    final backIconSize = r.adaptiveValue(context, mobile: 20, tablet: 28);
 
     return Padding(
-      padding: EdgeInsets.fromLTRB(hPad, 10, hPad, 0),
+      padding: EdgeInsets.fromLTRB(hPad, r.hp(context, 8), hPad, 0),
       child: Row(
         children: [
           // Back button
-          _CircleButton(
-            icon: Icons.arrow_back_ios_rounded,
-            iconSize: 18,
-            onTap: () => Navigator.of(context).pop(),
+          GestureDetector(
+            onTap: () {
+              Navigator.of(context).pop();
+            },
+            child: SizedBox(
+              width: backBtnSize,
+              height: backBtnSize,
+              child: Icon(
+                Icons.arrow_back_ios_rounded,
+                size: backIconSize,
+                color: const Color(0xFF1A1A1A),
+              ),
+            ),
           ),
+          SizedBox(width: r.wp(context, 8)),
           const Expanded(
-            child: Center(
+            child: Align(
+              alignment: Alignment.centerLeft,
               child: Text(
                 'Replace',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  fontSize: 32,
+                  fontSize: 24,
                   fontFamily: 'Georgia',
                   fontWeight: FontWeight.w500,
                   color: Color(0xFF1A1A1A),
-                  letterSpacing: -0.5,
+                  letterSpacing: -0.3,
                 ),
               ),
             ),
           ),
           // Coin badge
-          _CoinBadge(amount: 200),
+          GestureDetector(
+            onTap: () {
+              Navigator.of(context).pushNamed(CreditsScreen.routeName);
+            },
+            child: Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: r.wp(context, 10),
+                vertical: r.hp(context, 5),
+              ),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFF3E8),
+                borderRadius: BorderRadius.circular(r.wp(context, 20)),
+                border: Border.all(
+                  color: const Color(0xFFE8873A).withOpacity(0.3),
+                  width: r.wp(context, 1),
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ValueListenableBuilder<String>(
+                    valueListenable: creditsNotifier,
+                    builder: (context, credits, _) {
+                      return Text(
+                        creditsNotifier.value.toString(),
+                        style: TextStyle(
+                          fontSize: r.sp(context, 16),
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF1A1A1A),
+                          letterSpacing: -0.2,
+                        ),
+                      );
+                    },
+                  ),
+                  r.horizontalSpace(context, 4),
+                  CustomImageview(
+                    imagePath: "assets/images/credit.png",
+                    height: r.wp(context, 25),
+                    width: r.wp(context, 25),
+                    fit: BoxFit.contain,
+                  ),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -284,6 +399,7 @@ class _ReplaceEditScreenState extends State<ReplaceEditScreen>
   // Upload card
   // ─────────────────────────────────────────────
   Widget _buildUploadCard() {
+    final hasImage = _passedPicked != null || _passedTemplateIndex != -1 || _picked != null;
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -302,23 +418,121 @@ class _ReplaceEditScreenState extends State<ReplaceEditScreen>
           // Image preview
           Stack(
             children: [
-              picked != null
-                  ? CustomImageview(imagePath: picked!.path)
-                  : ClipRRect(
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(20),
+              ClipRRect(
+                borderRadius: BorderRadius.vertical(
+                  top: const Radius.circular(20),
+                  bottom: Radius.circular(!hasImage ? 0 : 20),
                 ),
                 child: Container(
                   width: double.infinity,
                   height: 330,
                   color: const Color(0xFFF8F6F2),
-
-                  child: CustomImageview(
-                    imagePath: "assets/images/replace_home.png",
-                    fit: BoxFit.contain,
-                  ),
+                  child: _passedPicked != null
+                      ? CustomImageview(
+                          imagePath: _passedPicked!.path,
+                          fit: BoxFit.cover,
+                        )
+                      : _passedTemplateIndex != -1
+                          ? CustomImageview(
+                              imagePath: "assets/images/interior/interior_${_passedTemplateIndex + 1}.jpg",
+                              fit: BoxFit.cover,
+                            )
+                          : _picked != null
+                              ? CustomImageview(
+                                  imagePath: _picked!.path,
+                                  fit: BoxFit.cover,
+                                )
+                              : CustomImageview(
+                                  imagePath: "assets/images/replace_home.png",
+                                  fit: BoxFit.contain,
+                                ),
                 ),
               ),
+              
+              // Highlight Overlay (when not scanning)
+              if (!_detectingObjects && _detectedObjects.isNotEmpty)
+                Positioned.fill(
+                  child: IgnorePointer(
+                    child: CustomPaint(
+                      painter: _ObjectHighlightPainter(
+                        selectedObject: _detectedObjects[_selectedAreaIndex],
+                        templateIndex: _passedTemplateIndex,
+                        isCustomImage: _passedPicked != null || _picked != null,
+                      ),
+                    ),
+                  ),
+                ),
+
+              // AI Scan Animation overlay
+              if (_detectingObjects && hasImage)
+                Positioned.fill(
+                  child: AnimatedBuilder(
+                    animation: _scanCtrl,
+                    builder: (context, child) {
+                      final progress = _scanCtrl.value;
+                      return Stack(
+                        children: [
+                          // Dark tint
+                          Container(
+                            color: Colors.black.withOpacity(0.2),
+                          ),
+                          // Moving scan line
+                          Positioned(
+                            top: progress * 330,
+                            left: 0,
+                            right: 0,
+                            child: Container(
+                              height: 3.0,
+                              decoration: BoxDecoration(
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFF3A7D7B).withOpacity(0.8),
+                                    blurRadius: 12,
+                                    spreadRadius: 3,
+                                  ),
+                                ],
+                                color: const Color(0xFF3A7D7B),
+                              ),
+                            ),
+                          ),
+                          // Status panel
+                          Center(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withOpacity(0.7),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: const [
+                                  SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3A7D7B)),
+                                    ),
+                                  ),
+                                  SizedBox(width: 12),
+                                  Text(
+                                    'AI Detecting Objects...',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+
               Positioned(
                 top: 14,
                 right: 14,
@@ -342,37 +556,38 @@ class _ReplaceEditScreenState extends State<ReplaceEditScreen>
                 ),
             ],
           ),
-          // Add photo button
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 18),
-            child: GestureDetector(
-              onTap: () => _showMediaSourcePicker(),
-              child: Container(
-                height: 48,
-                padding: const EdgeInsets.symmetric(horizontal: 32),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF2E8DA),
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: const [
-                    Icon(Icons.add_a_photo_outlined,
-                        size: 20, color: Color(0xFF5A4A3A)),
-                    SizedBox(width: 8),
-                    Text(
-                      'Add Photo',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF5A4A3A),
+          
+          if (!hasImage)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 18),
+              child: GestureDetector(
+                onTap: () => _showMediaSourcePicker(),
+                child: Container(
+                  height: 48,
+                  padding: const EdgeInsets.symmetric(horizontal: 32),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF2E8DA),
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: const [
+                      Icon(Icons.add_a_photo_outlined,
+                          size: 20, color: Color(0xFF5A4A3A)),
+                      SizedBox(width: 8),
+                      Text(
+                        'Add Photo',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF5A4A3A),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
         ],
       ),
     );
@@ -474,18 +689,27 @@ class _ReplaceEditScreenState extends State<ReplaceEditScreen>
   // Area chips (wraps on tablet/desktop)
   // ─────────────────────────────────────────────
   Widget _buildAreaChips() {
+    final activeAreas = _detectedObjects.isNotEmpty ? _detectedObjects : _areas;
+    final selectedIndex = _detectedObjects.isNotEmpty ? _selectedAreaIndex : _selectedArea;
+
     if (!r.isTablet(context)) {
       // Horizontal scroll on phones
       return SizedBox(
         height: 38,
         child: ListView.separated(
           scrollDirection: Axis.horizontal,
-          itemCount: _areas.length,
+          itemCount: activeAreas.length,
           separatorBuilder: (_, __) => const SizedBox(width: 8),
           itemBuilder: (_, i) => _AreaChip(
-            label: _areas[i],
-            selected: _selectedArea == i,
-            onTap: () => setState(() => _selectedArea = i),
+            label: activeAreas[i],
+            selected: selectedIndex == i,
+            onTap: () => setState(() {
+              if (_detectedObjects.isNotEmpty) {
+                _selectedAreaIndex = i;
+              } else {
+                _selectedArea = i;
+              }
+            }),
           ),
         ),
       );
@@ -495,11 +719,17 @@ class _ReplaceEditScreenState extends State<ReplaceEditScreen>
       spacing: 8,
       runSpacing: 8,
       children: List.generate(
-        _areas.length,
+        activeAreas.length,
         (i) => _AreaChip(
-          label: _areas[i],
-          selected: _selectedArea == i,
-          onTap: () => setState(() => _selectedArea = i),
+          label: activeAreas[i],
+          selected: selectedIndex == i,
+          onTap: () => setState(() {
+            if (_detectedObjects.isNotEmpty) {
+              _selectedAreaIndex = i;
+            } else {
+              _selectedArea = i;
+            }
+          }),
         ),
       ),
     );
@@ -566,7 +796,13 @@ class _ReplaceEditScreenState extends State<ReplaceEditScreen>
       height: btnHeight,
       child: GestureDetector(
         onTap: () {
-          Navigator.of(context).pushNamed(ReplaceDescribeVisionScreen.routeName);
+          Navigator.of(context).pushNamed(
+            ReplaceDescribeVisionScreen.routeName,
+            arguments: {
+              "picked": _passedPicked ?? _picked,
+              "templateIndex": _passedTemplateIndex,
+            },
+          );
         },
         child: Container(
           decoration: BoxDecoration(
@@ -654,52 +890,7 @@ class _CircleButton extends StatelessWidget {
   }
 }
 
-class _CoinBadge extends StatelessWidget {
-  const _CoinBadge({required this.amount});
-  final int amount;
 
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFFF3E8),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: const Color(0xFFE8873A).withOpacity(0.3),
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            '$amount',
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-              color: Color(0xFF1A1A1A),
-              letterSpacing: -0.2,
-            ),
-          ),
-          const SizedBox(width: 5),
-          Container(
-            width: 22,
-            height: 22,
-            decoration: const BoxDecoration(
-              color: Color(0xFFD4721A),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.diamond_outlined,
-              size: 13,
-              color: Colors.white,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 class _AreaChip extends StatelessWidget {
   const _AreaChip({
@@ -1078,5 +1269,183 @@ class _MediaSourceSheet extends StatelessWidget {
             style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
       ),
     );
+  }
+}
+class _ObjectHighlightPainter extends CustomPainter {
+  _ObjectHighlightPainter({
+    required this.selectedObject,
+    required this.templateIndex,
+    required this.isCustomImage,
+  });
+
+  final String selectedObject;
+  final int templateIndex;
+  final bool isCustomImage;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = const Color(0xFF3A7D7B).withOpacity(0.4)
+      ..style = PaintingStyle.fill;
+
+    final strokePaint = Paint()
+      ..color = const Color(0xFF3A7D7B).withOpacity(0.8)
+      ..strokeWidth = 2.0
+      ..style = PaintingStyle.stroke;
+
+    final cx = size.width / 2;
+    final cy = size.height / 2;
+
+    void highlightPath(Path path) {
+      canvas.drawPath(path, paint);
+      canvas.drawPath(path, strokePaint);
+    }
+
+    void highlightOval(Rect rect) {
+      canvas.drawOval(rect, paint);
+      canvas.drawOval(rect, strokePaint);
+    }
+
+    if (!isCustomImage && templateIndex == -1) {
+      final cyAdjusted = cy + size.height * 0.05;
+      final s = math.min(size.width / 320, size.height / 300) * 0.95;
+
+      final obj = selectedObject.toLowerCase();
+      if (obj == 'sofa') {
+        final sofaBody = Path()
+          ..moveTo(cx - 72 * s, cyAdjusted - 30 * s)
+          ..lineTo(cx + 30 * s, cyAdjusted + 28 * s)
+          ..lineTo(cx + 20 * s, cyAdjusted + 50 * s)
+          ..lineTo(cx - 82 * s, cyAdjusted - 8 * s)
+          ..close();
+        highlightPath(sofaBody);
+
+        final sofaBack = Path()
+          ..moveTo(cx - 82 * s, cyAdjusted - 8 * s)
+          ..lineTo(cx - 72 * s, cyAdjusted - 30 * s)
+          ..lineTo(cx - 64 * s, cyAdjusted - 56 * s)
+          ..lineTo(cx - 74 * s, cyAdjusted - 34 * s)
+          ..close();
+        highlightPath(sofaBack);
+
+        final frontSofa = Path()
+          ..moveTo(cx - 30 * s, cyAdjusted + 52 * s)
+          ..lineTo(cx + 60 * s, cyAdjusted + 10 * s)
+          ..lineTo(cx + 68 * s, cyAdjusted + 28 * s)
+          ..lineTo(cx - 22 * s, cyAdjusted + 70 * s)
+          ..close();
+        highlightPath(frontSofa);
+
+        highlightOval(Rect.fromCenter(
+          center: Offset(cx - 20 * s, cyAdjusted - 8 * s),
+          width: 28 * s,
+          height: 18 * s,
+        ));
+        highlightOval(Rect.fromCenter(
+          center: Offset(cx + 5 * s, cyAdjusted + 8 * s),
+          width: 26 * s,
+          height: 16 * s,
+        ));
+      } else if (obj == 'table') {
+        highlightOval(Rect.fromCenter(
+          center: Offset(cx + 20 * s, cyAdjusted + 22 * s),
+          width: 46 * s,
+          height: 28 * s,
+        ));
+      } else if (obj == 'rug') {
+        final rug = Path()
+          ..moveTo(cx, cyAdjusted - 20 * s)
+          ..lineTo(cx + 80 * s, cyAdjusted + 20 * s)
+          ..lineTo(cx, cyAdjusted + 55 * s)
+          ..lineTo(cx - 80 * s, cyAdjusted + 20 * s)
+          ..close();
+        highlightPath(rug);
+      } else if (obj == 'cabinet') {
+        final tvConsole = Path()
+          ..moveTo(cx + 80 * s, cyAdjusted - 8 * s)
+          ..lineTo(cx + 135 * s, cyAdjusted + 24 * s)
+          ..lineTo(cx + 128 * s, cyAdjusted + 36 * s)
+          ..lineTo(cx + 73 * s, cyAdjusted + 4 * s)
+          ..close();
+        highlightPath(tvConsole);
+      } else if (obj == 'mirror' || obj == 'wall') {
+        final leftWall = Path()
+          ..moveTo(cx - 140 * s, cyAdjusted - 10 * s)
+          ..lineTo(cx, cyAdjusted - 80 * s)
+          ..lineTo(cx, cyAdjusted - 160 * s)
+          ..lineTo(cx - 140 * s, cyAdjusted - 90 * s)
+          ..close();
+        highlightPath(leftWall);
+
+        if (obj == 'mirror') {
+          for (int i = 0; i < 3; i++) {
+            final fx = cx - 60 * s + i * 34 * s;
+            final fy = cyAdjusted - 148 * s;
+            highlightPath(Path()..addRect(Rect.fromLTWH(fx, fy, 28 * s, 36 * s)));
+          }
+        } else {
+          final rightWall = Path()
+            ..moveTo(cx, cyAdjusted - 80 * s)
+            ..lineTo(cx + 140 * s, cyAdjusted - 10 * s)
+            ..lineTo(cx + 140 * s, cyAdjusted - 90 * s)
+            ..lineTo(cx, cyAdjusted - 160 * s)
+            ..close();
+          highlightPath(rightWall);
+        }
+      } else if (obj == 'plant') {
+        highlightOval(Rect.fromCenter(
+          center: Offset(cx + 120 * s, cyAdjusted + 10 * s),
+          width: 35 * s,
+          height: 65 * s,
+        ));
+      }
+    } else {
+      final obj = selectedObject.toLowerCase();
+      if (obj.contains('sofa') || obj.contains('bed')) {
+        highlightOval(Rect.fromCenter(
+          center: Offset(cx - 30, cy + 10),
+          width: size.width * 0.45,
+          height: size.height * 0.35,
+        ));
+      } else if (obj.contains('table') || obj.contains('desk')) {
+        highlightOval(Rect.fromCenter(
+          center: Offset(cx + 20, cy + 45),
+          width: size.width * 0.3,
+          height: size.height * 0.2,
+        ));
+      } else if (obj.contains('wall') || obj.contains('ceiling')) {
+        highlightPath(Path()
+          ..moveTo(0, 0)
+          ..lineTo(size.width, 0)
+          ..lineTo(size.width, cy - 30)
+          ..lineTo(0, cy - 30)
+          ..close());
+      } else if (obj.contains('mirror') || obj.contains('painting') || obj.contains('window')) {
+        highlightOval(Rect.fromCenter(
+          center: Offset(cx - 70, cy - 40),
+          width: 80,
+          height: 90,
+        ));
+      } else if (obj.contains('plant') || obj.contains('lamp') || obj.contains('sink')) {
+        highlightOval(Rect.fromCenter(
+          center: Offset(cx + 80, cy - 10),
+          width: 55,
+          height: 110,
+        ));
+      } else {
+        highlightOval(Rect.fromCenter(
+          center: Offset(cx, cy),
+          width: 120,
+          height: 80,
+        ));
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _ObjectHighlightPainter oldDelegate) {
+    return oldDelegate.selectedObject != selectedObject ||
+        oldDelegate.templateIndex != templateIndex ||
+        oldDelegate.isCustomImage != isCustomImage;
   }
 }

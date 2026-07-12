@@ -1,3 +1,4 @@
+import '../../credit/presentataion/credit_screen.dart';
 import 'dart:io';
 
 import 'package:ai_interior/features/replace/presentation/replace_edit_screen.dart';
@@ -111,11 +112,14 @@ class _ReplaceScreenState extends State<ReplaceScreen> {
             ),
           ),
           Expanded(
-            child: Center(
+            child: Align(
+              alignment: Alignment.centerLeft,
               child: Text(
                 'Replace',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  fontSize: r.sp(context, 36),
+                  fontSize: r.sp(context, 24),
                   fontFamily: 'Georgia',
                   fontWeight: FontWeight.w500,
                   color: const Color(0xFF1A1A1A),
@@ -125,41 +129,46 @@ class _ReplaceScreenState extends State<ReplaceScreen> {
             ),
           ),
           // Coin badge
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: r.wp(context, 10), vertical: r.hp(context, 5)),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFFF3E8),
-              borderRadius: BorderRadius.circular(r.wp(context, 20)),
-              border: Border.all(
-                color: const Color(0xFFE8873A).withOpacity(0.3),
-                width: r.wp(context, 1),
+          GestureDetector(
+            onTap: () {
+              Navigator.of(context).pushNamed(CreditsScreen.routeName);
+            },
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: r.wp(context, 10), vertical: r.hp(context, 5)),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFF3E8),
+                borderRadius: BorderRadius.circular(r.wp(context, 20)),
+                border: Border.all(
+                  color: const Color(0xFFE8873A).withOpacity(0.3),
+                  width: r.wp(context, 1),
+                ),
               ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ValueListenableBuilder<String>(
-                  valueListenable: creditsNotifier,
-                  builder: (context, credits, _) {
-                    return Text(
-                      creditsNotifier.value.toString(),
-                      style: TextStyle(
-                        fontSize: r.sp(context, 16),
-                        fontWeight: FontWeight.w700,
-                        color: const Color(0xFF1A1A1A),
-                        letterSpacing: -0.2,
-                      ),
-                    );
-                  },
-                ),
-                r.horizontalSpace(context, 4),
-                CustomImageview(
-                  imagePath: "assets/images/credit.png",
-                  height: r.wp(context, 25),
-                  width: r.wp(context, 25),
-                  fit: BoxFit.contain,
-                ),
-              ],
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ValueListenableBuilder<String>(
+                    valueListenable: creditsNotifier,
+                    builder: (context, credits, _) {
+                      return Text(
+                        creditsNotifier.value.toString(),
+                        style: TextStyle(
+                          fontSize: r.sp(context, 16),
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF1A1A1A),
+                          letterSpacing: -0.2,
+                        ),
+                      );
+                    },
+                  ),
+                  r.horizontalSpace(context, 4),
+                  CustomImageview(
+                    imagePath: "assets/images/credit.png",
+                    height: r.wp(context, 25),
+                    width: r.wp(context, 25),
+                    fit: BoxFit.contain,
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -264,21 +273,33 @@ class _ReplaceScreenState extends State<ReplaceScreen> {
               children: [
                 picked != null
                     ? CustomImageview(imagePath: picked!.path)
-                    : ClipRRect(
-                      borderRadius: BorderRadius.vertical(
-                        top: Radius.circular(r.wp(context, 20)),
-                      ),
-                      child: Container(
-                        width: double.infinity,
-                        height: r.hp(context, 330),
-                        color: const Color(0xFFF8F6F2),
-
-                        child: CustomImageview(
-                          imagePath: "assets/images/replace_home.png",
-                          fit: BoxFit.contain,
-                        ),
-                      ),
-                    ),
+                    : _selectedTemplate != -1
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(r.wp(context, 20)),
+                            ),
+                            child: CustomImageview(
+                              imagePath:
+                                  "assets/images/interior/interior_${_selectedTemplate + 1}.jpg",
+                              width: double.infinity,
+                              height: r.hp(context, 330),
+                              fit: BoxFit.cover,
+                            ),
+                          )
+                        : ClipRRect(
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(r.wp(context, 20)),
+                            ),
+                            child: Container(
+                              width: double.infinity,
+                              height: r.hp(context, 330),
+                              color: const Color(0xFFF8F6F2),
+                              child: CustomImageview(
+                                imagePath: "assets/images/replace_home.png",
+                                fit: BoxFit.contain,
+                              ),
+                            ),
+                          ),
 
                 Positioned(
                   top: r.hp(context, 14),
@@ -316,7 +337,10 @@ class _ReplaceScreenState extends State<ReplaceScreen> {
                 onTap:
                     () => showMediaSourcePicker(
                       context,
-                      onFilePicked: (file) => setState(() => picked = file),
+                      onFilePicked: (file) => setState(() {
+                        picked = file;
+                        _selectedTemplate = -1;
+                      }),
                     ),
                 child: Container(
                   height: r.hp(context, 48),
@@ -433,7 +457,10 @@ class _ReplaceScreenState extends State<ReplaceScreen> {
         itemBuilder: (context, i) {
           final selected = _selectedTemplate == i;
           return GestureDetector(
-            onTap: () => setState(() => _selectedTemplate = i),
+            onTap: () => setState(() {
+              _selectedTemplate = i;
+              picked = null;
+            }),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               width: r.wp(context, 108),
@@ -512,9 +539,17 @@ class _ReplaceScreenState extends State<ReplaceScreen> {
       padding: EdgeInsets.symmetric(horizontal: r.wp(context, 20), vertical: 0),
       child: GestureDetector(
         onTap: () {
-          Navigator.of(
-            context,
-          ).pushNamed(ReplaceEditScreen.routeName);
+          if (picked == null && _selectedTemplate == -1) {
+            showSnackError(context, 'Please upload a photo or choose a template');
+            return;
+          }
+          Navigator.of(context).pushNamed(
+            ReplaceEditScreen.routeName,
+            arguments: {
+              'picked': picked,
+              'templateIndex': _selectedTemplate,
+            },
+          );
         },
         child: Container(
           width: double.infinity,

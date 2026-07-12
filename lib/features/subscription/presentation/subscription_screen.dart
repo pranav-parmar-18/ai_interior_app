@@ -2751,7 +2751,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen>
             text: 'Redesign Your Space with AI ',
             style: TextStyle(
               fontFamily: 'Georgia',
-              fontSize: 26,
+              fontSize: 21,
               fontWeight: FontWeight.w400,
               color: _AppColors.titleText,
               height: 1.35,
@@ -2985,6 +2985,18 @@ class _PricingCard extends StatelessWidget {
                     ),
                   ),
 
+                  // Price
+                  Text(
+                    price,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontFamily: 'Georgia',
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: _AppColors.titleText,
+                    ),
+                  ),
+
                   // Strikethrough price (Yearly only)
                   if (strikethrough.isNotEmpty) ...[
                     const SizedBox(height: 3),
@@ -3001,20 +3013,6 @@ class _PricingCard extends StatelessWidget {
                       ),
                     ),
                   ],
-
-                  const SizedBox(height: 4),
-
-                  // Price
-                  Text(
-                    price,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontFamily: 'Georgia',
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                      color: _AppColors.titleText,
-                    ),
-                  ),
 
                   const SizedBox(height: 8),
 

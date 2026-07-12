@@ -1,3 +1,4 @@
+import '../../credit/presentataion/credit_screen.dart';
 import 'dart:io';
 
 import 'package:ai_interior/features/snap_trip/presentation/snap_trip_screen.dart';
@@ -135,43 +136,48 @@ class _InteriorDesignScreenState extends State<InteriorDesignScreen> {
             ),
           ),
           // Coin badge
-          Container(
-            padding: EdgeInsets.symmetric(
-              horizontal: r.wp(context, 10),
-              vertical: r.hp(context, 5),
-            ),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFFF3E8),
-              borderRadius: BorderRadius.circular(r.wp(context, 20)),
-              border: Border.all(
-                color: const Color(0xFFE8873A).withOpacity(0.3),
+          GestureDetector(
+            onTap: () {
+              Navigator.of(context).pushNamed(CreditsScreen.routeName);
+            },
+            child: Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: r.wp(context, 10),
+                vertical: r.hp(context, 5),
               ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ValueListenableBuilder<String>(
-                  valueListenable: creditsNotifier,
-                  builder: (context, credits, _) {
-                    return Text(
-                      creditsNotifier.value.toString(),
-                      style: TextStyle(
-                        fontSize: creditsFontSize,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF1A1A1A),
-                        letterSpacing: -0.2,
-                      ),
-                    );
-                  },
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFF3E8),
+                borderRadius: BorderRadius.circular(r.wp(context, 20)),
+                border: Border.all(
+                  color: const Color(0xFFE8873A).withOpacity(0.3),
                 ),
-                SizedBox(width: r.wp(context, 4)),
-                CustomImageview(
-                  imagePath: "assets/images/credit.png",
-                  height: iconSize,
-                  width: iconSize,
-                  fit: BoxFit.contain,
-                ),
-              ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ValueListenableBuilder<String>(
+                    valueListenable: creditsNotifier,
+                    builder: (context, credits, _) {
+                      return Text(
+                        creditsNotifier.value.toString(),
+                        style: TextStyle(
+                          fontSize: creditsFontSize,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF1A1A1A),
+                          letterSpacing: -0.2,
+                        ),
+                      );
+                    },
+                  ),
+                  SizedBox(width: r.wp(context, 4)),
+                  CustomImageview(
+                    imagePath: "assets/images/credit.png",
+                    height: iconSize,
+                    width: iconSize,
+                    fit: BoxFit.contain,
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -292,20 +298,33 @@ class _InteriorDesignScreenState extends State<InteriorDesignScreen> {
               children: [
                 picked != null
                     ? CustomImageview(imagePath: picked!.path)
-                    : ClipRRect(
-                      borderRadius: BorderRadius.vertical(
-                        top: Radius.circular(borderRadius),
-                      ),
-                      child: Container(
-                        width: double.infinity,
-                        height: uploadImageHeight,
-                        color: const Color(0xFFF8F6F2),
-                        child: CustomImageview(
-                          imagePath: "assets/images/interior/interior_home.png",
-                          fit: BoxFit.contain,
-                        ),
-                      ),
-                    ),
+                    : _selectedTemplate != -1
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(borderRadius),
+                            ),
+                            child: CustomImageview(
+                              imagePath:
+                                  "assets/images/interior/interior_${_selectedTemplate + 1}.jpg",
+                              width: double.infinity,
+                              height: uploadImageHeight,
+                              fit: BoxFit.cover,
+                            ),
+                          )
+                        : ClipRRect(
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(borderRadius),
+                            ),
+                            child: Container(
+                              width: double.infinity,
+                              height: uploadImageHeight,
+                              color: const Color(0xFFF8F6F2),
+                              child: CustomImageview(
+                                imagePath: "assets/images/interior/interior_home.png",
+                                fit: BoxFit.contain,
+                              ),
+                            ),
+                          ),
 
                 Positioned(
                   top: r.hp(context, 14),
@@ -342,7 +361,10 @@ class _InteriorDesignScreenState extends State<InteriorDesignScreen> {
               child: GestureDetector(
                 onTap: () => showMediaSourcePicker(
                   context,
-                  onFilePicked: (file) => setState(() => picked = file),
+                  onFilePicked: (file) => setState(() {
+                    picked = file;
+                    _selectedTemplate = -1;
+                  }),
                 ),
                 child: Container(
                   height: buttonHeight,
@@ -464,7 +486,10 @@ class _InteriorDesignScreenState extends State<InteriorDesignScreen> {
         itemBuilder: (context, i) {
           final selected = _selectedTemplate == i;
           return GestureDetector(
-            onTap: () => setState(() => _selectedTemplate = i),
+            onTap: () => setState(() {
+              _selectedTemplate = i;
+              picked = null;
+            }),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               width: itemWidth,
@@ -546,6 +571,10 @@ class _InteriorDesignScreenState extends State<InteriorDesignScreen> {
       padding: EdgeInsets.symmetric(horizontal: r.wp(context, 20)),
       child: GestureDetector(
         onTap: () {
+          if (picked == null && _selectedTemplate == -1) {
+            showSnackError(context, 'Please upload a photo or choose a template');
+            return;
+          }
           Navigator.of(
             context,
           ).pushNamed(InteriorRoomSelectionScreen.routeName);

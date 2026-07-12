@@ -307,6 +307,8 @@ class _ExteriorColorPaletteScreenState
               "color": interiorDesignCreateModelResponse?.data?.colors ?? "",
               "designAsth":
                   interiorDesignCreateModelResponse?.data?.designAsthetic ?? "",
+              "id": interiorDesignCreateModelResponse?.data?.id ?? "",
+              "module_id": 2,
             },
           );
         } else if (state is ExteriorDeignCreateFailureState) {
@@ -398,7 +400,7 @@ class _ExteriorColorPaletteScreenState
 
   Widget _buildAppBar() {
     final hPad = r.wp(context, 16);
-    final titleFontSize = r.sp(context, 36);
+    final titleFontSize = r.sp(context, 24);
     final backBtnSize = r.adaptiveValue(context, mobile: 36, tablet: 48);
     final backIconSize = r.adaptiveValue(context, mobile: 20, tablet: 28);
 
@@ -421,19 +423,18 @@ class _ExteriorColorPaletteScreenState
             ),
           ),
           Expanded(
-            child: Center(
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Text(
-                  'Exterior Design',
-                  maxLines: 1,
-                  style: TextStyle(
-                    fontSize: titleFontSize,
-                    fontFamily: 'Georgia',
-                    fontWeight: FontWeight.w500,
-                    color: const Color(0xFF1A1A1A),
-                    letterSpacing: -0.3,
-                  ),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Exterior Design',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: titleFontSize,
+                  fontFamily: 'Georgia',
+                  fontWeight: FontWeight.w500,
+                  color: const Color(0xFF1A1A1A),
+                  letterSpacing: -0.3,
                 ),
               ),
             ),
@@ -666,6 +667,10 @@ class _ExteriorColorPaletteScreenState
       ),
       child: GestureDetector(
         onTap: () async {
+          if (_selectedPalette == null || _selectedPalette!.isEmpty) {
+            showSnackError(context, 'Please select a color palette');
+            return;
+          }
           if (isSubscribed == true) {
             final imageFile = await assetToFile(
               'assets/images/interior/interior_home.png',

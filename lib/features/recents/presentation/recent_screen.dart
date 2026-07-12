@@ -14,7 +14,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../setting/presentation/setting_screens.dart';
 
 class RecentsScreen extends StatefulWidget {
-  const RecentsScreen({super.key});
+  final ValueNotifier<int>? selectedIndex;
+  const RecentsScreen({super.key, this.selectedIndex});
 
   @override
   State<RecentsScreen> createState() => _RecentsScreenState();
@@ -29,6 +30,20 @@ class _RecentsScreenState extends State<RecentsScreen> {
   void initState() {
     super.initState();
     _loadRecents();
+    widget.selectedIndex?.addListener(_onTabChanged);
+  }
+
+  void _onTabChanged() {
+    if (widget.selectedIndex?.value == 2) {
+      _loadRecents();
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.selectedIndex?.removeListener(_onTabChanged);
+    _recentListBloc.close();
+    super.dispose();
   }
 
   Future<void> _loadRecents() async {
@@ -111,6 +126,13 @@ class _RecentsScreenState extends State<RecentsScreen> {
         return InkWell(
           borderRadius: BorderRadius.circular(r.adaptiveValue(context, mobile: 15, tablet: 22)),
           onTap: () {
+            int moduleId = 1;
+            if (item.type == Type.SMART_REPLACES) {
+              moduleId = 5;
+            } else if (item.type == Type.STYLE_TRANSFERS) {
+              moduleId = 3;
+            }
+
             Navigator.of(context).pushNamed(
               RecentOutputScreen.routeName,
               arguments: {
@@ -120,6 +142,7 @@ class _RecentsScreenState extends State<RecentsScreen> {
                 "color": item.colors ?? "",
                 "designAsth": item.designAsthetic ?? "",
                 "id": item.id ?? "",
+                "module_id": moduleId,
               },
             );
           },

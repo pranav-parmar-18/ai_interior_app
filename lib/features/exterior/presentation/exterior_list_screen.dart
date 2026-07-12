@@ -149,7 +149,7 @@ class _ExteriorRoomSelectionScreenState
 
   Widget _buildAppBar() {
     final hPad = r.wp(context, 16);
-    final titleFontSize = r.sp(context, 36);
+    final titleFontSize = r.sp(context, 24);
     final iconSize = r.adaptiveValue(context, mobile: 25, tablet: 35);
     final backBtnSize = r.adaptiveValue(context, mobile: 36, tablet: 48);
     final backIconSize = r.adaptiveValue(context, mobile: 20, tablet: 28);
@@ -173,9 +173,12 @@ class _ExteriorRoomSelectionScreenState
             ),
           ),
           Expanded(
-            child: Center(
+            child: Align(
+              alignment: Alignment.centerLeft,
               child: Text(
                 'Exterior Design',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   fontSize: titleFontSize,
                   fontFamily: 'Georgia',
@@ -438,6 +441,10 @@ class _ExteriorRoomSelectionScreenState
       ),
       child: GestureDetector(
         onTap: () {
+          if (_selectedRoom == null || _selectedRoom!.isEmpty) {
+            showSnackError(context, 'Please select a space type');
+            return;
+          }
           Navigator.of(context).pushNamed(ExteriorAshSelectionScreen.routeName);
         },
         child: Container(

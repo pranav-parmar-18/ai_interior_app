@@ -1,3 +1,4 @@
+import '../../credit/presentataion/credit_screen.dart';
 import 'dart:io';
 
 import 'package:ai_interior/features/snap_trip/presentation/snap_trip_screen.dart';
@@ -91,7 +92,7 @@ class _StagingDesignScreenState extends State<StagingDesignScreen> {
   // AppBar
   // ─────────────────────────────────────────────
   Widget _buildAppBar() {
-    final titleFontSize = r.sp(context, 36);
+    final titleFontSize = r.sp(context, 24);
     final backBtnSize = r.adaptiveValue(context, mobile: 36, tablet: 48);
     final backIconSize = r.adaptiveValue(context, mobile: 20, tablet: 28);
 
@@ -119,61 +120,65 @@ class _StagingDesignScreenState extends State<StagingDesignScreen> {
             ),
           ),
           Expanded(
-            child: Center(
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Text(
-                  'Smart Staging',
-                  maxLines: 1,
-                  style: TextStyle(
-                    fontSize: titleFontSize,
-                    fontFamily: 'Georgia',
-                    fontWeight: FontWeight.w500,
-                    color: const Color(0xFF1A1A1A),
-                    letterSpacing: -0.3,
-                  ),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Smart Staging',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: titleFontSize,
+                  fontFamily: 'Georgia',
+                  fontWeight: FontWeight.w500,
+                  color: const Color(0xFF1A1A1A),
+                  letterSpacing: -0.3,
                 ),
               ),
             ),
           ),
           // Coin badge
-          Container(
-            padding: EdgeInsets.symmetric(
-              horizontal: r.wp(context, 10),
-              vertical: r.hp(context, 5),
-            ),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFFF3E8),
-              borderRadius: BorderRadius.circular(r.radius(context, 20)),
-              border: Border.all(
-                color: const Color(0xFFE8873A).withOpacity(0.3),
+          GestureDetector(
+            onTap: () {
+              Navigator.of(context).pushNamed(CreditsScreen.routeName);
+            },
+            child: Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: r.wp(context, 10),
+                vertical: r.hp(context, 5),
               ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ValueListenableBuilder<String>(
-                  valueListenable: creditsNotifier,
-                  builder: (context, credits, _) {
-                    return Text(
-                      credits,
-                      style: TextStyle(
-                        fontSize: r.sp(context, 14),
-                        fontWeight: FontWeight.w700,
-                        color: const Color(0xFF1A1A1A),
-                        letterSpacing: -0.2,
-                      ),
-                    );
-                  },
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFF3E8),
+                borderRadius: BorderRadius.circular(r.radius(context, 20)),
+                border: Border.all(
+                  color: const Color(0xFFE8873A).withOpacity(0.3),
                 ),
-                r.horizontalSpace(context, 4),
-                CustomImageview(
-                  imagePath: "assets/images/credit.png",
-                  height: r.wp(context, 25),
-                  width: r.wp(context, 25),
-                  fit: BoxFit.contain,
-                ),
-              ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ValueListenableBuilder<String>(
+                    valueListenable: creditsNotifier,
+                    builder: (context, credits, _) {
+                      return Text(
+                        credits,
+                        style: TextStyle(
+                          fontSize: r.sp(context, 14),
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF1A1A1A),
+                          letterSpacing: -0.2,
+                        ),
+                      );
+                    },
+                  ),
+                  r.horizontalSpace(context, 4),
+                  CustomImageview(
+                    imagePath: "assets/images/credit.png",
+                    height: r.wp(context, 25),
+                    width: r.wp(context, 25),
+                    fit: BoxFit.contain,
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -281,20 +286,33 @@ class _StagingDesignScreenState extends State<StagingDesignScreen> {
               children: [
                 picked != null
                     ? CustomImageview(imagePath: picked!.path)
-                    : ClipRRect(
-                      borderRadius: BorderRadius.vertical(
-                        top: Radius.circular(r.radius(context, 20)),
-                      ),
-                      child: Container(
-                        width: double.infinity,
-                        height: r.hp(context, 330),
-                        color: const Color(0xFFF8F6F2),
-                        child: CustomImageview(
-                          imagePath: "assets/images/staging_home.png",
-                          fit: BoxFit.contain,
-                        ),
-                      ),
-                    ),
+                    : _selectedTemplate != -1
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(r.radius(context, 20)),
+                            ),
+                            child: CustomImageview(
+                              imagePath:
+                                  "assets/images/interior/interior_${_selectedTemplate + 1}.jpg",
+                              width: double.infinity,
+                              height: r.hp(context, 330),
+                              fit: BoxFit.cover,
+                            ),
+                          )
+                        : ClipRRect(
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(r.radius(context, 20)),
+                            ),
+                            child: Container(
+                              width: double.infinity,
+                              height: r.hp(context, 330),
+                              color: const Color(0xFFF8F6F2),
+                              child: CustomImageview(
+                                imagePath: "assets/images/staging_home.png",
+                                fit: BoxFit.contain,
+                              ),
+                            ),
+                          ),
 
                 Positioned(
                   top: r.hp(context, 14),
@@ -331,7 +349,10 @@ class _StagingDesignScreenState extends State<StagingDesignScreen> {
               child: GestureDetector(
                 onTap: () => showMediaSourcePicker(
                   context,
-                  onFilePicked: (file) => setState(() => picked = file),
+                  onFilePicked: (file) => setState(() {
+                    picked = file;
+                    _selectedTemplate = -1;
+                  }),
                 ),
                 child: Container(
                   height: r.hp(context, 48),
@@ -448,7 +469,10 @@ class _StagingDesignScreenState extends State<StagingDesignScreen> {
         itemBuilder: (context, i) {
           final selected = _selectedTemplate == i;
           return GestureDetector(
-            onTap: () => setState(() => _selectedTemplate = i),
+            onTap: () => setState(() {
+              _selectedTemplate = i;
+              picked = null;
+            }),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               width: r.wp(context, 108),
@@ -527,6 +551,10 @@ class _StagingDesignScreenState extends State<StagingDesignScreen> {
       padding: EdgeInsets.symmetric(horizontal: r.wp(context, 20)),
       child: GestureDetector(
         onTap: () {
+          if (picked == null && _selectedTemplate == -1) {
+            showSnackError(context, 'Please upload a photo or choose a template');
+            return;
+          }
           Navigator.of(
             context,
           ).pushNamed(StagingRoomSelectionScreen.routeName);

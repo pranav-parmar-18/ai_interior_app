@@ -1,9 +1,9 @@
 part of 'get_all_modules_bloc.dart';
 
 class GetAllModulesRepository {
-  CommonModelResponse? _makeSongResponse;
+  List<AppModule>? _modulesList;
 
-  CommonModelResponse? get makeSongResponse => _makeSongResponse;
+  List<AppModule>? get modulesList => _modulesList;
 
   String _message = '';
 
@@ -16,29 +16,25 @@ class GetAllModulesRepository {
     try {
       SharedPreferences preferences = await SharedPreferences.getInstance();
       String accessToken = preferences.getString('access_token') ?? "";
-      const String url = '${ProjectConstant.baseUrl}photos/list';
+      const String url = '${ProjectConstant.baseUrl}get-app-modules';
 
-      final response = await http.get(Uri.parse(url),headers: {
-        'Authorization': 'Bearer $accessToken'
-
+      final response = await http.get(Uri.parse(url), headers: {
+        'Authorization': 'Bearer $accessToken',
       });
       print("STATUS: ${response.statusCode}");
       print("BODY: ${response.body}");
       if (response.statusCode == 200) {
-        final responseJsonMap =
-            jsonDecode(response.body) as Map<String, dynamic>;
-        final responseData = CommonModelResponse.fromJson(responseJsonMap);
-        _makeSongResponse = responseData;
+        final List<dynamic> responseJsonList =
+            jsonDecode(response.body) as List<dynamic>;
+        _modulesList = responseJsonList
+            .map((x) => AppModule.fromJson(x as Map<String, dynamic>))
+            .toList();
         _message = "Success";
         _success = true;
       } else {
         if (kDebugMode) {
           print("API FAILED : ${response.body}");
         }
-        final responseJsonMap =
-            jsonDecode(response.body) as Map<String, dynamic>;
-        final responseData = CommonModelResponse.fromJson(responseJsonMap);
-        _makeSongResponse = responseData;
         _message = "Fail";
         _success = false;
       }
@@ -50,6 +46,4 @@ class GetAllModulesRepository {
       rethrow;
     }
   }
-
-
 }

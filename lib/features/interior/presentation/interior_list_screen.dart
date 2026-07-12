@@ -453,6 +453,10 @@ class _InteriorRoomSelectionScreenState
       ),
       child: GestureDetector(
         onTap: () {
+          if (_selectedRoom == null || _selectedRoom!.isEmpty) {
+            showSnackError(context, 'Please select a room type');
+            return;
+          }
           Navigator.of(context).pushNamed(InteriorAshSelectionScreen.routeName);
         },
         child: Container(

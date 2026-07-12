@@ -1,10 +1,16 @@
+import 'dart:async';
+import 'dart:convert';
 import 'package:ai_interior/models/create_user_model_response.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ai_interior/utils/responsive_utils.dart';
+import 'package:in_app_purchase/in_app_purchase.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../../bloc/create_user/create_user_bloc.dart';
 import '../../../services/device_indentification_service.dart';
@@ -25,17 +31,199 @@ class _OnboardingFourScreenState extends State<OnboardingFourScreen> {
   CreateUserModelResponse? createUserModelResponse;
   String? deviceId;
 
+  // IAP
+  bool _loading = true;
+  bool _isPurchasing = false;
+  List<ProductDetails> _products = [];
+  final InAppPurchase _iap = InAppPurchase.instance;
+  StreamSubscription<List<PurchaseDetails>>? _iapSubscription;
+
   Future<void> getDeviceId() async {
     deviceId = await DeviceIdManager.getDeviceId();
     print('Persistent Device ID: $deviceId');
   }
 
+  String _priceForWeekly() {
+    if (_loading || _products.isEmpty) return "\$3.99";
+    try {
+      return _products.firstWhere((p) => p.id == 'com.ai_interior.weekly').price;
+    } catch (_) {
+      return "\$3.99";
+    }
+  }
+
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-
     getDeviceId();
+
+    _iapSubscription = _iap.purchaseStream.listen(
+      _handlePurchaseUpdates,
+      onDone: () => _iapSubscription?.cancel(),
+      onError: (error) {
+        debugPrint('Purchase Stream Error: $error');
+      },
+    );
+    _initIAP();
+  }
+
+  Future<void> _saveSubscription(String productId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final expiryDate = DateTime.now().add(const Duration(days: 7));
+    await prefs.setString(
+      'subscription_info',
+      jsonEncode({'type': 'weekly', 'expiry': expiryDate.toIso8601String()}),
+    );
+  }
+
+  void _handlePurchaseUpdates(List<PurchaseDetails> purchases) async {
+    for (final purchase in purchases) {
+      if (purchase.status == PurchaseStatus.purchased ||
+          purchase.status == PurchaseStatus.restored) {
+        await _saveSubscription(purchase.productID);
+        if (mounted) {
+          setState(() => _isPurchasing = false);
+        }
+        _createUserBloc.add(
+          CreateUserDataEvent(
+            login: {"uuid": deviceId.toString()},
+          ),
+        );
+      } else if (purchase.status == PurchaseStatus.error ||
+          purchase.status == PurchaseStatus.canceled) {
+        if (mounted) {
+          setState(() => _isPurchasing = false);
+        }
+        if (purchase.status == PurchaseStatus.error) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Purchase failed: ${purchase.error?.message}')),
+          );
+        }
+      }
+
+      if (purchase.pendingCompletePurchase) {
+        await _iap.completePurchase(purchase);
+      }
+    }
+  }
+
+  Future<void> _initIAP() async {
+    try {
+      final available = await _iap.isAvailable();
+      if (!available) {
+        setState(() => _loading = false);
+        return;
+      }
+      final response = await _iap.queryProductDetails({'com.ai_interior.weekly'});
+      if (response.productDetails.isNotEmpty) {
+        setState(() {
+          _products = response.productDetails;
+          _loading = false;
+        });
+      } else {
+        setState(() => _loading = false);
+      }
+    } catch (_) {
+      setState(() => _loading = false);
+    }
+  }
+
+  void _onContinue() {
+    if (_isPurchasing || _loading) return;
+    setState(() => _isPurchasing = true);
+
+    if (kDebugMode) {
+      // In debug mode, immediately simulate success so you can test the full creation flow locally!
+      Future.delayed(const Duration(milliseconds: 500), () async {
+        await _saveSubscription('com.ai_interior.weekly');
+        if (mounted) {
+          setState(() => _isPurchasing = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Debug Mode: Simulated purchase successful!')),
+          );
+          _createUserBloc.add(
+            CreateUserDataEvent(
+              login: {"uuid": deviceId.toString()},
+            ),
+          );
+        }
+      });
+      return;
+    }
+
+    if (_products.isEmpty) {
+      // Simulate sandbox purchase on simulator/test environment when products cannot be fetched
+      Future.delayed(const Duration(seconds: 1), () async {
+        await _saveSubscription('com.ai_interior.weekly');
+        if (mounted) {
+          setState(() => _isPurchasing = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Simulated sandbox purchase successful!')),
+          );
+          _createUserBloc.add(
+            CreateUserDataEvent(
+              login: {"uuid": deviceId.toString()},
+            ),
+          );
+        }
+      });
+      return;
+    }
+
+    try {
+      final product = _products.firstWhere((p) => p.id == 'com.ai_interior.weekly');
+      final purchaseParam = PurchaseParam(productDetails: product);
+      _iap.buyNonConsumable(purchaseParam: purchaseParam);
+    } catch (e) {
+      setState(() => _isPurchasing = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error starting purchase: $e')),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _iapSubscription?.cancel();
+    _createUserBloc.close();
+    super.dispose();
+  }
+
+  Widget _buildFooter() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        _FooterLink(
+          label: 'Terms Of Use',
+          onTap: () => launchUrl(
+            Uri.parse('https://bvktechnologies.com/terms-of-use-for-bloomnest-ai-interior-design/'),
+            mode: LaunchMode.externalApplication,
+          ),
+        ),
+        _FooterLink(
+          label: 'Restore',
+          onTap: () async {
+            try {
+              await InAppPurchase.instance.restorePurchases();
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Restoring purchases...')),
+              );
+            } catch (e) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Restore failed: $e')),
+              );
+            }
+          },
+        ),
+        _FooterLink(
+          label: 'Privacy Policy',
+          onTap: () => launchUrl(
+            Uri.parse('https://bvktechnologies.com/privacy-policy-for-bloomnest-ai-interior-design/'),
+            mode: LaunchMode.externalApplication,
+          ),
+        ),
+      ],
+    );
   }
 
   @override
@@ -126,9 +314,9 @@ class _OnboardingFourScreenState extends State<OnboardingFourScreen> {
                 height: 1.55,
               ),
               children: [
-                const TextSpan(
+                TextSpan(
                   text:
-                      'Go beyond the basics — unlimited creations,\nexclusive styles, & more for just \$3.99/week,\n',
+                      'Go beyond the basics — unlimited creations,\nexclusive styles, & more for just ${_priceForWeekly()}/week,\n',
                 ),
                 WidgetSpan(
                   alignment: PlaceholderAlignment.middle,
@@ -143,14 +331,13 @@ class _OnboardingFourScreenState extends State<OnboardingFourScreen> {
 
           // Continue button
           _ContinueButton(
-            onTap: () {
-              _createUserBloc.add(
-                CreateUserDataEvent(
-                  login: {"uuid": deviceId.toString()},
-                ),
-              );
-            },
+            onTap: _onContinue,
           ),
+
+          SizedBox(height: r.hp(context, 16)),
+
+          // Privacy, Restore, Terms
+          _buildFooter(),
 
           if (!isLandscape) SizedBox(height: r.hp(context, 16)),
         ],
@@ -179,38 +366,51 @@ class _OnboardingFourScreenState extends State<OnboardingFourScreen> {
               state is CreateUserFailureState) {}
         },
         builder: (context, state) {
-          return isLandscape
-              ? Row(
-                  children: [
-                    Expanded(
-                      flex: 50,
-                      child: imageGridWidget,
-                    ),
-                    Expanded(
-                      flex: 50,
-                      child: SafeArea(
-                        left: false,
-                        child: SingleChildScrollView(
-                          child: detailsContent,
+          return Stack(
+            children: [
+              isLandscape
+                  ? Row(
+                      children: [
+                        Expanded(
+                          flex: 50,
+                          child: imageGridWidget,
                         ),
-                      ),
+                        Expanded(
+                          flex: 50,
+                          child: SafeArea(
+                            left: false,
+                            child: SingleChildScrollView(
+                              child: detailsContent,
+                            ),
+                          ),
+                        ),
+                      ],
+                    )
+                  : Column(
+                      children: [
+                        SizedBox(
+                          height: size.height * 0.58,
+                          child: imageGridWidget,
+                        ),
+                        Expanded(
+                          child: Container(
+                            color: const Color(0xFFF5F0EA),
+                            child: detailsContent,
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                )
-              : Column(
-                  children: [
-                    SizedBox(
-                      height: size.height * 0.58,
-                      child: imageGridWidget,
+              if (_isPurchasing)
+                Positioned.fill(
+                  child: ColoredBox(
+                    color: Colors.black26,
+                    child: Center(
+                      child: CupertinoActivityIndicator(radius: 16),
                     ),
-                    Expanded(
-                      child: Container(
-                        color: const Color(0xFFF5F0EA),
-                        child: detailsContent,
-                      ),
-                    ),
-                  ],
-                );
+                  ),
+                ),
+            ],
+          );
         },
       ),
     );
@@ -251,69 +451,18 @@ class _AutoRenewIcon extends StatelessWidget {
 // 2×2 Image Grid
 // ─────────────────────────────────────────────
 class _ImageGrid extends StatelessWidget {
-  final CreateUserBloc _createUserBloc = CreateUserBloc();
-  CreateUserModelResponse? createUserModelResponse;
-  String? deviceId;
-
-  Future<void> getDeviceId() async {
-    deviceId = await DeviceIdManager.getDeviceId();
-    print('Persistent Device ID: $deviceId');
-  }
-
-  Future<void> setUserId(String userId) async {
-    SharedPreferences preferences = await SharedPreferences.getInstance();
-    preferences.setString('user_id', userId);
-  }
-
-  Future<void> setIsOnboardingDone() async {
-    SharedPreferences preferences = await SharedPreferences.getInstance();
-    preferences.setBool('is_onboarding_done', true);
-  }
-
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<CreateUserBloc, CreateUserState>(
-      bloc: _createUserBloc,
-      listener: (context, state) {
-        if (state is CreateUserSuccessState) {
-          createUserModelResponse = state.login;
-          setUserId(createUserModelResponse?.data?.id.toString() ?? "");
-          setIsOnboardingDone();
-          SharedPreferences.getInstance().then((prefs) {
-            final credits = createUserModelResponse?.credits?.toString() ?? "0";
-            prefs.setBool('credits_initialized', true);
-            prefs.setString('credits', credits);
-            creditsNotifier.value = credits;
-          });
-          Navigator.of(
-            context,
-          ).pushNamedAndRemoveUntil(MainScreen.routeName, (route) => false);
-        } else if (state is CreateUserExceptionState ||
-            state is CreateUserFailureState) {}
-      },
-      builder: (context, state) {
-        return Scaffold(
-          backgroundColor: Color(0xFFF5F0EA),
-          body: Stack(
-            children: [
-              _FullScreenAnimatedGrid(),
-              // Positioned(
-              //   left: 0,
-              //   right: 0,
-              //   bottom: 0,
-              //   child: _BottomOverlay(),
-              // ),
-            ],
-          ),
-        );
-      },
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F0EA),
+      body: Stack(
+        children: [
+          _FullScreenAnimatedGrid(),
+        ],
+      ),
     );
   }
 }
-
-// ─────────────────────────────────────────────
-// Page Dot
-// ─────────────────────────────────────────────
 
 // ─────────────────────────────────────────────
 // Continue Button
@@ -482,6 +631,31 @@ class _AnimatedImageColumn extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+// ─────────────────────────────────────────────
+// Footer Link
+// ─────────────────────────────────────────────
+class _FooterLink extends StatelessWidget {
+  final String label;
+  final VoidCallback onTap;
+
+  const _FooterLink({required this.label, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Text(
+        label,
+        style: const TextStyle(
+          fontFamily: 'Georgia',
+          fontSize: 12,
+          color: Color(0xFF7A8080),
+        ),
+      ),
     );
   }
 }

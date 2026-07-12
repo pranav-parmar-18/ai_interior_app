@@ -3275,16 +3275,31 @@ class _SubscriptionScreenThreeState extends State<SubscriptionScreenThree>
                         children: [
                           SizedBox(height: spacing1),
                           _buildTitle(),
-                          SizedBox(height: spacing2),
+                          SizedBox(height: spacing3),
                           _buildFeatureCard(),
-                          const SizedBox(height: 8),
-                          Text(
-                            "Just for \$79.99 \$39.99 per year",
-                            style: TextStyle(
-                              fontWeight: FontWeight.w500,
-                              fontFamily: 'Georgia',
-                              fontSize: 20,
-                              color: Color.fromRGBO(46, 46, 46, 1),
+                           SizedBox(height: spacing3),
+                           SizedBox(height: spacing3),
+                          RichText(
+                            textAlign: TextAlign.center,
+                            text: TextSpan(
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w500,
+                                fontFamily: 'Georgia',
+                                fontSize: 20,
+                                color: Color.fromRGBO(46, 46, 46, 1),
+                              ),
+                              children: [
+                                const TextSpan(text: 'Just for '),
+                                const TextSpan(
+                                  text: '\$79.99',
+                                  style: TextStyle(
+                                    decoration: TextDecoration.lineThrough,
+                                    decorationColor: Color.fromRGBO(46, 46, 46, 1),
+                                    decorationThickness: 1.8,
+                                  ),
+                                ),
+                                TextSpan(text: ' ${_priceFor(1)} per year'),
+                              ],
                             ),
                           ),
                           const SizedBox(height: 6),
@@ -3297,6 +3312,7 @@ class _SubscriptionScreenThreeState extends State<SubscriptionScreenThree>
                               color: Color.fromRGBO(46, 46, 46, 1),
                             ),
                           ),
+                          SizedBox(height: spacing3),
                           SizedBox(height: spacing3),
 
                           _buildFinePrint(),
@@ -3684,7 +3700,7 @@ class _SubscriptionScreenThreeState extends State<SubscriptionScreenThree>
             text: 'Redesign Your Space with AI ',
             style: TextStyle(
               fontFamily: 'Georgia',
-              fontSize: 26,
+              fontSize: 21,
               fontWeight: FontWeight.w400,
               color: _AppColors.titleText,
               height: 1.35,
@@ -3760,8 +3776,13 @@ class _SubscriptionScreenThreeState extends State<SubscriptionScreenThree>
 
   // ── Fine print ────────────────────────────────────────────────────────────
   Widget _buildFinePrint() {
+    final period = _selectedPlan == 0
+        ? 'week'
+        : _selectedPlan == 1
+            ? 'year'
+            : 'month';
     return Text(
-      'Only ${_priceFor(_selectedPlan)}/week, auto-renew, cancel anytime.',
+      'Only ${_priceFor(_selectedPlan)}/$period, auto-renew, cancel anytime.',
       textAlign: TextAlign.center,
       style: const TextStyle(
         fontSize: 12.5,

@@ -671,6 +671,10 @@ class _InteriorColorPaletteScreenState
       ),
       child: GestureDetector(
         onTap: () async {
+          if (_selectedPalette == null || _selectedPalette!.isEmpty) {
+            showSnackError(context, 'Please select a color palette');
+            return;
+          }
           if (isSubscribed == true) {
             final imageFile = await assetToFile(
               'assets/images/interior/interior_home.png',

@@ -109,12 +109,15 @@ class _DreamSpaceScreenState extends State<DreamSpaceScreen>
         );
       } else {
         _getAllExteriorDesignBloc.add(
-          GetAllExteriorDesignDataEvent(data: {"space_type": "garden"}),
+          GetAllExteriorDesignDataEvent(data: {"space_type": ""}),
         );
       }
     });
     _getAllInteriorDesignBloc.add(
       GetAllInteriorDesignDataEvent(data: {"space_type": ""}),
+    );
+    _getAllExteriorDesignBloc.add(
+      GetAllExteriorDesignDataEvent(data: {"space_type": ""}),
     );
   }
 
@@ -219,11 +222,14 @@ class _DreamSpaceScreenState extends State<DreamSpaceScreen>
             ),
           ),
           Expanded(
-            child: Center(
+            child: Align(
+              alignment: Alignment.centerLeft,
               child: Text(
                 'Create Space',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  fontSize: r.sp(context, 36),
+                  fontSize: r.sp(context, 24),
                   fontFamily: 'Georgia',
                   fontWeight: FontWeight.w500,
                   color: const Color(0xFF1A1A1A),
@@ -233,43 +239,48 @@ class _DreamSpaceScreenState extends State<DreamSpaceScreen>
             ),
           ),
           // Coin badge
-          Container(
-            padding: EdgeInsets.symmetric(
-              horizontal: r.wp(context, 10),
-              vertical: r.hp(context, 5),
-            ),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFFF3E8),
-              borderRadius: BorderRadius.circular(r.wp(context, 20)),
-              border: Border.all(
-                color: const Color(0xFFE8873A).withOpacity(0.3),
+          GestureDetector(
+            onTap: () {
+              Navigator.of(context).pushNamed(CreditsScreen.routeName);
+            },
+            child: Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: r.wp(context, 10),
+                vertical: r.hp(context, 5),
               ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ValueListenableBuilder<String>(
-                  valueListenable: creditsNotifier,
-                  builder: (context, credits, _) {
-                    return Text(
-                      creditsNotifier.value.toString(),
-                      style: TextStyle(
-                        fontSize: r.sp(context, 16),
-                        fontWeight: FontWeight.w700,
-                        color: const Color(0xFF1A1A1A),
-                        letterSpacing: -0.2,
-                      ),
-                    );
-                  },
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFF3E8),
+                borderRadius: BorderRadius.circular(r.wp(context, 20)),
+                border: Border.all(
+                  color: const Color(0xFFE8873A).withOpacity(0.3),
                 ),
-                r.horizontalSpace(context, 4),
-                CustomImageview(
-                  imagePath: "assets/images/credit.png",
-                  height: r.wp(context, 25),
-                  width: r.wp(context, 25),
-                  fit: BoxFit.contain,
-                ),
-              ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ValueListenableBuilder<String>(
+                    valueListenable: creditsNotifier,
+                    builder: (context, credits, _) {
+                      return Text(
+                        creditsNotifier.value.toString(),
+                        style: TextStyle(
+                          fontSize: r.sp(context, 16),
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF1A1A1A),
+                          letterSpacing: -0.2,
+                        ),
+                      );
+                    },
+                  ),
+                  r.horizontalSpace(context, 4),
+                  CustomImageview(
+                    imagePath: "assets/images/credit.png",
+                    height: r.wp(context, 25),
+                    width: r.wp(context, 25),
+                    fit: BoxFit.contain,
+                  ),
+                ],
+              ),
             ),
           ),
         ],

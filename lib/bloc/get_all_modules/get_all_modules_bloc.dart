@@ -1,14 +1,11 @@
 import 'dart:convert';
-  import 'package:ai_interior/models/common_model_response.dart';
+import 'package:ai_interior/models/app_module_model.dart';
 import 'package:ai_interior/utils/app_utils.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-
-import '../../models/explore_model_response.dart';
-
 
 part 'get_all_modules_event.dart';
 part 'get_all_modules_repository.dart';
@@ -28,10 +25,9 @@ class GetAllModulesBloc extends Bloc<GetAllModulesEvent, GetAllModulesState> {
       await adminKeyLoginRepository.GetAllModules();
       if (adminKeyLoginRepository.success == true) {
         emit(GetAllModulesSuccessState(
-            photoModelResponse: adminKeyLoginRepository.makeSongResponse,
+            modules: adminKeyLoginRepository.modulesList,
             message: adminKeyLoginRepository.message.toString().trim(),
-        )
-        );
+        ));
       } else {
         emit(GetAllModulesFailureState(
           message: adminKeyLoginRepository.message.toString().trim(),

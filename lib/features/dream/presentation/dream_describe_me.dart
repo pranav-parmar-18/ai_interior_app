@@ -289,7 +289,7 @@ class _DreamDescribeVisionScreenState
           dreamASH = _controller.text;
           await Future.delayed(const Duration(seconds: 1));
           if (mounted) {
-            Navigator.of(context).pushNamed(DreamColorPaletteScreen.routeName);
+            Navigator.of(context).pop();
           }
         },
         child: Container(

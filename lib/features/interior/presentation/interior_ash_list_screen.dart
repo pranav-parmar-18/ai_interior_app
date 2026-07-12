@@ -341,11 +341,18 @@ class _InteriorAshSelectionScreenState
     final gifSize = r.adaptiveValue(context, mobile: 130, tablet: 180);
 
     return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedRoom = room.name;
-          intAshType = room.name.toLowerCase();
-        });
+      onTap: () async {
+        if (index == 0) {
+          await Navigator.of(context).pushNamed(InteriorDescribeVisionScreen.routeName);
+          setState(() {
+            _selectedRoom = room.name;
+          });
+        } else {
+          setState(() {
+            _selectedRoom = room.name;
+            intAshType = room.name.toLowerCase();
+          });
+        }
         HapticFeedback.lightImpact();
       },
       child: AnimatedContainer(
@@ -378,13 +385,7 @@ class _InteriorAshSelectionScreenState
             children: [
               // Room image
               index == 0
-                  ? GestureDetector(
-                    onTap: () {
-                      Navigator.of(
-                        context,
-                      ).pushNamed(InteriorDescribeVisionScreen.routeName);
-                    },
-                    child: Container(
+                  ? Container(
                       color: const Color.fromRGBO(255, 255, 255, 0.6),
                       child: Center(
                         child: Image.asset(
@@ -393,8 +394,7 @@ class _InteriorAshSelectionScreenState
                           width: gifSize,
                         ),
                       ),
-                    ),
-                  )
+                    )
                   : Image.asset(
                     "assets/images/interior/ash_${index + 1}.png",
                     fit: BoxFit.cover,
@@ -505,6 +505,10 @@ class _InteriorAshSelectionScreenState
       ),
       child: GestureDetector(
         onTap: () {
+          if (_selectedRoom == null || _selectedRoom!.isEmpty) {
+            showSnackError(context, 'Please select a design aesthetic');
+            return;
+          }
           Navigator.of(context).pushNamed(InteriorColorPaletteScreen.routeName);
         },
         child: Container(

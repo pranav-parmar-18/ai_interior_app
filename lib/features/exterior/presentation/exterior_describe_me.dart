@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../main/presentaion/main_screen.dart';
 import 'package:ai_interior/utils/responsive_utils.dart';
 
 import 'exterior_ash_list_screen.dart';
@@ -309,7 +310,8 @@ class _ExteriorDescribeVisionScreenState
         onTap: () async {
           extAsh = _controller.text;
           await Future.delayed(const Duration(seconds: 1));
-          Navigator.of(context).pushNamed(ExteriorColorPaletteScreen.routeName);
+          if (!mounted) return;
+          Navigator.of(context).pop();
         },
         child: Container(
           width: double.infinity,

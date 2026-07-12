@@ -1,6 +1,8 @@
 import 'package:ai_interior/bloc/create_user/create_user_bloc.dart';
+import 'package:ai_interior/bloc/get_all_modules/get_all_modules_bloc.dart';
 import 'package:ai_interior/features/style_transfer/presentation/style_transfer_screeen.dart';
 import 'package:ai_interior/models/create_user_model_response.dart';
+import 'package:ai_interior/models/app_module_model.dart';
 import 'package:ai_interior/utils/responsive_utils.dart';
 import 'package:ai_interior/widgets/custom_imageview.dart';
 import 'package:flutter/material.dart';
@@ -14,28 +16,11 @@ import '../../credit/presentataion/credit_screen.dart';
 import '../../dream/presentation/dream_screen.dart';
 import '../../exterior/presentation/exterior_screen.dart';
 import '../../interior/presentation/interior_screen.dart';
-import '../../main/presentaion/main_screen.dart';
 import '../../replace/presentation/replace_screen.dart';
 import '../../setting/presentation/setting_screens.dart';
 import '../../staging/presentation/staging_screen.dart';
 
 final ValueNotifier<String> creditsNotifier = ValueNotifier<String>("0");
-
-class FeatureItem {
-  final String title;
-  final String subtitle;
-  final String icon;
-  CustomPainter? imagePainter;
-  final String imagePath;
-
-  FeatureItem({
-    required this.title,
-    required this.subtitle,
-    required this.icon,
-    this.imagePainter,
-    required this.imagePath,
-  });
-}
 
 // ─────────────────────────────────────────────
 // Home Screen
@@ -51,6 +36,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final CreateUserBloc _createUserBloc = CreateUserBloc();
+  final GetAllModulesBloc _getAllModulesBloc = GetAllModulesBloc();
   CreateUserModelResponse? createUserModelResponse;
 
   String? deviceId;
@@ -78,6 +64,13 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  @override
+  void dispose() {
+    _createUserBloc.close();
+    _getAllModulesBloc.close();
+    super.dispose();
+  }
+
   Future<void> setCredits(String userId) async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
     preferences.setString('credits', userId);
@@ -86,45 +79,6 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
-
-    final features = [
-      FeatureItem(
-        title: 'Revamp Your Interior',
-        subtitle: 'Transform your space with a fresh design',
-        icon: "assets/images/home_icon_1.png",
-        imagePath: "assets/images/home_0.png",
-      ),
-      FeatureItem(
-        title: 'Redesign Your Exterior',
-        subtitle: 'Transform your outdoor space',
-        icon: "assets/images/home_icon_2.png",
-        imagePath: "assets/images/home_3.png",
-      ),
-      FeatureItem(
-        title: 'Style Transfer',
-        subtitle: 'Apply a style from any reference image',
-        icon: "assets/images/home_icon_3.png",
-        imagePath: "assets/images/home_6.png",
-      ),
-      FeatureItem(
-        title: 'Smart Staging',
-        subtitle: 'Effortlessly furnish and style your room',
-        icon: "assets/images/home_icon_4.png",
-        imagePath: "assets/images/home_9.png",
-      ),
-      FeatureItem(
-        title: 'Replace',
-        subtitle: 'Replace any part of your space with ease',
-        icon: "assets/images/home_icon_5.png",
-        imagePath: "assets/images/home_8.png",
-      ),
-      FeatureItem(
-        title: 'Design Your Dream Space',
-        subtitle: 'Build your ideal space from scratch',
-        icon: "assets/images/home_icon_6.png",
-        imagePath: "assets/images/home_2.png",
-      ),
-    ];
 
     return Scaffold(
       backgroundColor: const Color(0xFFFAF7F4),
@@ -141,37 +95,159 @@ class _HomeScreenState extends State<HomeScreen> {
             SharedPreferences.getInstance().then((prefs) {
               prefs.setString('user_id', userId);
             });
+            _getAllModulesBloc.add(const GetAllModulesDataEvent());
           } else if (state is CreateUserExceptionState ||
-              state is CreateUserExceptionState) {}
+              state is CreateUserFailureState) {}
         },
         builder: (context, state) {
-          return Column(
-            children: [
-              // ── Main scrollable content ──
-              Expanded(
-                child: CustomScrollView(
-                  slivers: [
-                    // Top App Bar
-                    // SliverToBoxAdapter(child: ()),
+          if (state is CreateUserLoadingState) {
+            return const Center(
+              child: CircularProgressIndicator(color: Color(0xFF873F00)),
+            );
+          }
 
-                    // Feature cards list
-                    SliverList(
-                      delegate: SliverChildBuilderDelegate(
-                        (context, index) =>
-                            _FeatureCard(item: features[index], index: index),
-                        childCount: features.length,
+          return BlocBuilder<GetAllModulesBloc, GetAllModulesState>(
+            bloc: _getAllModulesBloc,
+            builder: (context, modulesState) {
+              if (modulesState is GetAllModulesLoadingState ||
+                  modulesState is GetAllModulesInitialState) {
+                return const Center(
+                  child: CircularProgressIndicator(color: Color(0xFF873F00)),
+                );
+              }
+
+              if (modulesState is GetAllModulesSuccessState) {
+                final List<AppModule> modules = modulesState.modules ?? [];
+                if (modules.isEmpty) {
+                  return const Center(
+                    child: Text('No modules available'),
+                  );
+                }
+
+                // Map of design/module config based on tableName
+                final Map<String, Map<String, dynamic>> moduleConfig = {
+                  "interior_designs": {
+                    "icon": "assets/images/home_icon_1.png",
+                    "imagePath": "assets/images/home_0.png",
+                    "route": InteriorDesignScreen.routeName,
+                  },
+                  "exterior_designs": {
+                    "icon": "assets/images/home_icon_2.png",
+                    "imagePath": "assets/images/home_3.png",
+                    "route": ExteriorDesignScreen.routeName,
+                  },
+                  "style_transfers": {
+                    "icon": "assets/images/home_icon_3.png",
+                    "imagePath": "assets/images/home_6.png",
+                    "route": StyleTransferScreen.routeName,
+                  },
+                  "smart_stagings": {
+                    "icon": "assets/images/home_icon_4.png",
+                    "imagePath": "assets/images/home_9.png",
+                    "route": StagingDesignScreen.routeName,
+                  },
+                  "smart_replaces": {
+                    "icon": "assets/images/home_icon_5.png",
+                    "imagePath": "assets/images/home_8.png",
+                    "route": ReplaceScreen.routeName,
+                  },
+                  "dream_spaces": {
+                    "icon": "assets/images/home_icon_6.png",
+                    "imagePath": "assets/images/home_2.png",
+                    "route": DreamSpaceScreen.routeName,
+                  },
+                  "enhanced_spaces": {
+                    "icon": "assets/images/home_icon_1.png", // fallback icon
+                    "imagePath": "assets/images/home_0.png", // fallback image
+                    "route": null,
+                  },
+                };
+
+                return Column(
+                  children: [
+                    Expanded(
+                      child: CustomScrollView(
+                        slivers: [
+                          SliverList(
+                            delegate: SliverChildBuilderDelegate(
+                              (context, index) {
+                                final module = modules[index];
+                                final config = moduleConfig[module.tableName] ?? {
+                                  "icon": "assets/images/home_icon_1.png",
+                                  "imagePath": "assets/images/home_0.png",
+                                  "route": null,
+                                };
+
+                                final title = module.module ?? "";
+                                final subtitle = module.description ?? "";
+                                final icon = config["icon"] as String;
+
+                                // Determine the image path: use network thumbnail if valid, otherwise fallback
+                                final String thumbnail = module.thumbnail ?? "";
+                                final String imagePath = (thumbnail.isNotEmpty &&
+                                        thumbnail.startsWith("http") &&
+                                        !thumbnail.endsWith("/"))
+                                    ? thumbnail
+                                    : config["imagePath"] as String;
+
+                                return _FeatureCard(
+                                  title: title,
+                                  subtitle: subtitle,
+                                  icon: icon,
+                                  imagePath: imagePath,
+                                  onTap: () {
+                                    final route = config["route"] as String?;
+                                    if (route != null) {
+                                      Navigator.of(context).pushNamed(route);
+                                    } else {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(
+                                          content: Text('Feature coming soon!'),
+                                          duration: Duration(seconds: 2),
+                                        ),
+                                      );
+                                    }
+                                  },
+                                );
+                              },
+                              childCount: modules.length-1,
+                            ),
+                          ),
+                          const SliverToBoxAdapter(
+                            child: SizedBox(height: 90),
+                          ),
+                        ],
                       ),
                     ),
-
-                    const SliverToBoxAdapter(
-                      child: SizedBox(height: 90),
-                    ),
                   ],
-                ),
-              ),
+                );
+              }
 
-              // ── Bottom Navigation Bar ──
-            ],
+              if (modulesState is GetAllModulesFailureState) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Failed to load modules: ${modulesState.message}',
+                        style: const TextStyle(color: Colors.red),
+                      ),
+                      const SizedBox(height: 12),
+                      ElevatedButton(
+                        onPressed: () {
+                          _getAllModulesBloc.add(const GetAllModulesDataEvent());
+                        },
+                        child: const Text('Retry'),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              return const Center(
+                child: Text('Something went wrong'),
+              );
+            },
           );
         },
       ),
@@ -282,10 +358,19 @@ class TopBarAppBar extends StatelessWidget implements PreferredSizeWidget {
 // Feature Card
 // ─────────────────────────────────────────────
 class _FeatureCard extends StatelessWidget {
-  final FeatureItem item;
-  final int index;
+  final String title;
+  final String subtitle;
+  final String icon;
+  final String imagePath;
+  final VoidCallback onTap;
 
-  const _FeatureCard({required this.item, required this.index});
+  const _FeatureCard({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.imagePath,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -308,26 +393,7 @@ class _FeatureCard extends StatelessWidget {
         children: [
           // Image area
           GestureDetector(
-            onTap: () {
-              if (index == 0) {
-                Navigator.of(context).pushNamed(InteriorDesignScreen.routeName);
-              }
-              if (index == 1) {
-                Navigator.of(context).pushNamed(ExteriorDesignScreen.routeName);
-              }
-              if (index == 2) {
-                Navigator.of(context).pushNamed(StyleTransferScreen.routeName);
-              }
-              if (index == 3) {
-                Navigator.of(context).pushNamed(StagingDesignScreen.routeName);
-              }
-              if (index == 4) {
-                Navigator.of(context).pushNamed(ReplaceScreen.routeName);
-              }
-              if (index == 5) {
-                Navigator.of(context).pushNamed(DreamSpaceScreen.routeName);
-              }
-            },
+            onTap: onTap,
             child: ClipRRect(
               borderRadius: BorderRadius.circular(borderRadius),
               child: SizedBox(
@@ -337,7 +403,7 @@ class _FeatureCard extends StatelessWidget {
                   fit: StackFit.expand,
                   children: [
                     CustomImageview(
-                      imagePath: item.imagePath,
+                      imagePath: imagePath,
                       width: double.infinity,
                       height: imageHeight,
                       fit: BoxFit.fill,
@@ -361,7 +427,7 @@ class _FeatureCard extends StatelessWidget {
               children: [
                 // Icon circle
                 CustomImageview(
-                  imagePath: item.icon,
+                  imagePath: icon,
                   height: iconSize,
                   width: iconSize,
                   fit: BoxFit.contain,
@@ -372,21 +438,21 @@ class _FeatureCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        item.title,
+                        title,
                         style: TextStyle(
                           fontFamily: 'Lato',
                           fontSize: titleFontSize,
                           fontWeight: FontWeight.w600,
-                          color: Color.fromRGBO(46, 46, 46, 1),
+                          color: const Color.fromRGBO(46, 46, 46, 1),
                         ),
                       ),
                       SizedBox(height: r.hp(context, 2)),
                       Text(
-                        item.subtitle,
+                        subtitle,
                         style: TextStyle(
                           fontSize: subtitleFontSize,
                           fontFamily: 'Lato',
-                          color: Color.fromRGBO(46, 46, 46, 1),
+                          color: const Color.fromRGBO(46, 46, 46, 1),
                           height: 1.3,
                         ),
                       ),

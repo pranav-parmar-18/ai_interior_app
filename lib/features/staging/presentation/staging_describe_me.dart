@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../main/presentaion/main_screen.dart';
 import 'package:ai_interior/utils/responsive_utils.dart';
 
 import 'staging_ash_list_screen.dart';
@@ -303,7 +304,7 @@ class _StagingDescribeVisionScreenState
           stgAsh = _controller.text;
           await Future.delayed(const Duration(seconds: 1));
           if (mounted) {
-            Navigator.of(context).pushNamed(StagingColorPaletteScreen.routeName);
+            Navigator.of(context).pop();
           }
         },
         child: Container(

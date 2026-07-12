@@ -186,7 +186,7 @@ class _ExteriorAshSelectionScreenState
 
   Widget _buildAppBar() {
     final hPad = r.wp(context, 16);
-    final titleFontSize = r.sp(context, 36);
+    final titleFontSize = r.sp(context, 24);
     final iconSize = r.adaptiveValue(context, mobile: 25, tablet: 35);
     final backBtnSize = r.adaptiveValue(context, mobile: 36, tablet: 48);
     final backIconSize = r.adaptiveValue(context, mobile: 20, tablet: 28);
@@ -210,9 +210,12 @@ class _ExteriorAshSelectionScreenState
             ),
           ),
           Expanded(
-            child: Center(
+            child: Align(
+              alignment: Alignment.centerLeft,
               child: Text(
                 'Exterior Design',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   fontSize: titleFontSize,
                   fontFamily: 'Georgia',
@@ -333,11 +336,18 @@ class _ExteriorAshSelectionScreenState
     final gifSize = r.adaptiveValue(context, mobile: 130, tablet: 180);
 
     return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedRoom = room.name;
-          extAsh = room.name.toLowerCase();
-        });
+      onTap: () async {
+        if (index == 0) {
+          await Navigator.of(context).pushNamed(ExteriorDescribeVisionScreen.routeName);
+          setState(() {
+            _selectedRoom = room.name;
+          });
+        } else {
+          setState(() {
+            _selectedRoom = room.name;
+            extAsh = room.name.toLowerCase();
+          });
+        }
         HapticFeedback.lightImpact();
       },
       child: AnimatedContainer(
@@ -367,20 +377,13 @@ class _ExteriorAshSelectionScreenState
             children: [
               // Room image
               index == 0
-                  ? GestureDetector(
-                      onTap: () {
-                        Navigator.of(
-                          context,
-                        ).pushNamed(ExteriorDescribeVisionScreen.routeName);
-                      },
-                      child: Container(
-                        color: Color.fromRGBO(255, 255, 255, 0.6),
-                        child: Center(
-                          child: Image.asset(
-                            "assets/gifs/describe_me.gif",
-                            height: gifSize,
-                            width: gifSize,
-                          ),
+                  ? Container(
+                      color: Color.fromRGBO(255, 255, 255, 0.6),
+                      child: Center(
+                        child: Image.asset(
+                          "assets/gifs/describe_me.gif",
+                          height: gifSize,
+                          width: gifSize,
                         ),
                       ),
                     )
@@ -494,6 +497,10 @@ class _ExteriorAshSelectionScreenState
       ),
       child: GestureDetector(
         onTap: () {
+          if (_selectedRoom == null || _selectedRoom!.isEmpty) {
+            showSnackError(context, 'Please select a design aesthetic');
+            return;
+          }
           Navigator.of(context).pushNamed(ExteriorColorPaletteScreen.routeName);
         },
         child: Container(

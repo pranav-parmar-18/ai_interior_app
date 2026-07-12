@@ -1,8 +1,11 @@
+import 'dart:io';
+
 import 'package:ai_interior/bloc/smart_replace_create/smart_replace_create_bloc.dart';
 import 'package:ai_interior/features/replace/presentation/replace_output_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../main/presentaion/main_screen.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ai_interior/utils/responsive_utils.dart';
@@ -26,6 +29,13 @@ class ReplaceDescribeVisionScreen extends StatefulWidget {
 
 class _ReplaceDescribeVisionScreenState
     extends State<ReplaceDescribeVisionScreen> {
+  Map<String, dynamic> data = {};
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    data = (ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?) ?? {};
+  }
   final SmartReplaceCreateBloc _smartReplaceCreateBloc =
       SmartReplaceCreateBloc();
   final TextEditingController _controller = TextEditingController(
@@ -113,7 +123,25 @@ class _ReplaceDescribeVisionScreenState
             SharedPreferences.getInstance().then((prefs) {
               prefs.setString('credits', newCredits);
             });
-            Navigator.of(context).pushNamed(ReplaceOutputScreen.routeName);
+            String imageVal = "assets/images/replace_home.png";
+            if (data["picked"] != null) {
+              imageVal = data["picked"] is File ? (data["picked"] as File).path : data["picked"].toString();
+            } else if (data["templateIndex"] != null && data["templateIndex"] is int && (data["templateIndex"] as int) >= 0) {
+              imageVal = "assets/images/interior/interior_${(data["templateIndex"] as int) + 1}.jpg";
+            }
+
+            Navigator.of(context).pushNamed(
+              ReplaceOutputScreen.routeName,
+              arguments: {
+                "image": imageVal,
+                "prompt": _controller.text,
+                "spaceType": "Living Room",
+                "color": "Nature's Harmony",
+                "designAsth": "Modern",
+                "id": "replace_${DateTime.now().millisecondsSinceEpoch}",
+                "module_id": 5,
+              },
+            );
           } else if (state is SmartReplaceCreateFailureState) {
             showSnackError(
               context,
@@ -411,6 +439,10 @@ class _ReplaceDescribeVisionScreenState
       padding: EdgeInsets.fromLTRB(r.wp(context, 22), r.hp(context, 8), r.wp(context, 22), botPad > 0 ? botPad : r.hp(context, 22)),
       child: GestureDetector(
         onTap: () async {
+          if (_controller.text.trim().isEmpty) {
+            showSnackError(context, 'Please enter your vision description');
+            return;
+          }
           if (isSubscribed == true) {
             _smartReplaceCreateBloc.add(SmartReplaceCreateDataEvent(login: {}));
           } else {
