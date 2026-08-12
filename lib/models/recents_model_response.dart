@@ -55,12 +55,16 @@ class Data {
 
   factory Data.fromJson(Map<String, dynamic> json) => Data(
     currentPage: json["current_page"],
-    data: json["data"] == null ? [] : List<Datum>.from(json["data"]!.map((x) => Datum.fromJson(x))),
+    data: json["data"] == null || json["data"] is! List
+        ? []
+        : (json["data"] as List).map((x) => Datum.fromJson(x)).toList(),
     firstPageUrl: json["first_page_url"],
     from: json["from"],
     lastPage: json["last_page"],
     lastPageUrl: json["last_page_url"],
-    links: json["links"] == null ? [] : List<Link>.from(json["links"]!.map((x) => Link.fromJson(x))),
+    links: json["links"] == null || json["links"] is! List
+        ? []
+        : (json["links"] as List).map((x) => Link.fromJson(x)).toList(),
     nextPageUrl: json["next_page_url"],
     path: json["path"],
     perPage: json["per_page"],
@@ -127,10 +131,10 @@ class Datum {
     prompt: json["prompt"],
     jobId: json["job_id"],
     outputImage: json["output_image"],
-    status: statusValues.map[json["status"]]!,
-    createdAt: json["created_at"] == null ? null : DateTime.parse(json["created_at"]),
-    updatedAt: json["updated_at"] == null ? null : DateTime.parse(json["updated_at"]),
-    type: typeValues.map[json["type"]]!,
+    status: statusValues.map[json["status"]],
+    createdAt: json["created_at"] == null ? null : DateTime.tryParse(json["created_at"].toString()),
+    updatedAt: json["updated_at"] == null ? null : DateTime.tryParse(json["updated_at"].toString()),
+    type: typeValues.map[json["type"]],
   );
 
   Map<String, dynamic> toJson() => {
@@ -151,11 +155,13 @@ class Datum {
 }
 
 enum Status {
-  PRIVATE
+  PRIVATE,
+  PUBLIC,
 }
 
 final statusValues = EnumValues({
-  "private": Status.PRIVATE
+  "private": Status.PRIVATE,
+  "public": Status.PUBLIC,
 });
 
 enum Type {

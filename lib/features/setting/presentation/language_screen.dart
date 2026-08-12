@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ai_interior/utils/responsive_utils.dart';
+import 'package:ai_interior/bloc/locale/locale_cubit.dart';
+import 'package:ai_interior/l10n/generated/app_localizations.dart';
 
 const _languages = [
   'English',
@@ -19,6 +22,40 @@ const _languages = [
   'Dutch',
 ];
 
+const Map<String, String> _languageCodeMap = {
+  'English': 'en',
+  'Espanol': 'es',
+  'Italian': 'it',
+  'French': 'fr',
+  'Arabic': 'ar',
+  'Turkish': 'tr',
+  'Russian': 'ru',
+  'Portuguese': 'pt',
+  'German': 'de',
+  'Filipino': 'fil',
+  'Japanese': 'ja',
+  'Korean': 'ko',
+  'Chinese, simplified': 'zh',
+  'Dutch': 'nl',
+};
+
+const Map<String, String> _localeToLanguageMap = {
+  'en': 'English',
+  'es': 'Espanol',
+  'it': 'Italian',
+  'fr': 'French',
+  'ar': 'Arabic',
+  'tr': 'Turkish',
+  'ru': 'Russian',
+  'pt': 'Portuguese',
+  'de': 'German',
+  'fil': 'Filipino',
+  'ja': 'Japanese',
+  'ko': 'Korean',
+  'zh': 'Chinese, simplified',
+  'nl': 'Dutch',
+};
+
 class LanguageScreen extends StatefulWidget {
 
   const LanguageScreen({super.key});
@@ -30,12 +67,13 @@ class LanguageScreen extends StatefulWidget {
 }
 
 class _LanguageScreenState extends State<LanguageScreen> {
-  String _selected = 'English';
 
   @override
   Widget build(BuildContext context) {
     final top = MediaQuery.of(context).padding.top;
     final bottom = MediaQuery.of(context).padding.bottom;
+    final currentLocale = context.watch<LocaleCubit>().state;
+    final currentLang = _localeToLanguageMap[currentLocale.languageCode] ?? 'English';
 
     return Scaffold(
       backgroundColor: const Color(0xFFF2EDE8),
@@ -81,12 +119,15 @@ class _LanguageScreenState extends State<LanguageScreen> {
                         ),
                     itemBuilder: (context, index) {
                       final lang = _languages[index];
-                      final isSelected = lang == _selected;
+                      final isSelected = lang == currentLang;
 
                       return _LanguageRow(
                         language: lang,
                         isSelected: isSelected,
-                        onTap: () => setState(() => _selected = lang),
+                        onTap: () {
+                          final code = _languageCodeMap[lang] ?? 'en';
+                          context.read<LocaleCubit>().changeLocale(code);
+                        },
                         isFirst: index == 0,
                         isLast: index == _languages.length - 1,
                       );
@@ -121,6 +162,7 @@ class _LanguageScreenState extends State<LanguageScreen> {
 class _Header extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: EdgeInsets.symmetric(
         horizontal: r.wp(context, 16),
@@ -151,7 +193,7 @@ class _Header extends StatelessWidget {
 
           // Centered title
           Text(
-            'Language',
+            l10n.language,
             style: TextStyle(
               fontSize: r.sp(context, 26),
               fontWeight: FontWeight.w500,

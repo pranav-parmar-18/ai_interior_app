@@ -44,14 +44,14 @@ class CustomBottomBar extends StatelessWidget {
       (element) => element.type == selectedTab,
     );
 
-    // Responsive sizes - scaled up slightly to make the bar larger
-    final containerHeight = 64.0; // height: 64px
-    final selectedIconSize = r.adaptiveValue(context, mobile: 26, tablet: 36);
-    final unselectedIconSize = r.adaptiveValue(context, mobile: 24, tablet: 34);
-    final selectedIconWidth = r.adaptiveValue(context, mobile: 26, tablet: 36);
-    final unselectedIconWidth = r.adaptiveValue(context, mobile: 24, tablet: 34);
-    final selectedFontSize = r.sp(context, 12);
-    final unselectedFontSize = r.sp(context, 12);
+    // Responsive sizes - scaled to fit cleanly within container
+    final containerHeight = r.adaptiveValue(context, mobile: 68, tablet: 84);
+    final selectedIconSize = r.adaptiveValue(context, mobile: 24, tablet: 32);
+    final unselectedIconSize = r.adaptiveValue(context, mobile: 22, tablet: 30);
+    final selectedIconWidth = r.adaptiveValue(context, mobile: 24, tablet: 32);
+    final unselectedIconWidth = r.adaptiveValue(context, mobile: 22, tablet: 30);
+    final selectedFontSize = r.sp(context, 11);
+    final unselectedFontSize = r.sp(context, 11);
 
     final tabPillWidth = 102.0 * bottomMenuList.length;
     final horizontalPaddingVal = r.wp(context, 10);
@@ -106,7 +106,7 @@ class CustomBottomBar extends StatelessWidget {
           unselectedIconColor:Color.fromRGBO(89, 89, 89, 1.0), // Inactive tab color rgba(148, 148, 148, 1)
           barHeight: containerHeight,
           tabWidth: 102.0, // Scaled tab button width
-          tabPadding: const EdgeInsets.only(top: 6, bottom: 7, left: 8, right: 8), // Padding from Figma specs
+          tabPadding: const EdgeInsets.only(top: 4, bottom: 4, left: 6, right: 6), // Padding from Figma specs
           iconLabelSpacing: 3.0, // gap: 3px
           horizontalPadding: horizontalPaddingVal, // Horizontal padding around the pill
           verticalPadding: r.hp(context, 10), // Vertical floating space

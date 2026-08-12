@@ -14,7 +14,7 @@ class SmartReplaceCreateLoadingState extends SmartReplaceCreateState {
 }
 
 class SmartReplaceCreateSuccessState extends SmartReplaceCreateState {
-  final CommonModelResponse? login;
+  final SmartReplaceCreateModelResponse? login;
   final String message;
 
   SmartReplaceCreateSuccessState({
@@ -22,6 +22,7 @@ class SmartReplaceCreateSuccessState extends SmartReplaceCreateState {
     required this.message,
   });
 }
+
 
 class SmartReplaceCreateFailureState extends SmartReplaceCreateState {
   final String message;

@@ -6,6 +6,7 @@ import 'package:ai_interior/models/app_module_model.dart';
 import 'package:ai_interior/utils/responsive_utils.dart';
 import 'package:ai_interior/widgets/custom_imageview.dart';
 import 'package:flutter/material.dart';
+import 'package:ai_interior/l10n/generated/app_localizations.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -21,6 +22,49 @@ import '../../setting/presentation/setting_screens.dart';
 import '../../staging/presentation/staging_screen.dart';
 
 final ValueNotifier<String> creditsNotifier = ValueNotifier<String>("0");
+
+// ─────────────────────────────────────────────
+// Translation Helpers
+// ─────────────────────────────────────────────
+String _getModuleTitle(BuildContext context, String tableName, String defaultTitle) {
+  final l10n = AppLocalizations.of(context)!;
+  switch (tableName) {
+    case 'interior_designs':
+      return l10n.interiorDesignTitle;
+    case 'exterior_designs':
+      return l10n.exteriorDesignTitle;
+    case 'smart_staging':
+      return l10n.smartStagingTitle;
+    case 'style_transfer':
+      return l10n.styleTransferTitle;
+    case 'smart_replace':
+      return l10n.smartReplaceTitle;
+    case 'dream_spaces':
+      return l10n.dreamSpacesTitle;
+    default:
+      return defaultTitle;
+  }
+}
+
+String _getModuleSubtitle(BuildContext context, String tableName, String defaultSubtitle) {
+  final l10n = AppLocalizations.of(context)!;
+  switch (tableName) {
+    case 'interior_designs':
+      return l10n.interiorDesignSubtitle;
+    case 'exterior_designs':
+      return l10n.exteriorDesignSubtitle;
+    case 'smart_staging':
+      return l10n.smartStagingSubtitle;
+    case 'style_transfer':
+      return l10n.styleTransferSubtitle;
+    case 'smart_replace':
+      return l10n.smartReplaceSubtitle;
+    case 'dream_spaces':
+      return l10n.dreamSpacesSubtitle;
+    default:
+      return defaultSubtitle;
+  }
+}
 
 // ─────────────────────────────────────────────
 // Home Screen
@@ -79,6 +123,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: const Color(0xFFFAF7F4),
@@ -92,6 +137,7 @@ class _HomeScreenState extends State<HomeScreen> {
             final credits = createUserModelResponse?.credits?.toString() ?? "0";
             setCredits(credits);
             creditsNotifier.value = credits;
+            print("USER_IDDDDD : ${userId}");
             SharedPreferences.getInstance().then((prefs) {
               prefs.setString('user_id', userId);
             });
@@ -117,10 +163,12 @@ class _HomeScreenState extends State<HomeScreen> {
               }
 
               if (modulesState is GetAllModulesSuccessState) {
-                final List<AppModule> modules = modulesState.modules ?? [];
+                final List<AppModule> modules = (modulesState.modules ?? [])
+                    .where((m) => m.tableName != "enhanced_spaces")
+                    .toList();
                 if (modules.isEmpty) {
-                  return const Center(
-                    child: Text('No modules available'),
+                  return Center(
+                    child: Text(l10n.noModules),
                   );
                 }
 
@@ -178,8 +226,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                   "route": null,
                                 };
 
-                                final title = module.module ?? "";
-                                final subtitle = module.description ?? "";
+                                final title = _getModuleTitle(context, module.tableName ?? "", module.module ?? "");
+                                final subtitle = _getModuleSubtitle(context, module.tableName ?? "", module.description ?? "");
                                 final icon = config["icon"] as String;
 
                                 // Determine the image path: use network thumbnail if valid, otherwise fallback
@@ -201,16 +249,16 @@ class _HomeScreenState extends State<HomeScreen> {
                                       Navigator.of(context).pushNamed(route);
                                     } else {
                                       ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(
-                                          content: Text('Feature coming soon!'),
-                                          duration: Duration(seconds: 2),
+                                        SnackBar(
+                                          content: Text(l10n.featureComingSoon),
+                                          duration: const Duration(seconds: 2),
                                         ),
                                       );
                                     }
                                   },
                                 );
                               },
-                              childCount: modules.length-1,
+                              childCount: modules.length,
                             ),
                           ),
                           const SliverToBoxAdapter(
@@ -223,29 +271,31 @@ class _HomeScreenState extends State<HomeScreen> {
                 );
               }
 
-              if (modulesState is GetAllModulesFailureState) {
+              if (modulesState is GetAllModulesExceptionState ||
+                  modulesState is GetAllModulesFailureState) {
                 return Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        'Failed to load modules: ${modulesState.message}',
+                        modulesState is GetAllModulesExceptionState
+                            ? modulesState.message
+                            : l10n.somethingWentWrong,
                         style: const TextStyle(color: Colors.red),
                       ),
                       const SizedBox(height: 12),
                       ElevatedButton(
-                        onPressed: () {
-                          _getAllModulesBloc.add(const GetAllModulesDataEvent());
-                        },
-                        child: const Text('Retry'),
+                        onPressed: () =>
+                            _getAllModulesBloc.add(const GetAllModulesDataEvent()),
+                        child: Text(l10n.retry),
                       ),
                     ],
                   ),
                 );
               }
 
-              return const Center(
-                child: Text('Something went wrong'),
+              return Center(
+                child: Text(l10n.somethingWentWrong),
               );
             },
           );
@@ -266,11 +316,12 @@ class TopBarAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    final titleFontSize = r.sp(context, 30);
+    final titleFontSize = r.sp(context, 26);
     final creditsFontSize = r.sp(context, 16);
     final iconSize = r.adaptiveValue(context, mobile: 25, tablet: 35);
     final badgePaddingH = r.wp(context, 10);
     final badgePaddingV = r.hp(context, 5);
+    final l10n = AppLocalizations.of(context)!;
 
     return AppBar(
       automaticallyImplyLeading: false,

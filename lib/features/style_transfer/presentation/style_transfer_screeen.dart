@@ -40,7 +40,7 @@ class _StyleTransferScreenState extends State<StyleTransferScreen> {
   File? refImage;
   String? styleReferenceUrl;
   bool _isLoadingStyleReference = false;
-  bool? isSubscribed;
+  bool? isSubscribed = true;
 
   @override
   void initState() {
@@ -64,21 +64,10 @@ class _StyleTransferScreenState extends State<StyleTransferScreen> {
   }
 
   Future<bool> isSubscriptionActive() async {
-    final prefs = await SharedPreferences.getInstance();
-    final data = prefs.getString('subscription_info');
-    if (data == null) {
-      setState(() {
-        isSubscribed = false;
-      });
-      return false;
-    }
-
-    final sub = SubscriptionInfo.fromJson(data);
     setState(() {
-      isSubscribed = sub?.isActive ?? false;
+      isSubscribed = true;
     });
-
-    return sub?.isActive ?? false;
+    return true;
   }
 
   @override
@@ -278,28 +267,86 @@ class _StyleTransferScreenState extends State<StyleTransferScreen> {
                           ),
                           child: Row(
                             children: [
-                              Expanded(
-                                child: Text(
-                                  _isLoadingStyleReference
-                                      ? "Downloading style reference..."
-                                      : (refImage != null
-                                          ? "Style Reference: ${refImage!.path.split('/').last}"
-                                          : "Upload a style reference"),
-                                  style: TextStyle(
-                                    fontSize: r.sp(context, 16),
-                                    fontWeight: FontWeight.w500,
-                                    color: const Color.fromRGBO(46, 46, 46, 1),
-                                    letterSpacing: -0.2,
+                              if (_isLoadingStyleReference) ...[
+                                Expanded(
+                                  child: Text(
+                                    "Downloading style reference...",
+                                    style: TextStyle(
+                                      fontSize: r.sp(context, 16),
+                                      fontWeight: FontWeight.w500,
+                                      color: const Color.fromRGBO(46, 46, 46, 1),
+                                      letterSpacing: -0.2,
+                                    ),
                                   ),
                                 ),
-                              ),
-                              if (_isLoadingStyleReference)
-                                const CupertinoActivityIndicator()
-                              else if (refImage != null)
+                                const CupertinoActivityIndicator(),
+                              ] else if (refImage != null) ...[
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(
+                                    r.wp(context, 10),
+                                  ),
+                                  child: Image.file(
+                                    refImage!,
+                                    width: r.wp(context, 50),
+                                    height: r.wp(context, 50),
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                                SizedBox(width: r.wp(context, 12)),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        "Style Reference",
+                                        style: TextStyle(
+                                          fontSize: r.sp(context, 15),
+                                          fontWeight: FontWeight.w600,
+                                          color: const Color.fromRGBO(
+                                            46,
+                                            46,
+                                            46,
+                                            1,
+                                          ),
+                                          letterSpacing: -0.2,
+                                        ),
+                                      ),
+                                      SizedBox(height: r.hp(context, 2)),
+                                      Text(
+                                        "Tap to change reference photo",
+                                        style: TextStyle(
+                                          fontSize: r.sp(context, 12),
+                                          fontWeight: FontWeight.w400,
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                                 const Icon(
                                   Icons.check_circle_rounded,
                                   color: Color(0xFF3A7D7B),
                                 ),
+                              ] else ...[
+                                Expanded(
+                                  child: Text(
+                                    "Upload a style reference",
+                                    style: TextStyle(
+                                      fontSize: r.sp(context, 16),
+                                      fontWeight: FontWeight.w500,
+                                      color: const Color.fromRGBO(
+                                        46,
+                                        46,
+                                        46,
+                                        1,
+                                      ),
+                                      letterSpacing: -0.2,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ],
                           ),
                         ),

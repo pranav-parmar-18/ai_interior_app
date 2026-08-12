@@ -31,8 +31,7 @@ class CustomImageview extends StatelessWidget {
     this.radius,
     this.margin,
     this.border,
-    this.placeHolder = "assets/images/image_not_found",
-
+    this.placeHolder,
   });
 
   @override
@@ -92,14 +91,19 @@ class CustomImageview extends StatelessWidget {
         width: width,
         fit: fit ?? BoxFit.cover,
         color: color,
-        errorWidget: (context, url, error) => placeHolder != null
+        errorWidget: (context, url, error) => (placeHolder != null && placeHolder!.isNotEmpty)
             ? Image.asset(
-          placeHolder!,
-          height: height,
-          width: width,
-          fit: fit ?? BoxFit.cover,
-        )
-            : Icon(Icons.error),
+                placeHolder!,
+                height: height,
+                width: width,
+                fit: fit ?? BoxFit.cover,
+                errorBuilder: (_, __, ___) => const Center(
+                  child: Icon(Icons.broken_image_outlined, color: Colors.grey),
+                ),
+              )
+            : const Center(
+                child: Icon(Icons.broken_image_outlined, color: Colors.grey),
+              ),
       );
     }
     final file = File(imagePath!);

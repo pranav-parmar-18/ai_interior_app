@@ -42,38 +42,84 @@ class GerEnhancmentResponseRepository {
       String accessToken = preferences.getString('access_token') ?? "";
       final uri = Uri.parse('${ProjectConstant.baseUrl}check-enhancement-status').replace(
         queryParameters: data.map(
-              (key, value) => MapEntry(key, value.toString()),
+          (key, value) => MapEntry(key, value.toString()),
         ),
       );
 
       final verifyHeader = generateVerifyHeader('');
 
-      final response = await http.get(uri,headers: {
-        'Authorization': 'Bearer $accessToken',
-        'verify': verifyHeader,
+      int maxRetries = 15;
+      for (int attempt = 0; attempt < maxRetries; attempt++) {
+        final response = await http.get(uri, headers: {
+          'Authorization': 'Bearer $accessToken',
+          'verify': verifyHeader,
+        });
 
-
-      });
-      print("STATUS: ${response.statusCode}");
-      print("BODY: ${response.body}");
-      if (response.statusCode == 200) {
-        final responseJsonMap =
-            jsonDecode(response.body) as Map<String, dynamic>;
-        final responseData = ImageEnhanceModelResponse.fromJson(responseJsonMap);
-        _makeSongResponse = responseData;
-        _message = "Success";
-        _success = true;
-      } else {
         if (kDebugMode) {
-          print("API FAILED : ${response.body}");
+          print("STATUS: ${response.statusCode}");
+          print("BODY: ${response.body}");
         }
-        final responseJsonMap =
-            jsonDecode(response.body) as Map<String, dynamic>;
-        final responseData = ImageEnhanceModelResponse.fromJson(responseJsonMap);
-        _makeSongResponse = responseData;
-        _message = "Fail";
-        _success = false;
+
+        if (response.statusCode == 200) {
+          final responseJsonMap =
+              jsonDecode(response.body) as Map<String, dynamic>;
+          final responseData = ImageEnhanceModelResponse.fromJson(responseJsonMap);
+          final outputImageUrl = responseData.imageUrl?.outputImage ?? '';
+
+          if (outputImageUrl.isNotEmpty) {
+            try {
+              final freshUrl = "$outputImageUrl?t=${DateTime.now().millisecondsSinceEpoch}";
+              final imgRes = await http.get(Uri.parse(freshUrl));
+
+              if (imgRes.statusCode == 200 && imgRes.bodyBytes.length > 5000) {
+                _makeSongResponse = ImageEnhanceModelResponse(
+                  success: responseData.success,
+                  imageUrl: ImageUrl(
+                    id: responseData.imageUrl?.id,
+                    userId: responseData.imageUrl?.userId,
+                    prompt: responseData.imageUrl?.prompt,
+                    spaceType: responseData.imageUrl?.spaceType,
+                    jobId: responseData.imageUrl?.jobId,
+                    outputImage: freshUrl,
+                    status: responseData.imageUrl?.status,
+                    createdAt: responseData.imageUrl?.createdAt,
+                    updatedAt: responseData.imageUrl?.updatedAt,
+                  ),
+                );
+                _message = "Success";
+                _success = true;
+                return;
+              }
+            } catch (_) {}
+          }
+        } else {
+          final responseJsonMap =
+              jsonDecode(response.body) as Map<String, dynamic>;
+          final responseData = ImageEnhanceModelResponse.fromJson(responseJsonMap);
+          _makeSongResponse = responseData;
+          if (responseJsonMap.containsKey('error')) {
+            final err = responseJsonMap['error'];
+            if (err is Map && err.containsKey('task_id')) {
+              _message = (err['task_id'] is List)
+                  ? (err['task_id'] as List).join(', ')
+                  : err['task_id'].toString();
+            } else {
+              _message = err.toString();
+            }
+          } else if (responseJsonMap.containsKey('message')) {
+            _message = responseJsonMap['message'].toString();
+          } else {
+            _message = "Fail";
+          }
+          _success = false;
+          return;
+        }
+
+        await Future.delayed(const Duration(seconds: 3));
       }
+
+      _message = "Enhancement timed out. Please try again.";
+      _success = false;
     } catch (error) {
       if (kDebugMode) {
         print("Ger EnhancmentResponse API Exception : $error");

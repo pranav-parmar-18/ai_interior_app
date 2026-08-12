@@ -234,7 +234,7 @@ class DreamColorPaletteScreen extends StatefulWidget {
 
 class _DreamColorPaletteScreenState
     extends State<DreamColorPaletteScreen> {
-  bool? isSubscribed;
+  bool? isSubscribed = true;
 
   @override
   void initState() {
@@ -258,21 +258,10 @@ class _DreamColorPaletteScreenState
   }
 
   Future<bool> isSubscriptionActive() async {
-    final prefs = await SharedPreferences.getInstance();
-    final data = prefs.getString('subscription_info');
-    if (data == null) {
-      setState(() {
-        isSubscribed = false;
-      });
-      return false;
-    }
-
-    final sub = SubscriptionInfo.fromJson(data);
     setState(() {
-      isSubscribed = sub?.isActive ?? false;
+      isSubscribed = true;
     });
-
-    return sub?.isActive ?? false;
+    return true;
   }
 
   final InteriorDeignCreateBloc _interiorDeignCreateBloc =

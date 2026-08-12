@@ -14,7 +14,7 @@ class DeleteRecordRepository {
 
   Future<void> login(Map<String, dynamic> data) async {
     try {
-      const String url = '${ProjectConstant.baseUrl}login';
+      const String url = '${ProjectConstant.baseUrl}delete';
       String jsonPayload = jsonEncode(data);
 
       final response = await http.post(
@@ -25,27 +25,32 @@ class DeleteRecordRepository {
         },
       );
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 || response.statusCode == 201) {
         final responseJsonMap =
             jsonDecode(response.body) as Map<String, dynamic>;
         final responseData = CommonModelResponse.fromJson(responseJsonMap);
-        print("LOGIN Success: ${response.body}");
+        print("DELETE Success: ${response.body}");
         _makeSongResponse = responseData;
-        _message = "Success";
-        _success = true;
+        _message = responseJsonMap["message"]?.toString() ?? "Success";
+        _success = responseJsonMap["error"] == null;
       } else {
         if (kDebugMode) {
-          print("API FAILED : ${response.body}");
+          print("DELETE API FAILED : ${response.body}");
         }
-        final responseJsonMap =
-            jsonDecode(response.body) as Map<String, dynamic>;
-        final responseData = CommonModelResponse.fromJson(responseJsonMap);
-        _makeSongResponse = responseData;
-        _message = "Fail";
+        try {
+          final responseJsonMap =
+              jsonDecode(response.body) as Map<String, dynamic>;
+          final responseData = CommonModelResponse.fromJson(responseJsonMap);
+          _makeSongResponse = responseData;
+          _message = responseJsonMap["error"]?.toString() ?? responseJsonMap["message"]?.toString() ?? "Fail";
+        } catch (_) {
+          _message = "Fail";
+        }
         _success = false;
       }
     } catch (error) {
       _message = 'Something went wrong!';
+      _success = false;
       rethrow;
     }
   }

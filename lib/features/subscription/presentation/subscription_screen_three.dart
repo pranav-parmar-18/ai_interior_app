@@ -3040,9 +3040,9 @@ class _SubscriptionScreenThreeState extends State<SubscriptionScreenThree>
   ];
 
   final List<String> _planLabels = ['Weekly', 'Yearly', 'Monthly'];
-  final List<String> _planFallbackPrices = ['\$9.99', '\$39.99', '\$12.99'];
+  final List<String> _planFallbackPrices = ['\$6.99', '\$39.99', '\$12.99'];
   final List<String> _planSubLabels = [
-    'Less than\n\$1.43/day',
+    'Less than\n\$0.99/day',
     'Less than\n\$3.33/month',
     'Less than\n\$3.25/week',
   ];
@@ -3207,8 +3207,8 @@ class _SubscriptionScreenThreeState extends State<SubscriptionScreenThree>
 
   // Pricing display data — order maps to _productIds: weekly, yearly, monthly
   final List<String> _list1 = ['Yearly Unlimited', 'Weekly Unlimited'];
-  final List<String> _list2 = ['\$3.99/year', '\$9.99/week'];
-  final List<String> _list4 = ['\$9.99/week', '\$39.99/year', '\$12.99/month'];
+  final List<String> _list2 = ['\$3.99/year', '\$6.99/week'];
+  final List<String> _list4 = ['\$6.99/week', '\$39.99/year', '\$12.99/month'];
 
   // ───────────────────────────── build ─────────────────────────────────────
   @override

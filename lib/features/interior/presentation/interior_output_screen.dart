@@ -18,6 +18,9 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:gal/gal.dart';
+
+
 
 import '../../../bloc/get_enhancment_response_api/get_enhancment_response_api_bloc.dart';
 import '../../../models/image_enhance_model_response.dart';
@@ -65,7 +68,66 @@ class _InteriorOutputScreenState extends State<InteriorOutputScreen> {
     print("IMAGE : ${data["image"]} | MODULE_ID : $_moduleId");
   }
 
+  Future<void> saveNetworkImageToGallery({
+    required BuildContext context,
+    required String imageUrl,
+  }) async {
+    try {
+      if (imageUrl.isEmpty) return;
+
+      if (Platform.isAndroid) {
+        final storagePermission = await Permission.storage.status;
+        if (storagePermission.isDenied) {
+          await Permission.storage.request();
+        }
+      }
+
+      if (!context.mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+
+
+        const SnackBar(
+          content: Text('Saving image to gallery...'),
+          duration: Duration(seconds: 1),
+        ),
+      );
+
+      final response = await http.get(Uri.parse(imageUrl));
+      if (response.statusCode != 200) {
+        throw Exception('Failed to download image');
+      }
+
+      Uint8List bytes = response.bodyBytes;
+      await Gal.putImageBytes(Uint8List.fromList(bytes));
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Image saved to gallery!'),
+            backgroundColor: Colors.black87,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error saving image: $e'),
+            backgroundColor: Colors.redAccent,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    }
+  }
+
+
   Future<void> shareNetworkImage({
+
     required BuildContext context,
     required String imageUrl,
   }) async {
@@ -145,22 +207,37 @@ class _InteriorOutputScreenState extends State<InteriorOutputScreen> {
                 listener: (context, state) {
                   if (state is ImageEnhanceSuccessState) {
                     imageEnhanceResponse = state.login;
+                    final taskId = imageEnhanceResponse?.data?.id;
 
-                    Future.delayed(const Duration(seconds: 3), () {
-                      _gerEnhancmentResponseBloc.add(
-                        GerEnhancmentResponseDataEvent(
-                          data: {
-                            "user_id": int.tryParse(_userId) ?? 0,
-                            "module_id": _moduleId,
-                            "id": int.tryParse(data["id"]?.toString() ?? "") ?? 0,
-                            "task_id": imageEnhanceResponse?.data?.id ?? "",
-                          },
+                    if (taskId != null && taskId.isNotEmpty) {
+                      Future.delayed(const Duration(seconds: 3), () {
+                        _gerEnhancmentResponseBloc.add(
+                          GerEnhancmentResponseDataEvent(
+                            data: {
+                              "user_id": int.tryParse(_userId) ?? 0,
+                              "module_id": _moduleId,
+                              "id": int.tryParse(data["id"]?.toString() ?? "") ?? 0,
+                              "task_id": taskId,
+                            },
+                          ),
+                        );
+                      });
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Failed to obtain valid task ID for enhancement.'),
                         ),
                       );
-                    });
-
-                  } else if (state is ImageEnhanceExceptionState ||
-                      state is ImageEnhanceFailureState) {}
+                    }
+                  } else if (state is ImageEnhanceFailureState) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(state.message.isNotEmpty ? state.message : 'Image enhancement failed.')),
+                    );
+                  } else if (state is ImageEnhanceExceptionState) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(state.message.isNotEmpty ? state.message : 'An error occurred during image enhancement.')),
+                    );
+                  }
                 },
                 builder: (context, state) {
                   return BlocConsumer<
@@ -191,7 +268,7 @@ class _InteriorOutputScreenState extends State<InteriorOutputScreen> {
                                           ImageEnhanceDataEvent(
                                             login: {
                                               "user_id": int.tryParse(_userId) ?? 0,
-                                              "module_id": 1,
+                                              "module_id": _moduleId,
                                               "id": int.tryParse(data["id"]?.toString() ?? "") ?? 0,
                                             },
                                           ),
@@ -255,49 +332,52 @@ class _InteriorOutputScreenState extends State<InteriorOutputScreen> {
                                     ),
                                   ],
                                 ),
-                        bottomNavigationBar: Container(
-                          height: r.adaptiveValue(context, mobile: r.hp(context, 100), tablet: r.hp(context, 120)),
-                          padding: EdgeInsets.only(bottom: botPad > 0 ? botPad : r.hp(context, 8)),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              _buildOutputAction(
-                                context,
-                                icon: Icons.refresh_rounded,
-                                label: "Regenerate",
-                                onTap: () => _showRegenerateAlert(context),
-                              ),
-                              _buildOutputAction(
-                                context,
-                                icon: Icons.download_rounded,
-                                label: "Save",
-                                onTap: () => shareNetworkImage(
-                                  context: context,
-                                  imageUrl: currentImageUrl,
+                        bottomNavigationBar: SafeArea(
+                          top: false,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                _buildOutputAction(
+                                  context,
+                                  icon: Icons.refresh_rounded,
+                                  label: "Regenerate",
+                                  onTap: () => _showRegenerateAlert(context),
                                 ),
-                              ),
-                              _buildOutputAction(
-                                context,
-                                icon: Icons.more_horiz_rounded,
-                                label: "Publish",
-                                onTap: () => showPublishSheet(context),
-                              ),
-                              _buildOutputAction(
-                                context,
-                                icon: Icons.share_outlined,
-                                label: "Share",
-                                onTap: () => shareNetworkImage(
-                                  context: context,
-                                  imageUrl: currentImageUrl,
+                                _buildOutputAction(
+                                  context,
+                                  icon: Icons.download_rounded,
+                                  label: "Save",
+                                  onTap: () => saveNetworkImageToGallery(
+                                    context: context,
+                                    imageUrl: currentImageUrl,
+                                  ),
                                 ),
-                              ),
-                              _buildOutputAction(
-                                context,
-                                icon: Icons.delete_outline_rounded,
-                                label: "Delete",
-                                onTap: () => _showDeleteAlert(context),
-                              ),
-                            ],
+
+                                _buildOutputAction(
+                                  context,
+                                  icon: Icons.more_horiz_rounded,
+                                  label: "Publish",
+                                  onTap: () => showPublishSheet(context),
+                                ),
+                                _buildOutputAction(
+                                  context,
+                                  icon: Icons.share_outlined,
+                                  label: "Share",
+                                  onTap: () => shareNetworkImage(
+                                    context: context,
+                                    imageUrl: currentImageUrl,
+                                  ),
+                                ),
+                                _buildOutputAction(
+                                  context,
+                                  icon: Icons.delete_outline_rounded,
+                                  label: "Delete",
+                                  onTap: () => _showDeleteAlert(context),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       );
@@ -342,17 +422,18 @@ class _InteriorOutputScreenState extends State<InteriorOutputScreen> {
                       await SharedPreferences.getInstance();
                   String userId = preferences.getString('user_id') ?? "";
 
-                  final publishData = {
+                  final deleteData = {
                     "user_id": userId,
                     "module_id": _moduleId,
-                    "id": data["id"],
+                    "id": int.tryParse(data["id"]?.toString() ?? "") ?? data["id"],
                   };
 
-                  debugPrint("Delete Record DataEvent payload: $publishData");
+                  debugPrint("Delete Record DataEvent payload: $deleteData");
 
                   _deleteRecordBloc.add(
-                    DeleteRecordDataEvent(login: publishData),
+                    DeleteRecordDataEvent(login: deleteData),
                   );
+
                 },
                 child: const Text('Delete'),
               ),
@@ -510,9 +591,9 @@ class _InteriorOutputScreenState extends State<InteriorOutputScreen> {
     required String label,
     required VoidCallback onTap,
   }) {
-    final buttonSize = r.adaptiveValue(context, mobile: 52.0, tablet: 64.0);
-    final iconSize = r.adaptiveValue(context, mobile: 24.0, tablet: 30.0);
-    final fontSize = r.sp(context, 12);
+    final buttonSize = r.adaptiveValue(context, mobile: 44.0, tablet: 56.0);
+    final iconSize = r.adaptiveValue(context, mobile: 22.0, tablet: 28.0);
+    final fontSize = r.sp(context, 11);
     return Column(
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
@@ -524,7 +605,7 @@ class _InteriorOutputScreenState extends State<InteriorOutputScreen> {
           iconSize: iconSize,
           useOwnLayer: true,
         ),
-        r.verticalSpace(context, 6),
+        r.verticalSpace(context, 4),
         GestureDetector(
           onTap: onTap,
           child: Text(
@@ -553,29 +634,13 @@ class _PhotoSection extends StatelessWidget {
   });
 
   Widget buildSmartImage(String img) {
-    try {
-      if (img.startsWith('http') || img.startsWith('https')) {
-        return Image.network(
-          img,
-          fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => _errorContainer(),
-        );
-      } else if (img.startsWith('assets/')) {
-        return Image.asset(
-          img,
-          fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => _errorContainer(),
-        );
-      } else {
-        return Image.file(
-          File(img),
-          fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => _errorContainer(),
-        );
-      }
-    } catch (_) {
-      return _errorContainer();
-    }
+    if (img.isEmpty) return _errorContainer();
+    return CustomImageview(
+      imagePath: img,
+      fit: BoxFit.cover,
+      height: double.infinity,
+      width: double.infinity,
+    );
   }
 
   Widget _errorContainer() {

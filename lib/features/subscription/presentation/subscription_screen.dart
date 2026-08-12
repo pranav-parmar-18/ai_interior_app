@@ -2446,9 +2446,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen>
   StreamSubscription<List<PurchaseDetails>>? _iapSubscription;
 
   final List<String> _planLabels = ['Weekly', 'Yearly', 'Monthly'];
-  final List<String> _planFallbackPrices = ['\$9.99', '\$39.99', '\$12.99'];
+  final List<String> _planFallbackPrices = ['\$6.99', '\$39.99', '\$12.99'];
   final List<String> _planSubLabels = [
-    'Less than\n\$1.43/day',
+    'Less than\n\$0.99/day',
     'Less than\n\$3.33/month',
     'Less than\n\$3.25/week',
   ];

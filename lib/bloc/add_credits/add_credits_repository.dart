@@ -17,10 +17,21 @@ class AddCreditsRepository {
       SharedPreferences preferences = await SharedPreferences.getInstance();
       String accessToken = preferences.getString('access_token') ?? "";
 
-      const String url = '${ProjectConstant.baseUrl}add/credit';
-      String jsonPayload = jsonEncode(data);
+      const String url = '${ProjectConstant.baseUrl}user/top-up/v2';
+      
+      String uuid = await DeviceIdManager.getDeviceId();
+      String productId = data['product_id'] ?? "";
+      String transactionId = data['transactionId'] ?? data['transaction_id'] ?? "";
 
-      print("DATA : ${data}");
+      Map<String, dynamic> payload = {
+        "uuid": uuid,
+        "product_id": productId,
+        "transaction_id": transactionId,
+      };
+
+      String jsonPayload = jsonEncode(payload);
+
+      print("DATA : $payload");
 
       final response = await http.post(
         Uri.parse(url),

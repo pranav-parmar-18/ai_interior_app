@@ -6,7 +6,9 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:ai_interior/l10n/generated/app_localizations.dart';
+import 'package:ai_interior/bloc/locale/locale_cubit.dart';
 
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 
@@ -91,13 +93,43 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final appRouter = AppRouter();
-    return MaterialApp(
-      title: 'AI Interior',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        fontFamily: 'Georgia',
+    return BlocProvider(
+      create: (_) => LocaleCubit(),
+      child: BlocBuilder<LocaleCubit, Locale>(
+        builder: (context, locale) {
+          return MaterialApp(
+            title: 'AI Interior',
+            debugShowCheckedModeBanner: false,
+            theme: ThemeData(
+              fontFamily: 'Georgia',
+            ),
+            locale: locale,
+            localizationsDelegates: const [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: const [
+              Locale('en'),
+              Locale('es'),
+              Locale('it'),
+              Locale('fr'),
+              Locale('ar'),
+              Locale('tr'),
+              Locale('ru'),
+              Locale('pt'),
+              Locale('de'),
+              Locale('fil'),
+              Locale('ja'),
+              Locale('ko'),
+              Locale('zh'),
+              Locale('nl'),
+            ],
+            onGenerateRoute: (settings) => appRouter.onGenerateRoute(settings),
+          );
+        },
       ),
-      onGenerateRoute: (settings) => appRouter.onGenerateRoute(settings),
     );
   }
 }
