@@ -53,7 +53,7 @@ class _ReplaceDescribeVisionScreenState
     isSubscriptionActive();
   }
 
-  bool? isSubscribed = true;
+  bool? isSubscribed = false;
 
   void openSubscriptionScreen(BuildContext context) {
     final nextIndex = SubscriptionScreenManager().getNextIndex();
@@ -71,10 +71,14 @@ class _ReplaceDescribeVisionScreenState
   }
 
   Future<bool> isSubscriptionActive() async {
-    setState(() {
-      isSubscribed = true;
-    });
-    return true;
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    final active = preferences.getBool('is_subscribed') ?? false;
+    if (mounted) {
+      setState(() {
+        isSubscribed = active;
+      });
+    }
+    return active;
   }
 
   final Set<int> _selected = {};

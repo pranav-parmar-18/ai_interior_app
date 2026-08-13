@@ -247,7 +247,7 @@ class _StagingColorPaletteScreenState extends State<StagingColorPaletteScreen> {
     isSubscriptionActive();
   }
 
-  bool? isSubscribed = true;
+  bool? isSubscribed = false;
 
   void openSubscriptionScreen(BuildContext context) {
     final nextIndex = SubscriptionScreenManager().getNextIndex();
@@ -265,10 +265,14 @@ class _StagingColorPaletteScreenState extends State<StagingColorPaletteScreen> {
   }
 
   Future<bool> isSubscriptionActive() async {
-    setState(() {
-      isSubscribed = true;
-    });
-    return true;
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    final active = preferences.getBool('is_subscribed') ?? false;
+    if (mounted) {
+      setState(() {
+        isSubscribed = active;
+      });
+    }
+    return active;
   }
 
   @override

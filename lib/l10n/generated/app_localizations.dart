@@ -367,6 +367,132 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Create your dream space.'**
   String get dreamSpacesSubtitle;
+
+  /// No description provided for @regenerate.
+  ///
+  /// In en, this message translates to:
+  /// **'Regenerate'**
+  String get regenerate;
+
+  /// No description provided for @save.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get save;
+
+  /// No description provided for @publish.
+  ///
+  /// In en, this message translates to:
+  /// **'Publish'**
+  String get publish;
+
+  /// No description provided for @share.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get share;
+
+  /// No description provided for @delete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get delete;
+
+  /// No description provided for @enhance.
+  ///
+  /// In en, this message translates to:
+  /// **'Enhance'**
+  String get enhance;
+
+  /// No description provided for @enhancing.
+  ///
+  /// In en, this message translates to:
+  /// **'Enhancing...'**
+  String get enhancing;
+
+  /// No description provided for @enhancingQuality.
+  ///
+  /// In en, this message translates to:
+  /// **'Enhancing Quality...'**
+  String get enhancingQuality;
+
+  /// No description provided for @applyStyle.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply Style'**
+  String get applyStyle;
+
+  /// No description provided for @buildingType.
+  ///
+  /// In en, this message translates to:
+  /// **'Building Type'**
+  String get buildingType;
+
+  /// No description provided for @designAesthetic.
+  ///
+  /// In en, this message translates to:
+  /// **'Design Aesthetic'**
+  String get designAesthetic;
+
+  /// No description provided for @colorPalette.
+  ///
+  /// In en, this message translates to:
+  /// **'Color Palette'**
+  String get colorPalette;
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
+  /// No description provided for @deleteDesignTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete This Design?'**
+  String get deleteDesignTitle;
+
+  /// No description provided for @deleteDesignContent.
+  ///
+  /// In en, this message translates to:
+  /// **'This action cannot be undone. Are you sure you want to permanently remove this design?'**
+  String get deleteDesignContent;
+
+  /// No description provided for @regenerateDesignTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Regenerate Design?'**
+  String get regenerateDesignTitle;
+
+  /// No description provided for @regenerateDesignContent.
+  ///
+  /// In en, this message translates to:
+  /// **'This action will use 50 credits to generate a new design. Do you want to proceed?'**
+  String get regenerateDesignContent;
+
+  /// No description provided for @publishDesignTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Publish Your Design'**
+  String get publishDesignTitle;
+
+  /// No description provided for @publishDesignSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Share your design on the Explore page for others to discover'**
+  String get publishDesignSubtitle;
+
+  /// No description provided for @recentsEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Designs Will Appear Here'**
+  String get recentsEmptyTitle;
+
+  /// No description provided for @recentsEmptySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload a photo, try a style, and watch AI do the magic!'**
+  String get recentsEmptySubtitle;
 }
 
 class _AppLocalizationsDelegate

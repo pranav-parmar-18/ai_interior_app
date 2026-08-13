@@ -15,6 +15,7 @@ import '../../../widgets/custom_imageview.dart';
 import '../../credit/presentataion/credit_screen.dart';
 import '../../home/presentation/home_screen.dart';
 import '../../setting/presentation/setting_screens.dart';
+import 'package:ai_interior/l10n/generated/app_localizations.dart';
 
 class RoomCardData {
   final String imagePath;
@@ -70,7 +71,19 @@ class _ExploreScreenState extends State<ExploreScreen>
     'Living Room',
     'Bedroom',
     'Kitchen',
-    'Dining',
+    'Dining Room',
+    'Bathroom',
+    'Laundry Room',
+    'Home Office',
+    'Study Room',
+    'Dorm Room',
+    'Gaming Room',
+    'Attic',
+    'Toilet',
+    'Coffee Shop',
+    'Restaurant',
+    'Office',
+    'Other',
   ];
   final _exteriorCats = const [
     'All',
@@ -117,7 +130,6 @@ class _ExploreScreenState extends State<ExploreScreen>
 
   String _spaceTypeForCategory(String category, {required bool isInterior}) {
     if (category == 'All') return '';
-    if (isInterior && category == 'Dining') return 'dining room';
     return category.toLowerCase();
   }
 
@@ -229,12 +241,13 @@ class _ExploreScreenState extends State<ExploreScreen>
   }
 
   Widget _buildTabBar() {
+    final l10n = AppLocalizations.of(context);
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: r.wp(context, 20)),
       child: GlassSegmentedControl(
-        segments: const [
-          GlassTab(label: 'Interior'),
-          GlassTab(label: 'Exterior'),
+        segments: [
+          GlassTab(label: l10n?.interiorDesignTitle ?? 'Interior'),
+          GlassTab(label: l10n?.exteriorDesignTitle ?? 'Exterior'),
         ],
         selectedIndex: _tabController.index,
         onSegmentSelected: (index) {

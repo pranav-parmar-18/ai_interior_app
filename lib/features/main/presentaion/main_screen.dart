@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../theme/app_colors.dart';
 import '../../../widgets/custom_bottom_bar.dart';
+import '../../../widgets/custom_snackbar.dart';
 import '../../explore/presentation/explore_screen.dart';
 import '../../home/presentation/home_screen.dart';
 import '../../recents/presentation/recent_screen.dart';
@@ -119,135 +120,9 @@ bool isIPhoneSE(BuildContext context) {
 }
 
 void showSnackSuccess(BuildContext context, String name) {
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(
-      elevation: 0,
-      behavior: SnackBarBehavior.fixed,
-      backgroundColor: Colors.transparent,
-      duration: const Duration(milliseconds: 1200),
-      content: Center(
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            maxWidth: r.screenWidth(context) * 0.9,
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(r.wp(context, 30)),
-            child: Container(
-              padding: EdgeInsets.symmetric(
-                horizontal: r.wp(context, 20),
-                vertical: r.hp(context, 12),
-              ),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    AppColors.orange200,
-                    AppColors.orange300,
-                  ],
-                  begin: Alignment.centerLeft,
-                  end: Alignment.centerRight,
-                ),
-                borderRadius: BorderRadius.circular(r.wp(context, 18)),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Icon(
-                    CupertinoIcons.check_mark_circled_solid,
-                    color: Colors.white,
-                    size: r.iconSize(context, mobile: 28, tablet: 36),
-                  ),
-                  SizedBox(width: r.wp(context, 10)),
-
-                  /// ✅ This is the important part
-                  Flexible(
-                    child: Text(
-                      name,
-                      maxLines: 2,
-                      softWrap: true,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontFamily: 'Geist',
-                        fontWeight: FontWeight.w800,
-                        fontSize: r.sp(context, 16),
-                        color: Colors.white,
-                        height: 1.2,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    ),
-  );
+  CustomSnackBar.success(context, name);
 }
 
 void showSnackError(BuildContext context, String name) {
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(
-      elevation: 0,
-      behavior: SnackBarBehavior.fixed,
-      backgroundColor: Colors.transparent,
-      duration: const Duration(milliseconds: 1200),
-      content: Center(
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            maxWidth: r.screenWidth(context) * 0.9,
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(r.wp(context, 30)),
-            child: Container(
-              padding: EdgeInsets.symmetric(
-                horizontal: r.wp(context, 20),
-                vertical: r.hp(context, 12),
-              ),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    AppColors.orange200,
-                    AppColors.orange300,
-                  ],
-                  begin: Alignment.centerLeft,
-                  end: Alignment.centerRight,
-                ),
-                borderRadius: BorderRadius.circular(r.wp(context, 18)),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Icon(
-                    CupertinoIcons.info_circle_fill,
-                    color: Colors.white,
-                    size: r.iconSize(context, mobile: 28, tablet: 36),
-                  ),
-                  SizedBox(width: r.wp(context, 10)),
-
-                  /// ✅ Dynamic text
-                  Flexible(
-                    child: Text(
-                      name,
-                      maxLines: 2,
-                      softWrap: true,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontFamily: 'Geist',
-                        fontWeight: FontWeight.w800,
-                        fontSize: r.sp(context, 16),
-                        color: Colors.white,
-                        height: 1.2,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    ),
-  );
+  CustomSnackBar.error(context, name);
 }

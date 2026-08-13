@@ -1701,6 +1701,7 @@ class _SubscriptionScreenTwoState extends State<SubscriptionScreenTwo>
     }
 
     final expiryDate = DateTime.now().add(duration);
+    await prefs.setBool('is_subscribed', true);
     await prefs.setString(
       'subscription_info',
       jsonEncode({'type': type.name, 'expiry': expiryDate.toIso8601String()}),

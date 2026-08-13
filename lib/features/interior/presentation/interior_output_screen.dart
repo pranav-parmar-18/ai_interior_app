@@ -4,7 +4,6 @@ import 'package:ai_interior/bloc/delete_record/delete_record_bloc.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:ai_interior/utils/responsive_utils.dart';
 import 'package:ai_interior/features/style_transfer/presentation/style_transfer_screeen.dart';
-import 'package:ai_interior/bloc/get_all_designs/get_all_designs_bloc.dart';
 import 'package:ai_interior/bloc/image_enhance/image_enhance_bloc.dart';
 import 'package:ai_interior/bloc/publish_record/publish_record_bloc.dart';
 import 'package:ai_interior/models/image_enhance_response.dart';
@@ -19,6 +18,8 @@ import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:gal/gal.dart';
+import 'package:ai_interior/widgets/custom_snackbar.dart';
+import 'package:ai_interior/l10n/generated/app_localizations.dart';
 
 
 
@@ -44,6 +45,7 @@ class _InteriorOutputScreenState extends State<InteriorOutputScreen> {
   ImageEnhanceModelResponse? imageEnhanceModelResponse;
   Map<String, dynamic> data = {};
   String _userId = '';
+  bool _isEnhancing = false;
 
   @override
   void initState() {
@@ -84,14 +86,7 @@ class _InteriorOutputScreenState extends State<InteriorOutputScreen> {
 
       if (!context.mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-
-
-        const SnackBar(
-          content: Text('Saving image to gallery...'),
-          duration: Duration(seconds: 1),
-        ),
-      );
+      CustomSnackBar.info(context, 'Saving image to gallery...', duration: const Duration(seconds: 1));
 
       final response = await http.get(Uri.parse(imageUrl));
       if (response.statusCode != 200) {
@@ -102,25 +97,11 @@ class _InteriorOutputScreenState extends State<InteriorOutputScreen> {
       await Gal.putImageBytes(Uint8List.fromList(bytes));
 
       if (context.mounted) {
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Image saved to gallery!'),
-            backgroundColor: Colors.black87,
-            duration: Duration(seconds: 2),
-          ),
-        );
+        CustomSnackBar.success(context, 'Image saved to gallery!');
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error saving image: $e'),
-            backgroundColor: Colors.redAccent,
-            duration: const Duration(seconds: 3),
-          ),
-        );
+        CustomSnackBar.error(context, 'Error saving image: $e');
       }
     }
   }
@@ -161,7 +142,6 @@ class _InteriorOutputScreenState extends State<InteriorOutputScreen> {
   Widget build(BuildContext context) {
     final mq = MediaQuery.of(context);
     final topPad = mq.padding.top;
-    final botPad = mq.padding.bottom;
 
     return PopScope(
       canPop: false,
@@ -173,44 +153,37 @@ class _InteriorOutputScreenState extends State<InteriorOutputScreen> {
         value: SystemUiOverlayStyle.light,
         child: BlocConsumer<PublishRecordBloc, PublishRecordState>(
         bloc: _publishRecordBloc,
-        listener: (context, state) {
-          if (state is PublishRecordSuccessState) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Design published successfully!')),
-            );
-          } else if (state is PublishRecordFailureState ||
-              state is PublishRecordExceptionState) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Publish failed. Please try again.')),
-            );
+        listener: (context, publishState) {
+          if (publishState is PublishRecordSuccessState) {
+            CustomSnackBar.success(context, 'Design published successfully!');
+          } else if (publishState is PublishRecordFailureState ||
+              publishState is PublishRecordExceptionState) {
+            CustomSnackBar.error(context, 'Publish failed. Please try again.');
           }
         },
-        builder: (context, state) {
+        builder: (context, publishState) {
           return BlocConsumer<DeleteRecordBloc, DeleteRecordState>(
             bloc: _deleteRecordBloc,
-            listener: (context, state) {
-              if (state is DeleteRecordSuccessState) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Design deleted successfully!')),
-                );
+            listener: (context, deleteState) {
+              if (deleteState is DeleteRecordSuccessState) {
+                CustomSnackBar.success(context, 'Design deleted successfully!');
                 Navigator.of(context).pop();
-              } else if (state is DeleteRecordExceptionState ||
-                  state is DeleteRecordFailureState) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Delete failed. Please try again.')),
-                );
+              } else if (deleteState is DeleteRecordExceptionState ||
+                  deleteState is DeleteRecordFailureState) {
+                CustomSnackBar.error(context, 'Delete failed. Please try again.');
               }
             },
-            builder: (context, state) {
+            builder: (context, deleteState) {
               return BlocConsumer<ImageEnhanceBloc, ImageEnhanceState>(
                 bloc: _imageEnhanceBloc,
-                listener: (context, state) {
-                  if (state is ImageEnhanceSuccessState) {
-                    imageEnhanceResponse = state.login;
+                listener: (context, enhanceState) {
+                  if (enhanceState is ImageEnhanceSuccessState) {
+                    imageEnhanceResponse = enhanceState.login;
                     final taskId = imageEnhanceResponse?.data?.id;
 
                     if (taskId != null && taskId.isNotEmpty) {
                       Future.delayed(const Duration(seconds: 3), () {
+                        if (!mounted) return;
                         _gerEnhancmentResponseBloc.add(
                           GerEnhancmentResponseDataEvent(
                             data: {
@@ -223,34 +196,57 @@ class _InteriorOutputScreenState extends State<InteriorOutputScreen> {
                         );
                       });
                     } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Failed to obtain valid task ID for enhancement.'),
-                        ),
-                      );
+                      if (mounted) {
+                        setState(() {
+                          _isEnhancing = false;
+                        });
+                      }
+                      CustomSnackBar.error(context, 'Failed to obtain valid task ID for enhancement.');
                     }
-                  } else if (state is ImageEnhanceFailureState) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(state.message.isNotEmpty ? state.message : 'Image enhancement failed.')),
-                    );
-                  } else if (state is ImageEnhanceExceptionState) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(state.message.isNotEmpty ? state.message : 'An error occurred during image enhancement.')),
-                    );
+                  } else if (enhanceState is ImageEnhanceFailureState) {
+                    if (mounted) {
+                      setState(() {
+                        _isEnhancing = false;
+                      });
+                    }
+                    CustomSnackBar.error(context, enhanceState.message.isNotEmpty ? enhanceState.message : 'Image enhancement failed.');
+                  } else if (enhanceState is ImageEnhanceExceptionState) {
+                    if (mounted) {
+                      setState(() {
+                        _isEnhancing = false;
+                      });
+                    }
+                    CustomSnackBar.error(context, enhanceState.message.isNotEmpty ? enhanceState.message : 'An error occurred during image enhancement.');
                   }
                 },
-                builder: (context, state) {
+                builder: (context, enhanceState) {
                   return BlocConsumer<
                     GerEnhancmentResponseBloc,
                     GerEnhancmentResponseState
                   >(
                     bloc: _gerEnhancmentResponseBloc,
-                    listener: (context, state) {
-                      if (state is GerEnhancmentResponseSuccessState) {
-                        imageEnhanceModelResponse = state.exploreSongResponse;
+                    listener: (context, getResponseState) {
+                      if (getResponseState is GerEnhancmentResponseSuccessState) {
+                        if (mounted) {
+                          setState(() {
+                            _isEnhancing = false;
+                          });
+                        }
+                        imageEnhanceModelResponse = getResponseState.exploreSongResponse;
+                      } else if (getResponseState is GerEnhancmentResponseFailureState ||
+                          getResponseState is GerEnhancmentResponseExceptionState) {
+                        if (mounted) {
+                          setState(() {
+                            _isEnhancing = false;
+                          });
+                        }
                       }
                     },
-                    builder: (context, state) {
+                    builder: (context, getResponseState) {
+                      final bool isEnhancing = _isEnhancing ||
+                          enhanceState is ImageEnhanceLoadingState ||
+                          getResponseState is GerEnhancmentResponseLoadingState;
+
                       final currentImageUrl = (imageEnhanceModelResponse?.imageUrl?.outputImage?.isNotEmpty == true
                           ? imageEnhanceModelResponse!.imageUrl!.outputImage
                           : data["image"]) ?? "";
@@ -258,12 +254,17 @@ class _InteriorOutputScreenState extends State<InteriorOutputScreen> {
                       return Scaffold(
                         backgroundColor: const Color(0xFFF2EFEA),
                         body:
-                            state is PublishRecordLoadingState
+                            (publishState is PublishRecordLoadingState || deleteState is DeleteRecordLoadingState)
                                 ? Center(child: CupertinoActivityIndicator())
                                 : Column(
                                   children: [
                                     _PhotoSection(
+                                      isEnhancing: isEnhancing,
                                       onTap: () {
+                                        if (isEnhancing) return;
+                                        setState(() {
+                                          _isEnhancing = true;
+                                        });
                                         _imageEnhanceBloc.add(
                                           ImageEnhanceDataEvent(
                                             login: {
@@ -289,10 +290,14 @@ class _InteriorOutputScreenState extends State<InteriorOutputScreen> {
                                         child: Column(
                                           children: [
                                             _InfoTile(
-                                              iconWidget: const _BuildingIcon(),
-                                              label: 'Building Type',
+                                              iconWidget: Icon(
+                                                Icons.home_outlined,
+                                                size: r.wp(context, 24),
+                                                color: const Color(0xFF7A7A7A),
+                                              ),
+                                              label: AppLocalizations.of(context)?.buildingType ?? 'Building Type',
                                               value:
-                                                  data["spaceType"]
+                                                  data["roomType"]
                                                       .toString()
                                                       .toTitleCase(),
                                               trailing: null,
@@ -304,7 +309,7 @@ class _InteriorOutputScreenState extends State<InteriorOutputScreen> {
                                                 size: r.wp(context, 24),
                                                 color: const Color(0xFF7A7A7A),
                                               ),
-                                              label: 'Design Aesthetic',
+                                              label: AppLocalizations.of(context)?.designAesthetic ?? 'Design Aesthetic',
                                               value:
                                                   data["designAsth"]
                                                       .toString()
@@ -318,7 +323,7 @@ class _InteriorOutputScreenState extends State<InteriorOutputScreen> {
                                                 size: r.wp(context, 24),
                                                 color: const Color(0xFF7A7A7A),
                                               ),
-                                              label: 'Color Palette',
+                                              label: AppLocalizations.of(context)?.colorPalette ?? 'Color Palette',
                                               value:
                                                   data["color"]
                                                       .toString()
@@ -342,13 +347,13 @@ class _InteriorOutputScreenState extends State<InteriorOutputScreen> {
                                 _buildOutputAction(
                                   context,
                                   icon: Icons.refresh_rounded,
-                                  label: "Regenerate",
+                                  label: AppLocalizations.of(context)?.regenerate ?? "Regenerate",
                                   onTap: () => _showRegenerateAlert(context),
                                 ),
                                 _buildOutputAction(
                                   context,
                                   icon: Icons.download_rounded,
-                                  label: "Save",
+                                  label: AppLocalizations.of(context)?.save ?? "Save",
                                   onTap: () => saveNetworkImageToGallery(
                                     context: context,
                                     imageUrl: currentImageUrl,
@@ -358,13 +363,13 @@ class _InteriorOutputScreenState extends State<InteriorOutputScreen> {
                                 _buildOutputAction(
                                   context,
                                   icon: Icons.more_horiz_rounded,
-                                  label: "Publish",
+                                  label: AppLocalizations.of(context)?.publish ?? "Publish",
                                   onTap: () => showPublishSheet(context),
                                 ),
                                 _buildOutputAction(
                                   context,
                                   icon: Icons.share_outlined,
-                                  label: "Share",
+                                  label: AppLocalizations.of(context)?.share ?? "Share",
                                   onTap: () => shareNetworkImage(
                                     context: context,
                                     imageUrl: currentImageUrl,
@@ -373,7 +378,7 @@ class _InteriorOutputScreenState extends State<InteriorOutputScreen> {
                                 _buildOutputAction(
                                   context,
                                   icon: Icons.delete_outline_rounded,
-                                  label: "Delete",
+                                  label: AppLocalizations.of(context)?.delete ?? "Delete",
                                   onTap: () => _showDeleteAlert(context),
                                 ),
                               ],
@@ -401,18 +406,20 @@ class _InteriorOutputScreenState extends State<InteriorOutputScreen> {
   }
 
   void _showDeleteAlert(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     showCupertinoDialog<void>(
       context: context,
       builder:
           (BuildContext context) => CupertinoAlertDialog(
-            title: const Text('Delete This Design?'),
-            content: const Text(
-              'This action cannot be undone. Are you sure you want to permanently remove this design?',
+            title: Text(l10n?.deleteDesignTitle ?? 'Delete This Design?'),
+            content: Text(
+              l10n?.deleteDesignContent ??
+                  'This action cannot be undone. Are you sure you want to permanently remove this design?',
             ),
             actions: <CupertinoDialogAction>[
               CupertinoDialogAction(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('Cancel'),
+                child: Text(l10n?.cancel ?? 'Cancel'),
               ),
               CupertinoDialogAction(
                 isDestructiveAction: true,
@@ -435,7 +442,7 @@ class _InteriorOutputScreenState extends State<InteriorOutputScreen> {
                   );
 
                 },
-                child: const Text('Delete'),
+                child: Text(l10n?.delete ?? 'Delete'),
               ),
             ],
           ),
@@ -443,18 +450,20 @@ class _InteriorOutputScreenState extends State<InteriorOutputScreen> {
   }
 
   void _showRegenerateAlert(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     showCupertinoDialog<void>(
       context: context,
       builder:
           (BuildContext context) => CupertinoAlertDialog(
-            title: const Text('Regenerate Design?'),
-            content: const Text(
-              'This action will use 10 credits to generate a new design. Do you want to proceed?',
+            title: Text(l10n?.regenerateDesignTitle ?? 'Regenerate Design?'),
+            content: Text(
+              l10n?.regenerateDesignContent ??
+                  'This action will use 50 credits to generate a new design. Do you want to proceed?',
             ),
             actions: <CupertinoDialogAction>[
               CupertinoDialogAction(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('Cancel'),
+                child: Text(l10n?.cancel ?? 'Cancel'),
               ),
               CupertinoDialogAction(
                 isDefaultAction: true,
@@ -462,7 +471,7 @@ class _InteriorOutputScreenState extends State<InteriorOutputScreen> {
                   Navigator.pop(context);
                   Navigator.pop(context);
                 },
-                child: const Text('Regenerate'),
+                child: Text(l10n?.regenerate ?? 'Regenerate'),
               ),
             ],
           ),
@@ -509,7 +518,7 @@ class _InteriorOutputScreenState extends State<InteriorOutputScreen> {
 
           // Title
           Text(
-            'Publish Your Design',
+            AppLocalizations.of(context)?.publishDesignTitle ?? 'Publish Your Design',
             style: TextStyle(
               fontSize: r.sp(context, 18),
               fontWeight: FontWeight.w600,
@@ -520,7 +529,8 @@ class _InteriorOutputScreenState extends State<InteriorOutputScreen> {
 
           // Subtitle
           Text(
-            'Share your design on the Explore page for\nothers to discover',
+            AppLocalizations.of(context)?.publishDesignSubtitle ??
+                'Share your design on the Explore page for\nothers to discover',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: r.sp(context, 15),
@@ -553,17 +563,21 @@ class _InteriorOutputScreenState extends State<InteriorOutputScreen> {
                 );
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFE8D5BC),
-                foregroundColor: const Color(0xFF3D3229),
-                elevation: 0,
+                backgroundColor: const Color(0xFF4C756B),
+                foregroundColor: Colors.white,
                 padding: EdgeInsets.symmetric(vertical: r.hp(context, 16)),
-                shape: const StadiumBorder(),
-                textStyle: TextStyle(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(r.wp(context, 14)),
+                ),
+                elevation: 0,
+              ),
+              child: Text(
+                AppLocalizations.of(context)?.publish ?? 'Publish',
+                style: TextStyle(
                   fontSize: r.sp(context, 16),
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
-              child: const Text('Publish'),
             ),
           ),
           r.verticalSpace(context, 4),
@@ -626,11 +640,13 @@ class _PhotoSection extends StatelessWidget {
   final VoidCallback onTap;
   final double topPad;
   final String img;
+  final bool isEnhancing;
 
   const _PhotoSection({
     required this.onTap,
     required this.topPad,
     required this.img,
+    this.isEnhancing = false,
   });
 
   Widget buildSmartImage(String img) {
@@ -665,57 +681,105 @@ class _PhotoSection extends StatelessWidget {
         fit: StackFit.expand,
         children: [
           buildSmartImage(img),
+          if (isEnhancing)
+            Container(
+              color: Colors.black.withOpacity(0.35),
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const CupertinoActivityIndicator(
+                      radius: 16,
+                      color: Colors.white,
+                    ),
+                    SizedBox(height: r.hp(context, 10)),
+                    Text(
+                      AppLocalizations.of(context)?.enhancingQuality ?? "Enhancing Quality...",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: r.sp(context, 14),
+                        fontWeight: FontWeight.w500,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           Positioned(
             left: 0,
             right: 0,
             bottom: r.hp(context, 15),
             child: Center(
               child: GestureDetector(
-                onTap: () {
-                  onTap();
-                },
-                child: Container(
+                onTap: isEnhancing ? null : onTap,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
                   padding: EdgeInsets.symmetric(
-                    horizontal: r.wp(context, 10),
+                    horizontal: r.wp(context, isEnhancing ? 14 : 10),
                     vertical: r.hp(context, 5),
                   ),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(r.wp(context, 50)),
-                    gradient: const LinearGradient(
-                      colors: [
-                        Color.fromRGBO(230, 203, 168, 1),
-                        Color.fromRGBO(167, 196, 188, 1),
-                      ],
+                    gradient: LinearGradient(
+                      colors: isEnhancing
+                          ? [
+                              const Color.fromRGBO(200, 180, 150, 0.9),
+                              const Color.fromRGBO(145, 170, 162, 0.9),
+                            ]
+                          : [
+                              const Color.fromRGBO(230, 203, 168, 1),
+                              const Color.fromRGBO(167, 196, 188, 1),
+                            ],
                     ),
                   ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        "Enhance",
-                        style: TextStyle(
-                          fontSize: r.sp(context, 16),
-                          fontWeight: FontWeight.w500,
-                          color: const Color.fromRGBO(46, 46, 46, 1),
+                  child: isEnhancing
+                      ? Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const CupertinoActivityIndicator(
+                              radius: 8,
+                              color: Color.fromRGBO(46, 46, 46, 1),
+                            ),
+                            SizedBox(width: r.wp(context, 6)),
+                            Text(
+                              AppLocalizations.of(context)?.enhancing ?? "Enhancing...",
+                              style: TextStyle(
+                                fontSize: r.sp(context, 15),
+                                fontWeight: FontWeight.w500,
+                                color: const Color.fromRGBO(46, 46, 46, 1),
+                              ),
+                            ),
+                          ],
+                        )
+                      : Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              AppLocalizations.of(context)?.enhance ?? "Enhance",
+                              style: TextStyle(
+                                fontSize: r.sp(context, 16),
+                                fontWeight: FontWeight.w500,
+                                color: const Color.fromRGBO(46, 46, 46, 1),
+                              ),
+                            ),
+                            SizedBox(width: r.wp(context, 3)),
+                            CustomImageview(
+                              imagePath: "assets/images/credit.png",
+                              height: r.wp(context, 25),
+                              width: r.wp(context, 25),
+                            ),
+                            SizedBox(width: r.wp(context, 3)),
+                            Text(
+                              "1",
+                              style: TextStyle(
+                                fontSize: r.sp(context, 16),
+                                fontWeight: FontWeight.w500,
+                                color: const Color.fromRGBO(46, 46, 46, 1),
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                      SizedBox(width: r.wp(context, 3)),
-                      CustomImageview(
-                        imagePath: "assets/images/credit.png",
-                        height: r.wp(context, 25),
-                        width: r.wp(context, 25),
-                      ),
-                      SizedBox(width: r.wp(context, 3)),
-                      Text(
-                        "1",
-                        style: TextStyle(
-                          fontSize: r.sp(context, 16),
-                          fontWeight: FontWeight.w500,
-                          color: const Color.fromRGBO(46, 46, 46, 1),
-                        ),
-                      ),
-                    ],
-                  ),
                 ),
               ),
             ),

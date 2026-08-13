@@ -14,29 +14,31 @@ part 'get_all_modules_state.dart';
 class GetAllModulesBloc extends Bloc<GetAllModulesEvent, GetAllModulesState> {
   GetAllModulesRepository adminKeyLoginRepository = GetAllModulesRepository();
 
-  GetAllModulesBloc() : super(GetAllModulesInitialState()) {
-    on<GetAllModulesInitialEvent>((event, emit) => emit(GetAllModulesInitialState()));
+  GetAllModulesBloc() : super(GetAllModulesSuccessState(modules: AppModule.defaultModules, message: "Success")) {
+    on<GetAllModulesInitialEvent>((event, emit) => emit(GetAllModulesSuccessState(modules: adminKeyLoginRepository.modulesList ?? AppModule.defaultModules, message: "Success")));
     on<GetAllModulesDataEvent>(_acceptOrderDataEvent);
   }
 
   void _acceptOrderDataEvent(GetAllModulesDataEvent event, Emitter<GetAllModulesState> emit) async {
-    emit(GetAllModulesLoadingState());
+    // Immediately emit local static modules for zero latency
+    emit(GetAllModulesSuccessState(
+      modules: adminKeyLoginRepository.modulesList ?? AppModule.defaultModules,
+      message: "Success",
+    ));
+
     try {
       await adminKeyLoginRepository.GetAllModules();
-      if (adminKeyLoginRepository.success == true) {
-        emit(GetAllModulesSuccessState(
-            modules: adminKeyLoginRepository.modulesList,
-            message: adminKeyLoginRepository.message.toString().trim(),
-        ));
-      } else {
-        emit(GetAllModulesFailureState(
-          message: adminKeyLoginRepository.message.toString().trim(),
-        ));
-      }
-    } catch (error) {
-      print(error);
-      emit(GetAllModulesExceptionState(
+      emit(GetAllModulesSuccessState(
+        modules: adminKeyLoginRepository.modulesList ?? AppModule.defaultModules,
         message: adminKeyLoginRepository.message.toString().trim(),
+      ));
+    } catch (error) {
+      if (kDebugMode) {
+        print("GetAllModulesBloc exception: $error");
+      }
+      emit(GetAllModulesSuccessState(
+        modules: adminKeyLoginRepository.modulesList ?? AppModule.defaultModules,
+        message: "Success",
       ));
     }
   }

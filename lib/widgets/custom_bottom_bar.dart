@@ -4,6 +4,7 @@ import 'package:ai_interior/utils/responsive_utils.dart';
 import 'package:ai_interior/widgets/custom_imageview.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:ai_interior/l10n/generated/app_localizations.dart';
 
 import '../theme/theme.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
@@ -18,25 +19,26 @@ class CustomBottomBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
 
     List<BottomMenuModel> bottomMenuList = [
       BottomMenuModel(
         icon: "assets/images/home.png",
         activeIcon: "assets/images/home.png",
         type: BottomBarEnum.Home,
-        title: "Home",
+        title: l10n?.home ?? "Home",
       ),
       BottomMenuModel(
         icon: "assets/images/explore.png",
         activeIcon: "assets/images/explore.png",
         type: BottomBarEnum.Explore,
-        title: "Explore",
+        title: l10n?.explore ?? "Explore",
       ),
       BottomMenuModel(
         icon: "assets/images/recents.png",
         activeIcon: "assets/images/recents.png",
         type: BottomBarEnum.Recents,
-        title: "Recents",
+        title: l10n?.recents ?? "Recents",
       ),
     ];
 

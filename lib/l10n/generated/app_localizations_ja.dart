@@ -130,4 +130,71 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get dreamSpacesSubtitle => '夢の空間を作成しましょう。';
+
+  @override
+  String get regenerate => 'Regenerate';
+
+  @override
+  String get save => 'Save';
+
+  @override
+  String get publish => 'Publish';
+
+  @override
+  String get share => 'Share';
+
+  @override
+  String get delete => 'Delete';
+
+  @override
+  String get enhance => 'Enhance';
+
+  @override
+  String get enhancing => 'Enhancing...';
+
+  @override
+  String get enhancingQuality => 'Enhancing Quality...';
+
+  @override
+  String get applyStyle => 'Apply Style';
+
+  @override
+  String get buildingType => 'Building Type';
+
+  @override
+  String get designAesthetic => 'Design Aesthetic';
+
+  @override
+  String get colorPalette => 'Color Palette';
+
+  @override
+  String get cancel => 'Cancel';
+
+  @override
+  String get deleteDesignTitle => 'Delete This Design?';
+
+  @override
+  String get deleteDesignContent =>
+      'This action cannot be undone. Are you sure you want to permanently remove this design?';
+
+  @override
+  String get regenerateDesignTitle => 'Regenerate Design?';
+
+  @override
+  String get regenerateDesignContent =>
+      'This action will use 50 credits to generate a new design. Do you want to proceed?';
+
+  @override
+  String get publishDesignTitle => 'Publish Your Design';
+
+  @override
+  String get publishDesignSubtitle =>
+      'Share your design on the Explore page for others to discover';
+
+  @override
+  String get recentsEmptyTitle => 'Your Designs Will Appear Here';
+
+  @override
+  String get recentsEmptySubtitle =>
+      'Upload a photo, try a style, and watch AI do the magic!';
 }

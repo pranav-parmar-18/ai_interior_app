@@ -135,4 +135,71 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get dreamSpacesSubtitle => 'Crea il tuo spazio da sogno.';
+
+  @override
+  String get regenerate => 'Rigenera';
+
+  @override
+  String get save => 'Salva';
+
+  @override
+  String get publish => 'Pubblica';
+
+  @override
+  String get share => 'Condividi';
+
+  @override
+  String get delete => 'Elimina';
+
+  @override
+  String get enhance => 'Migliora';
+
+  @override
+  String get enhancing => 'Miglioramento...';
+
+  @override
+  String get enhancingQuality => 'Miglioramento Qualità...';
+
+  @override
+  String get applyStyle => 'Applica Stile';
+
+  @override
+  String get buildingType => 'Tipo di Edificio';
+
+  @override
+  String get designAesthetic => 'Estetica del Design';
+
+  @override
+  String get colorPalette => 'Tavolozza dei Colori';
+
+  @override
+  String get cancel => 'Annulla';
+
+  @override
+  String get deleteDesignTitle => 'Eliminare questo design?';
+
+  @override
+  String get deleteDesignContent =>
+      'Questa azione non può essere annullata. Sei sicuro di voler rimuovere permanentemente questo design?';
+
+  @override
+  String get regenerateDesignTitle => 'Rigenerare il design?';
+
+  @override
+  String get regenerateDesignContent =>
+      'Questa azione utilizzerà 50 crediti per generare un nuovo design. Vuoi procedere?';
+
+  @override
+  String get publishDesignTitle => 'Pubblica il tuo design';
+
+  @override
+  String get publishDesignSubtitle =>
+      'Condividi il tuo design nella pagina Esplora affinché gli altri lo scoprano';
+
+  @override
+  String get recentsEmptyTitle => 'I tuoi design appariranno qui';
+
+  @override
+  String get recentsEmptySubtitle =>
+      'Carica una foto, prova uno stile e guarda la magia dell\'IA!';
 }

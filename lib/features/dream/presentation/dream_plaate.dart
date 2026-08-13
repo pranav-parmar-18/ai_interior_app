@@ -234,7 +234,7 @@ class DreamColorPaletteScreen extends StatefulWidget {
 
 class _DreamColorPaletteScreenState
     extends State<DreamColorPaletteScreen> {
-  bool? isSubscribed = true;
+  bool? isSubscribed = false;
 
   @override
   void initState() {
@@ -258,10 +258,14 @@ class _DreamColorPaletteScreenState
   }
 
   Future<bool> isSubscriptionActive() async {
-    setState(() {
-      isSubscribed = true;
-    });
-    return true;
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    final active = preferences.getBool('is_subscribed') ?? false;
+    if (mounted) {
+      setState(() {
+        isSubscribed = active;
+      });
+    }
+    return active;
   }
 
   final InteriorDeignCreateBloc _interiorDeignCreateBloc =
@@ -294,7 +298,7 @@ class _DreamColorPaletteScreenState
               "designAsth":
                   interiorDesignCreateModelResponse?.data?.designAsthetic ?? "",
               "id": interiorDesignCreateModelResponse?.data?.id ?? "",
-              "module_id": 6,
+              "module_id": 1,
             },
           );
         } else if (state is InteriorDeignCreateFailureState) {

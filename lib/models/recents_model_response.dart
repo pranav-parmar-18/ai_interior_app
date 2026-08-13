@@ -166,14 +166,20 @@ final statusValues = EnumValues({
 
 enum Type {
   INTERIOR_DESIGNS,
+  EXTERIOR_DESIGNS,
   SMART_REPLACES,
-  STYLE_TRANSFERS
+  STYLE_TRANSFERS,
+  SMART_STAGINGS,
+  DREAM_SPACES,
 }
 
 final typeValues = EnumValues({
   "interior_designs": Type.INTERIOR_DESIGNS,
+  "exterior_designs": Type.EXTERIOR_DESIGNS,
   "smart_replaces": Type.SMART_REPLACES,
-  "style_transfers": Type.STYLE_TRANSFERS
+  "style_transfers": Type.STYLE_TRANSFERS,
+  "smart_stagings": Type.SMART_STAGINGS,
+  "dream_spaces": Type.DREAM_SPACES,
 });
 
 class Link {

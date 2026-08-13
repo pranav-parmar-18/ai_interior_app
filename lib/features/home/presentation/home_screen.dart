@@ -30,16 +30,22 @@ String _getModuleTitle(BuildContext context, String tableName, String defaultTit
   final l10n = AppLocalizations.of(context)!;
   switch (tableName) {
     case 'interior_designs':
+    case 'interior_design':
       return l10n.interiorDesignTitle;
     case 'exterior_designs':
+    case 'exterior_design':
       return l10n.exteriorDesignTitle;
+    case 'smart_stagings':
     case 'smart_staging':
       return l10n.smartStagingTitle;
+    case 'style_transfers':
     case 'style_transfer':
       return l10n.styleTransferTitle;
+    case 'smart_replaces':
     case 'smart_replace':
       return l10n.smartReplaceTitle;
     case 'dream_spaces':
+    case 'dream_space':
       return l10n.dreamSpacesTitle;
     default:
       return defaultTitle;
@@ -50,16 +56,22 @@ String _getModuleSubtitle(BuildContext context, String tableName, String default
   final l10n = AppLocalizations.of(context)!;
   switch (tableName) {
     case 'interior_designs':
+    case 'interior_design':
       return l10n.interiorDesignSubtitle;
     case 'exterior_designs':
+    case 'exterior_design':
       return l10n.exteriorDesignSubtitle;
+    case 'smart_stagings':
     case 'smart_staging':
       return l10n.smartStagingSubtitle;
+    case 'style_transfers':
     case 'style_transfer':
       return l10n.styleTransferSubtitle;
+    case 'smart_replaces':
     case 'smart_replace':
       return l10n.smartReplaceSubtitle;
     case 'dream_spaces':
+    case 'dream_space':
       return l10n.dreamSpacesSubtitle;
     default:
       return defaultSubtitle;

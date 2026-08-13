@@ -40,7 +40,7 @@ class _StyleTransferScreenState extends State<StyleTransferScreen> {
   File? refImage;
   String? styleReferenceUrl;
   bool _isLoadingStyleReference = false;
-  bool? isSubscribed = true;
+  bool? isSubscribed = false;
 
   @override
   void initState() {
@@ -64,10 +64,14 @@ class _StyleTransferScreenState extends State<StyleTransferScreen> {
   }
 
   Future<bool> isSubscriptionActive() async {
-    setState(() {
-      isSubscribed = true;
-    });
-    return true;
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    final active = preferences.getBool('is_subscribed') ?? false;
+    if (mounted) {
+      setState(() {
+        isSubscribed = active;
+      });
+    }
+    return active;
   }
 
   @override
