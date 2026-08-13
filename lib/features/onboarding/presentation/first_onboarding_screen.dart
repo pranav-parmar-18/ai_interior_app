@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:video_player/video_player.dart';
 import 'package:ai_interior/utils/responsive_utils.dart';
+import 'package:ai_interior/l10n/generated/app_localizations.dart';
 
 import 'fourth_onboarding_screen.dart';
 
@@ -21,26 +22,26 @@ class _OnBoardingFirstScreenState extends State<OnBoardingFirstScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
 
-  final List<OnboardingData> _pages = [
-    OnboardingData(
-      imagePath: 'assets/images/room1.jpg',
-      title: 'Effortless Home Redesign',
-      subtitle:
-          'Upload a photo and let AI redesign your interiors and exteriors effortlessly.',
-    ),
-    OnboardingData(
-      imagePath: 'assets/images/on_board_2.png',
-      title: 'Style It Your Way',
-      subtitle:
-          'Choose from presets or create a custom design with AI-powered suggestions',
-    ),
-    OnboardingData(
-      imagePath: 'assets/images/on_board_3.png',
-      title: 'Reimagine Any Space',
-      subtitle:
-          'Select an area, describe your vision, and let AI bring it to life.',
-    ),
-  ];
+  List<OnboardingData> get _pages {
+    final l10n = AppLocalizations.of(context)!;
+    return [
+      OnboardingData(
+        imagePath: 'assets/images/room1.jpg',
+        title: l10n.onboardingTitle1,
+        subtitle: l10n.onboardingSubtitle1,
+      ),
+      OnboardingData(
+        imagePath: 'assets/images/on_board_2.png',
+        title: l10n.onboardingTitle2,
+        subtitle: l10n.onboardingSubtitle2,
+      ),
+      OnboardingData(
+        imagePath: 'assets/images/on_board_3.png',
+        title: l10n.onboardingTitle3,
+        subtitle: l10n.onboardingSubtitle3,
+      ),
+    ];
+  }
 
   @override
   void dispose() {
@@ -562,7 +563,7 @@ class _ContinueButton extends StatelessWidget {
             Align(
               alignment: Alignment.center,
               child: Text(
-                'Continue',
+                AppLocalizations.of(context)!.continueButton,
                 style: TextStyle(
                   fontFamily: 'Georgia',
                   fontSize: r.sp(context, 18),

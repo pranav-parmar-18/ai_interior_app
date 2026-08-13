@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:ai_interior/models/common_model_response.dart';
+import 'package:ai_interior/models/smart_replace_create_model_response.dart';
 import 'package:ai_interior/utils/app_utils.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
@@ -23,7 +25,8 @@ class SmartReplaceCreateBloc extends Bloc<SmartReplaceCreateEvent, SmartReplaceC
   void _acceptOrderDataEvent(SmartReplaceCreateDataEvent event, Emitter<SmartReplaceCreateState> emit) async {
     emit(SmartReplaceCreateLoadingState());
     try {
-      await adminKeySmartReplaceCreateRepository.login(event.login);
+      await adminKeySmartReplaceCreateRepository.smartReplaceCreate(event.login, event.image, event.mask);
+
       if (adminKeySmartReplaceCreateRepository.success == true) {
         emit(SmartReplaceCreateSuccessState(
             login: adminKeySmartReplaceCreateRepository.makeSongResponse,

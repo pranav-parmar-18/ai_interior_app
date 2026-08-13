@@ -89,7 +89,19 @@ class _DreamSpaceScreenState extends State<DreamSpaceScreen>
     'Living Room',
     'Bedroom',
     'Kitchen',
-    'Dining',
+    'Dining Room',
+    'Bathroom',
+    'Laundry Room',
+    'Home Office',
+    'Study Room',
+    'Dorm Room',
+    'Gaming Room',
+    'Attic',
+    'Toilet',
+    'Coffee Shop',
+    'Restaurant',
+    'Office',
+    'Other',
   ];
   final _exteriorCats = const ['All', 'Garden', 'Patio', 'Pool', 'Balcony'];
 

@@ -4,6 +4,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
+import 'package:ai_interior/services/device_indentification_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../models/add_credit_model_response.dart';
 part 'add_credits_event.dart';

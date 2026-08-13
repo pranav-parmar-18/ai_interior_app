@@ -76,9 +76,17 @@ class InteriorDeignCreateRepository {
         ),
       );
 
-      // 🔹 Send request
-      final streamedResponse = await request.send();
-      final response = await http.Response.fromStream(streamedResponse);
+      // 🔹 Send request with extended timeout (AI image generation takes 50+ seconds)
+      final client = http.Client();
+      final http.Response response;
+      try {
+        final streamedResponse = await client.send(request).timeout(
+          const Duration(minutes: 3),
+        );
+        response = await http.Response.fromStream(streamedResponse);
+      } finally {
+        client.close();
+      }
 
       if (response.statusCode == 200) {
         final responseJson =

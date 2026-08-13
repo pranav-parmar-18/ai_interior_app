@@ -26,6 +26,7 @@ import '../features/replace/presentation/replace_describe_me.dart';
 import '../features/replace/presentation/replace_edit_screen.dart';
 import '../features/replace/presentation/replace_output_screen.dart';
 import '../features/replace/presentation/replace_screen.dart';
+import '../features/setting/presentation/contact_screen.dart';
 import '../features/setting/presentation/language_screen.dart';
 import '../features/setting/presentation/setting_screens.dart';
 import '../features/snap_trip/presentation/snap_trip_screen.dart';
@@ -232,6 +233,11 @@ class AppRouter {
         return CupertinoPageRoute(
           settings: settings,
           builder: (_) => LanguageScreen(),
+        );
+      case ContactUsScreen.routeName:
+        return CupertinoPageRoute(
+          settings: settings,
+          builder: (_) => const ContactUsScreen(),
         );
       case DreamOutputScreen.routeName:
         return CupertinoPageRoute(

@@ -30,7 +30,7 @@ class Result {
   });
 
   factory Result.fromJson(Map<String, dynamic> json) => Result(
-    credit: json["credit"],
+    credit: json["credit"]?.toString(),
   );
 
   Map<String, dynamic> toJson() => {

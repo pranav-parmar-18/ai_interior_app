@@ -1,10 +1,14 @@
 import 'dart:io';
+import 'dart:ui' as ui;
+import 'dart:math' as math;
 
-import 'package:ai_interior/bloc/smart_replace_create/smart_replace_create_bloc.dart';
-import 'package:ai_interior/features/replace/presentation/replace_output_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:ai_interior/bloc/smart_replace_create/smart_replace_create_bloc.dart';
+import 'package:ai_interior/features/replace/presentation/replace_output_screen.dart';
+import 'replace_edit_screen.dart';
 import '../../main/presentaion/main_screen.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -15,7 +19,7 @@ import '../../subscription/presentation/subscription_screen.dart';
 import '../../subscription/presentation/subscription_screen_three.dart';
 import '../../subscription/presentation/subscription_screen_two.dart';
 import '../../home/presentation/home_screen.dart';
-import '../../main/presentaion/main_screen.dart';
+
 
 class ReplaceDescribeVisionScreen extends StatefulWidget {
   const ReplaceDescribeVisionScreen({super.key});
@@ -49,7 +53,7 @@ class _ReplaceDescribeVisionScreenState
     isSubscriptionActive();
   }
 
-  bool? isSubscribed;
+  bool? isSubscribed = false;
 
   void openSubscriptionScreen(BuildContext context) {
     final nextIndex = SubscriptionScreenManager().getNextIndex();
@@ -67,21 +71,14 @@ class _ReplaceDescribeVisionScreenState
   }
 
   Future<bool> isSubscriptionActive() async {
-    final prefs = await SharedPreferences.getInstance();
-    final data = prefs.getString('subscription_info');
-    if (data == null) {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    final active = preferences.getBool('is_subscribed') ?? false;
+    if (mounted) {
       setState(() {
-        isSubscribed = false;
+        isSubscribed = active;
       });
-      return false;
     }
-
-    final sub = SubscriptionInfo.fromJson(data);
-    setState(() {
-      isSubscribed = sub?.isActive ?? false;
-    });
-
-    return sub?.isActive ?? false;
+    return active;
   }
 
   final Set<int> _selected = {};
@@ -130,15 +127,16 @@ class _ReplaceDescribeVisionScreenState
               imageVal = "assets/images/interior/interior_${(data["templateIndex"] as int) + 1}.jpg";
             }
 
+            final outputUrl = state.login?.data?.outputImage ?? "";
             Navigator.of(context).pushNamed(
               ReplaceOutputScreen.routeName,
               arguments: {
-                "image": imageVal,
+                "image": outputUrl.isNotEmpty ? outputUrl : imageVal,
                 "prompt": _controller.text,
                 "spaceType": "Living Room",
                 "color": "Nature's Harmony",
                 "designAsth": "Modern",
-                "id": "replace_${DateTime.now().millisecondsSinceEpoch}",
+                "id": state.login?.data?.id ?? "",
                 "module_id": 5,
               },
             );
@@ -174,39 +172,47 @@ class _ReplaceDescribeVisionScreenState
                           stops: [0.0, 0.48, 1.0],
                         ),
                       ),
-                      child: Column(
-                        children: [
-                          r.verticalSpace(context, 300),
-                          Image.asset("assets/gifs/loading.gif", height: r.hp(context, 393)),
-                          r.verticalSpace(context, 10),
-                          Text(
-                            "Bringing your vision to life...",
-                            style: TextStyle(
-                              fontSize: r.sp(context, 16),
-                              fontWeight: FontWeight.w400,
-                              color: const Color.fromRGBO(90, 106, 117, 1),
-                              letterSpacing: -0.3,
+                      child: SafeArea(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Spacer(flex: 1),
+                            Image.asset(
+                              "assets/gifs/loading.gif",
+                              height: r.adaptiveValue(context, mobile: 320, tablet: 420),
                             ),
-                          ),
-                          r.verticalSpace(context, 150),
-                          Padding(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: r.wp(context, 30.0),
-                            ),
-                            child: Text(
-                              "Keep the app open & don’t lock your device. This may take around 10 seconds.",
+                            const SizedBox(height: 20),
+                            Text(
+                              "Bringing your vision to life...",
                               textAlign: TextAlign.center,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
                               style: TextStyle(
-                                fontSize: r.sp(context, 14),
-                                fontWeight: FontWeight.w400,
+                                fontSize: r.sp(context, 17),
+                                fontWeight: FontWeight.w500,
                                 color: const Color.fromRGBO(90, 106, 117, 1),
                                 letterSpacing: -0.3,
                               ),
                             ),
-                          ),
-                        ],
+                            const Spacer(flex: 3),
+                            Padding(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: r.wp(context, 30.0),
+                              ),
+                              child: Text(
+                                "Keep the app open & don’t lock your device. This may take around 10 seconds.",
+                                textAlign: TextAlign.center,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: r.sp(context, 14),
+                                  fontWeight: FontWeight.w400,
+                                  color: const Color.fromRGBO(90, 106, 117, 1),
+                                  letterSpacing: -0.3,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                          ],
+                        ),
                       ),
                     )
                     : Container(
@@ -433,6 +439,253 @@ class _ReplaceDescribeVisionScreenState
     );
   }
 
+  Future<File> assetToFile(String assetPath) async {
+    final byteData = await rootBundle.load(assetPath);
+    final Uint8List bytes = byteData.buffer.asUint8List();
+
+    final tempDir = await getTemporaryDirectory();
+    final file = File('${tempDir.path}/${assetPath.split('/').last}');
+
+    await file.writeAsBytes(bytes);
+    return file;
+  }
+
+  Future<ui.Size> getImageSize(File file) async {
+    final bytes = await file.readAsBytes();
+    final codec = await ui.instantiateImageCodec(bytes);
+    final frameInfo = await codec.getNextFrame();
+    return ui.Size(frameInfo.image.width.toDouble(), frameInfo.image.height.toDouble());
+  }
+
+  Future<ui.Size> getAssetImageSize(String assetPath) async {
+    final byteData = await rootBundle.load(assetPath);
+    final bytes = byteData.buffer.asUint8List();
+    final codec = await ui.instantiateImageCodec(bytes);
+    final frameInfo = await codec.getNextFrame();
+    return ui.Size(frameInfo.image.width.toDouble(), frameInfo.image.height.toDouble());
+  }
+
+  Future<File> generateMaskFile({
+    required File? pickedFile,
+    required int templateIndex,
+    required String selectedObject,
+    List<BrushStroke>? strokes,
+    double brushSize = 0.5,
+  }) async {
+    ui.Size size;
+    if (pickedFile != null) {
+      size = await getImageSize(pickedFile);
+    } else if (templateIndex != -1) {
+      size = await getAssetImageSize("assets/images/interior/interior_${templateIndex + 1}.jpg");
+    } else {
+      size = const ui.Size(512, 512);
+    }
+
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder, Rect.fromLTWH(0, 0, size.width, size.height));
+
+    // Fill background with black
+    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), Paint()..color = Colors.black);
+
+    // Draw mask in white
+    final paint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.fill;
+
+    void drawPath(Path path) {
+      canvas.drawPath(path, paint);
+    }
+
+    if (strokes != null && strokes.isNotEmpty) {
+      final ratioX = size.width / 350.0;
+      final ratioY = size.height / 330.0;
+
+      for (final stroke in strokes) {
+        if (stroke.points.isEmpty) continue;
+        final strokePaint = Paint()
+          ..color = Colors.white
+          ..strokeWidth = (stroke.strokeWidth * ratioX).clamp(10.0, 120.0)
+          ..strokeCap = StrokeCap.round
+          ..strokeJoin = StrokeJoin.round
+          ..style = PaintingStyle.stroke;
+
+        final strokePath = Path();
+        strokePath.moveTo(
+          stroke.points.first.dx * ratioX,
+          stroke.points.first.dy * ratioY,
+        );
+        for (int i = 1; i < stroke.points.length; i++) {
+          strokePath.lineTo(
+            stroke.points[i].dx * ratioX,
+            stroke.points[i].dy * ratioY,
+          );
+        }
+        canvas.drawPath(strokePath, strokePaint);
+      }
+    } else {
+      final obj = selectedObject.toLowerCase();
+
+      if (templateIndex == 1) {
+        // Bedroom template (Image 2)
+        if (obj.contains('bed')) {
+          final bedPath = Path()
+            ..moveTo(0, size.height * 0.92)
+            ..cubicTo(
+              size.width * 0.25, size.height * 0.48,
+              size.width * 0.65, size.height * 0.42,
+              size.width, size.height * 0.48,
+            )
+            ..lineTo(size.width, size.height)
+            ..lineTo(0, size.height)
+            ..close();
+          drawPath(bedPath);
+        } else if (obj.contains('pillow')) {
+          final pillowPath = Path()
+            ..addOval(Rect.fromLTRB(size.width * 0.50, size.height * 0.42, size.width * 0.92, size.height * 0.58));
+          drawPath(pillowPath);
+        } else if (obj.contains('wall')) {
+          final wallPath = Path()
+            ..moveTo(0, 0)
+            ..lineTo(size.width, 0)
+            ..lineTo(size.width, size.height * 0.45)
+            ..lineTo(0, size.height * 0.45)
+            ..close();
+          drawPath(wallPath);
+        } else if (obj.contains('nightstand')) {
+          final nightstandPath = Path()
+            ..addRRect(RRect.fromRectAndRadius(
+              Rect.fromLTRB(size.width * 0.05, size.height * 0.55, size.width * 0.28, size.height * 0.78),
+              const Radius.circular(8),
+            ));
+          drawPath(nightstandPath);
+        } else if (obj.contains('lamp')) {
+          final lampPath = Path()
+            ..addOval(Rect.fromLTRB(size.width * 0.82, size.height * 0.25, size.width * 0.95, size.height * 0.45));
+          drawPath(lampPath);
+        } else {
+          final defaultPath = Path()
+            ..moveTo(0, size.height * 0.92)
+            ..cubicTo(
+              size.width * 0.25, size.height * 0.48,
+              size.width * 0.65, size.height * 0.42,
+              size.width, size.height * 0.48,
+            )
+            ..lineTo(size.width, size.height)
+            ..lineTo(0, size.height)
+            ..close();
+          drawPath(defaultPath);
+        }
+      } else if (templateIndex == 0 || templateIndex == 4) {
+        // Living Room sofa / table templates
+        if (obj.contains('sofa')) {
+          final sofaPath = Path()
+            ..moveTo(0, size.height * 0.48)
+            ..lineTo(size.width * 0.78, size.height * 0.48)
+            ..lineTo(size.width * 0.75, size.height * 0.88)
+            ..lineTo(0, size.height * 0.88)
+            ..close();
+          drawPath(sofaPath);
+        } else if (obj.contains('table')) {
+          final tablePath = Path()
+            ..addOval(Rect.fromLTRB(size.width * 0.28, size.height * 0.62, size.width * 0.82, size.height * 0.88));
+          drawPath(tablePath);
+        } else if (obj.contains('rug')) {
+          final rugPath = Path()
+            ..moveTo(0, size.height * 0.68)
+            ..lineTo(size.width, size.height * 0.68)
+            ..lineTo(size.width, size.height)
+            ..lineTo(0, size.height)
+            ..close();
+          drawPath(rugPath);
+        } else if (obj.contains('plant')) {
+          final plantPath = Path()
+            ..addOval(Rect.fromLTRB(size.width * 0.72, size.height * 0.38, size.width * 0.95, size.height * 0.82));
+          drawPath(plantPath);
+        } else if (obj.contains('wall')) {
+          final wallPath = Path()
+            ..moveTo(0, 0)
+            ..lineTo(size.width, 0)
+            ..lineTo(size.width, size.height * 0.48)
+            ..lineTo(0, size.height * 0.48)
+            ..close();
+          drawPath(wallPath);
+        } else {
+          final sofaPath = Path()
+            ..moveTo(0, size.height * 0.48)
+            ..lineTo(size.width * 0.78, size.height * 0.48)
+            ..lineTo(size.width * 0.75, size.height * 0.88)
+            ..lineTo(0, size.height * 0.88)
+            ..close();
+          drawPath(sofaPath);
+        }
+      } else {
+        // General / custom images
+        if (obj.contains('bed') || obj.contains('sofa')) {
+          final bedPath = Path()
+            ..moveTo(0, size.height * 0.90)
+            ..cubicTo(
+              size.width * 0.25, size.height * 0.48,
+              size.width * 0.65, size.height * 0.42,
+              size.width, size.height * 0.48,
+            )
+            ..lineTo(size.width, size.height)
+            ..lineTo(0, size.height)
+            ..close();
+          drawPath(bedPath);
+        } else if (obj.contains('table') || obj.contains('desk')) {
+          final tablePath = Path()
+            ..addOval(Rect.fromLTRB(size.width * 0.25, size.height * 0.55, size.width * 0.82, size.height * 0.85));
+          drawPath(tablePath);
+        } else if (obj.contains('wall') || obj.contains('ceiling')) {
+          final wallPath = Path()
+            ..moveTo(0, 0)
+            ..lineTo(size.width, 0)
+            ..lineTo(size.width, size.height * 0.45)
+            ..lineTo(0, size.height * 0.45)
+            ..close();
+          drawPath(wallPath);
+        } else if (obj.contains('pillow') || obj.contains('cushion')) {
+          final pillowPath = Path()
+            ..addOval(Rect.fromLTRB(size.width * 0.45, size.height * 0.45, size.width * 0.85, size.height * 0.65));
+          drawPath(pillowPath);
+        } else if (obj.contains('mirror') || obj.contains('painting') || obj.contains('window')) {
+          final mirrorPath = Path()
+            ..addRRect(RRect.fromRectAndRadius(
+              Rect.fromLTRB(size.width * 0.2, size.height * 0.15, size.width * 0.6, size.height * 0.45),
+              const Radius.circular(12),
+            ));
+          drawPath(mirrorPath);
+        } else if (obj.contains('plant') || obj.contains('lamp') || obj.contains('sink')) {
+          final plantPath = Path()
+            ..addOval(Rect.fromLTRB(size.width * 0.7, size.height * 0.35, size.width * 0.92, size.height * 0.78));
+          drawPath(plantPath);
+        } else {
+          final defaultPath = Path()
+            ..moveTo(0, size.height * 0.90)
+            ..cubicTo(
+              size.width * 0.25, size.height * 0.48,
+              size.width * 0.65, size.height * 0.42,
+              size.width, size.height * 0.48,
+            )
+            ..lineTo(size.width, size.height)
+            ..lineTo(0, size.height)
+            ..close();
+          drawPath(defaultPath);
+        }
+      }
+    }
+
+    final picture = recorder.endRecording();
+    final img = await picture.toImage(size.width.toInt(), size.height.toInt());
+    final byteData = await img.toByteData(format: ui.ImageByteFormat.png);
+    final buffer = byteData!.buffer.asUint8List();
+
+    final tempDir = await getTemporaryDirectory();
+    final file = File('${tempDir.path}/mask_${DateTime.now().millisecondsSinceEpoch}.png');
+    await file.writeAsBytes(buffer);
+    return file;
+  }
+
   // ─── Save button ──────────────────────────────────────────────────────
   Widget _buildSaveButton(double botPad) {
     return Padding(
@@ -444,7 +697,46 @@ class _ReplaceDescribeVisionScreenState
             return;
           }
           if (isSubscribed == true) {
-            _smartReplaceCreateBloc.add(SmartReplaceCreateDataEvent(login: {}));
+            final prefs = await SharedPreferences.getInstance();
+            final userId = prefs.getString('user_id') ?? '0';
+
+            // Get original image file
+            File imageFile;
+            final picked = data["picked"];
+            final templateIndex = data["templateIndex"] as int? ?? -1;
+
+            if (picked != null) {
+              imageFile = picked is File ? picked : File(picked.toString());
+            } else if (templateIndex != -1) {
+              imageFile = await assetToFile("assets/images/interior/interior_${templateIndex + 1}.jpg");
+            } else {
+              showSnackError(context, 'No image found');
+              return;
+            }
+
+            // Generate mask file
+            final selectedObject = data["selectedObject"] as String? ?? "sofa";
+            final strokes = data["strokes"] as List<BrushStroke>?;
+            final brushSize = data["brushSize"] as double? ?? 0.5;
+
+            final maskFile = await generateMaskFile(
+              pickedFile: picked != null ? imageFile : null,
+              templateIndex: templateIndex,
+              selectedObject: selectedObject,
+              strokes: strokes,
+              brushSize: brushSize,
+            );
+
+            _smartReplaceCreateBloc.add(
+              SmartReplaceCreateDataEvent(
+                login: {
+                  "user_id": int.tryParse(userId) ?? 0,
+                  "prompt": _controller.text,
+                },
+                image: imageFile,
+                mask: maskFile,
+              ),
+            );
           } else {
             openSubscriptionScreen(context);
           }

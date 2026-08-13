@@ -57,10 +57,24 @@ class ImageEnhanceRepository {
         final responseJsonMap =
             jsonDecode(response.body) as Map<String, dynamic>;
         final responseData = ImageEnhanceResponse.fromJson(responseJsonMap);
-        print("LOGIN Success: ${response.body}");
+        print("LOGIN Response: ${response.body}");
         _makeSongResponse = responseData;
-        _message = "Success";
-        _success = true;
+        if (responseJsonMap.containsKey('error') && responseJsonMap['error'] != null) {
+          _message = responseJsonMap['error'].toString();
+          _success = false;
+        } else if (responseData.data?.errors != null && responseData.data!.errors!.isNotEmpty) {
+          _message = responseData.data!.errors!.join(', ');
+          _success = false;
+        } else if (responseData.data?.name == "payment_required") {
+          _message = "Payment required: Insufficient Stability AI credits on server.";
+          _success = false;
+        } else if (responseData.status != true || responseData.data?.id == null || responseData.data!.id!.isEmpty) {
+          _message = responseData.message ?? "Failed to initiate image enhancement task.";
+          _success = false;
+        } else {
+          _message = "Success";
+          _success = true;
+        }
       } else {
         if (kDebugMode) {
           print("API FAILED : ${response.body}");
@@ -69,7 +83,7 @@ class ImageEnhanceRepository {
             jsonDecode(response.body) as Map<String, dynamic>;
         final responseData = ImageEnhanceResponse.fromJson(responseJsonMap);
         _makeSongResponse = responseData;
-        _message = "Fail";
+        _message = responseData.message ?? "Fail";
         _success = false;
       }
     } catch (error) {

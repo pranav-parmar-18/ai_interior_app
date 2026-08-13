@@ -11,6 +11,16 @@ class SmartReplaceCreateInitialEvent extends SmartReplaceCreateEvent {}
 
 class SmartReplaceCreateDataEvent extends SmartReplaceCreateEvent {
   final Map<String, dynamic> login;
+  final File image;
+  final File mask;
 
-  const SmartReplaceCreateDataEvent({required this.login});
+  const SmartReplaceCreateDataEvent({
+    required this.login,
+    required this.image,
+    required this.mask,
+  });
+
+  @override
+  List<Object> get props => [login, image, mask];
 }
+

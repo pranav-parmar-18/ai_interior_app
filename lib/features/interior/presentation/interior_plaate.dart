@@ -246,7 +246,7 @@ class _InteriorColorPaletteScreenState
     isSubscriptionActive();
   }
 
-  bool? isSubscribed;
+  bool? isSubscribed = false;
 
   void openSubscriptionScreen(BuildContext context) {
     final nextIndex = SubscriptionScreenManager().getNextIndex();
@@ -264,21 +264,14 @@ class _InteriorColorPaletteScreenState
   }
 
   Future<bool> isSubscriptionActive() async {
-    final prefs = await SharedPreferences.getInstance();
-    final data = prefs.getString('subscription_info');
-    if (data == null) {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    final active = preferences.getBool('is_subscribed') ?? false;
+    if (mounted) {
       setState(() {
-        isSubscribed = false;
+        isSubscribed = active;
       });
-      return false;
     }
-
-    final sub = SubscriptionInfo.fromJson(data);
-    setState(() {
-      isSubscribed = sub?.isActive ?? false;
-    });
-
-    return sub?.isActive ?? false;
+    return active;
   }
 
   @override
@@ -309,6 +302,7 @@ class _InteriorColorPaletteScreenState
               "designAsth":
                   interiorDesignCreateModelResponse?.data?.designAsthetic ?? "",
               "id": interiorDesignCreateModelResponse?.data?.id ?? "",
+              "module_id": 1,
             },
           );
         } else if (state is InteriorDeignCreateFailureState) {

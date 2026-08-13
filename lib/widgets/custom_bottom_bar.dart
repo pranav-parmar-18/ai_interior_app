@@ -4,6 +4,7 @@ import 'package:ai_interior/utils/responsive_utils.dart';
 import 'package:ai_interior/widgets/custom_imageview.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:ai_interior/l10n/generated/app_localizations.dart';
 
 import '../theme/theme.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
@@ -18,25 +19,26 @@ class CustomBottomBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
 
     List<BottomMenuModel> bottomMenuList = [
       BottomMenuModel(
         icon: "assets/images/home.png",
         activeIcon: "assets/images/home.png",
         type: BottomBarEnum.Home,
-        title: "Home",
+        title: l10n?.home ?? "Home",
       ),
       BottomMenuModel(
         icon: "assets/images/explore.png",
         activeIcon: "assets/images/explore.png",
         type: BottomBarEnum.Explore,
-        title: "Explore",
+        title: l10n?.explore ?? "Explore",
       ),
       BottomMenuModel(
         icon: "assets/images/recents.png",
         activeIcon: "assets/images/recents.png",
         type: BottomBarEnum.Recents,
-        title: "Recents",
+        title: l10n?.recents ?? "Recents",
       ),
     ];
 
@@ -44,14 +46,14 @@ class CustomBottomBar extends StatelessWidget {
       (element) => element.type == selectedTab,
     );
 
-    // Responsive sizes - scaled up slightly to make the bar larger
-    final containerHeight = 64.0; // height: 64px
-    final selectedIconSize = r.adaptiveValue(context, mobile: 26, tablet: 36);
-    final unselectedIconSize = r.adaptiveValue(context, mobile: 24, tablet: 34);
-    final selectedIconWidth = r.adaptiveValue(context, mobile: 26, tablet: 36);
-    final unselectedIconWidth = r.adaptiveValue(context, mobile: 24, tablet: 34);
-    final selectedFontSize = r.sp(context, 12);
-    final unselectedFontSize = r.sp(context, 12);
+    // Responsive sizes - scaled to fit cleanly within container
+    final containerHeight = r.adaptiveValue(context, mobile: 68, tablet: 84);
+    final selectedIconSize = r.adaptiveValue(context, mobile: 24, tablet: 32);
+    final unselectedIconSize = r.adaptiveValue(context, mobile: 22, tablet: 30);
+    final selectedIconWidth = r.adaptiveValue(context, mobile: 24, tablet: 32);
+    final unselectedIconWidth = r.adaptiveValue(context, mobile: 22, tablet: 30);
+    final selectedFontSize = r.sp(context, 11);
+    final unselectedFontSize = r.sp(context, 11);
 
     final tabPillWidth = 102.0 * bottomMenuList.length;
     final horizontalPaddingVal = r.wp(context, 10);
@@ -106,7 +108,7 @@ class CustomBottomBar extends StatelessWidget {
           unselectedIconColor:Color.fromRGBO(89, 89, 89, 1.0), // Inactive tab color rgba(148, 148, 148, 1)
           barHeight: containerHeight,
           tabWidth: 102.0, // Scaled tab button width
-          tabPadding: const EdgeInsets.only(top: 6, bottom: 7, left: 8, right: 8), // Padding from Figma specs
+          tabPadding: const EdgeInsets.only(top: 4, bottom: 4, left: 6, right: 6), // Padding from Figma specs
           iconLabelSpacing: 3.0, // gap: 3px
           horizontalPadding: horizontalPaddingVal, // Horizontal padding around the pill
           verticalPadding: r.hp(context, 10), // Vertical floating space

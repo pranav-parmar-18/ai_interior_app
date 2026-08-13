@@ -44,11 +44,11 @@ class _OnboardingFourScreenState extends State<OnboardingFourScreen> {
   }
 
   String _priceForWeekly() {
-    if (_loading || _products.isEmpty) return "\$3.99";
+    if (_loading || _products.isEmpty) return "\$6.99";
     try {
       return _products.firstWhere((p) => p.id == 'com.ai_interior.weekly').price;
     } catch (_) {
-      return "\$3.99";
+      return "\$6.99";
     }
   }
 
@@ -70,6 +70,7 @@ class _OnboardingFourScreenState extends State<OnboardingFourScreen> {
   Future<void> _saveSubscription(String productId) async {
     final prefs = await SharedPreferences.getInstance();
     final expiryDate = DateTime.now().add(const Duration(days: 7));
+    await prefs.setBool('is_subscribed', true);
     await prefs.setString(
       'subscription_info',
       jsonEncode({'type': 'weekly', 'expiry': expiryDate.toIso8601String()}),
@@ -132,52 +133,17 @@ class _OnboardingFourScreenState extends State<OnboardingFourScreen> {
     if (_isPurchasing || _loading) return;
     setState(() => _isPurchasing = true);
 
-    if (kDebugMode) {
-      // In debug mode, immediately simulate success so you can test the full creation flow locally!
-      Future.delayed(const Duration(milliseconds: 500), () async {
-        await _saveSubscription('com.ai_interior.weekly');
-        if (mounted) {
-          setState(() => _isPurchasing = false);
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Debug Mode: Simulated purchase successful!')),
-          );
-          _createUserBloc.add(
-            CreateUserDataEvent(
-              login: {"uuid": deviceId.toString()},
-            ),
-          );
-        }
-      });
-      return;
-    }
-
-    if (_products.isEmpty) {
-      // Simulate sandbox purchase on simulator/test environment when products cannot be fetched
-      Future.delayed(const Duration(seconds: 1), () async {
-        await _saveSubscription('com.ai_interior.weekly');
-        if (mounted) {
-          setState(() => _isPurchasing = false);
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Simulated sandbox purchase successful!')),
-          );
-          _createUserBloc.add(
-            CreateUserDataEvent(
-              login: {"uuid": deviceId.toString()},
-            ),
-          );
-        }
-      });
-      return;
-    }
-
     try {
-      final product = _products.firstWhere((p) => p.id == 'com.ai_interior.weekly');
+      final product = _products.firstWhere(
+        (p) => p.id == 'com.ai_interior.weekly',
+        orElse: () => _products.isNotEmpty ? _products.first : throw Exception('No products found'),
+      );
       final purchaseParam = PurchaseParam(productDetails: product);
       _iap.buyNonConsumable(purchaseParam: purchaseParam);
     } catch (e) {
       setState(() => _isPurchasing = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error starting purchase: $e')),
+        SnackBar(content: Text('Unable to process purchase: $e')),
       );
     }
   }

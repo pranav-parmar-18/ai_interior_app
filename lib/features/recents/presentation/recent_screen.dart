@@ -12,6 +12,7 @@ import '../../home/presentation/home_screen.dart';
 import '../../main/presentaion/main_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../setting/presentation/setting_screens.dart';
+import 'package:ai_interior/l10n/generated/app_localizations.dart';
 
 class RecentsScreen extends StatefulWidget {
   final ValueNotifier<int>? selectedIndex;
@@ -127,10 +128,16 @@ class _RecentsScreenState extends State<RecentsScreen> {
           borderRadius: BorderRadius.circular(r.adaptiveValue(context, mobile: 15, tablet: 22)),
           onTap: () {
             int moduleId = 1;
-            if (item.type == Type.SMART_REPLACES) {
-              moduleId = 5;
+            if (item.type == Type.EXTERIOR_DESIGNS) {
+              moduleId = 2;
             } else if (item.type == Type.STYLE_TRANSFERS) {
               moduleId = 3;
+            } else if (item.type == Type.SMART_STAGINGS) {
+              moduleId = 4;
+            } else if (item.type == Type.SMART_REPLACES) {
+              moduleId = 5;
+            } else if (item.type == Type.DREAM_SPACES) {
+              moduleId = 6;
             }
 
             Navigator.of(context).pushNamed(
@@ -206,6 +213,7 @@ class _RecentsScreenState extends State<RecentsScreen> {
   }
 
   Widget _buildEmptyState() {
+    final l10n = AppLocalizations.of(context);
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -219,7 +227,7 @@ class _RecentsScreenState extends State<RecentsScreen> {
 
         // Title
         Text(
-          'Your Designs Will Appear Here',
+          l10n?.recentsEmptyTitle ?? 'Your Designs Will Appear Here',
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: r.sp(context, 22),
@@ -236,7 +244,7 @@ class _RecentsScreenState extends State<RecentsScreen> {
         Padding(
           padding: EdgeInsets.symmetric(horizontal: r.wp(context, 32)),
           child: Text(
-            'Upload a photo, try a style, and watch AI do the magic!',
+            l10n?.recentsEmptySubtitle ?? 'Upload a photo, try a style, and watch AI do the magic!',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: r.sp(context, 15),

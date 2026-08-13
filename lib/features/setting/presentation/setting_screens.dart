@@ -564,6 +564,7 @@
 //   }
 // }
 import 'package:ai_interior/features/credit/presentataion/credit_screen.dart';
+import 'package:ai_interior/features/setting/presentation/contact_screen.dart';
 import 'package:ai_interior/features/setting/presentation/language_screen.dart';
 import 'package:ai_interior/widgets/custom_imageview.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -571,6 +572,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ai_interior/utils/responsive_utils.dart';
+import 'package:ai_interior/l10n/generated/app_localizations.dart';
 
 import '../../../services/subscription_manager.dart';
 import '../../subscription/presentation/subscription_screen.dart';
@@ -591,6 +593,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     final topPadding = MediaQuery.of(context).padding.top;
     final bottomPadding = MediaQuery.of(context).padding.bottom;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF0EDE8),
@@ -621,7 +624,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 // Title
                 Text(
-                  'Settings',
+                  l10n.settingsTitle,
                   style: TextStyle(
                     fontFamily: 'Georgia',
                     fontSize: r.sp(context, 26),
@@ -659,7 +662,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         size: r.wp(context, 24),
                         color: const Color(0xFF1A1A1A),
                       ),
-                      label: 'Change Language',
+                      label: l10n.changeLanguage,
                       onTap: () {
                         Navigator.of(
                           context,
@@ -679,7 +682,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         size: r.wp(context, 22),
                         color: const Color(0xFF1A1A1A),
                       ),
-                      label: 'Share App',
+                      label: l10n.shareApp,
                       onTap: () {},
                     ),
                     _SettingsItem(
@@ -688,7 +691,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         size: r.wp(context, 23),
                         color: const Color(0xFF1A1A1A),
                       ),
-                      label: 'Rate Us',
+                      label: l10n.rateUs,
                       onTap: () {},
                     ),
                     _SettingsItem(
@@ -697,8 +700,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         size: r.wp(context, 23),
                         color: const Color(0xFF1A1A1A),
                       ),
-                      label: 'Support',
-                      onTap: () {},
+                      label: l10n.support,
+                      onTap: () {
+                        Navigator.of(context).pushNamed(ContactUsScreen.routeName);
+                      },
                     ),
                     _SettingsItem(
                       icon: Icon(
@@ -706,7 +711,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         size: r.wp(context, 23),
                         color: const Color(0xFF1A1A1A),
                       ),
-                      label: 'Terms & Conditions',
+                      label: l10n.termsConditions,
                       onTap: () => launchUrl(
                         Uri.parse('https://bvktechnologies.com/terms-of-use-for-bloomnest-ai-interior-design/'),
                         mode: LaunchMode.externalApplication,
@@ -718,7 +723,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         size: r.wp(context, 23),
                         color: const Color(0xFF1A1A1A),
                       ),
-                      label: 'Privacy Policy',
+                      label: l10n.privacyPolicy,
                       onTap: () => launchUrl(
                         Uri.parse('https://bvktechnologies.com/privacy-policy-for-bloomnest-ai-interior-design/'),
                         mode: LaunchMode.externalApplication,
@@ -772,6 +777,7 @@ class _PremiumBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final containerSize = r.adaptiveValue(context, mobile: 70.0, tablet: 90.0);
+    final l10n = AppLocalizations.of(context)!;
 
     return GestureDetector(
       onTap: () {
@@ -815,7 +821,7 @@ class _PremiumBanner extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Upgrade To Premium',
+                    l10n.upgradePremium,
                     style: TextStyle(
                       fontFamily: 'Georgia',
                       fontSize: r.sp(context, 18),
@@ -825,7 +831,7 @@ class _PremiumBanner extends StatelessWidget {
                   ),
                   r.verticalSpace(context, 3),
                   Text(
-                    'Unlock all benefits!',
+                    l10n.unlockFeatures,
                     style: TextStyle(
                       fontFamily: 'Georgia',
                       fontSize: r.sp(context, 14),

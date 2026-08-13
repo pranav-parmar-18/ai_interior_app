@@ -15,6 +15,7 @@ import '../../../widgets/custom_imageview.dart';
 import '../../credit/presentataion/credit_screen.dart';
 import '../../home/presentation/home_screen.dart';
 import '../../setting/presentation/setting_screens.dart';
+import 'package:ai_interior/l10n/generated/app_localizations.dart';
 
 class RoomCardData {
   final String imagePath;
@@ -70,9 +71,37 @@ class _ExploreScreenState extends State<ExploreScreen>
     'Living Room',
     'Bedroom',
     'Kitchen',
-    'Dining',
+    'Dining Room',
+    'Bathroom',
+    'Laundry Room',
+    'Home Office',
+    'Study Room',
+    'Dorm Room',
+    'Gaming Room',
+    'Attic',
+    'Toilet',
+    'Coffee Shop',
+    'Restaurant',
+    'Office',
+    'Other',
   ];
-  final _exteriorCats = const ['All', 'Garden', 'Patio', 'Pool', 'Balcony'];
+  final _exteriorCats = const [
+    'All',
+    'House',
+    'Villa',
+    'Backyard',
+    'Courtyard',
+    'Ranch',
+    'Office',
+    'School',
+    'Retail',
+    'Tower',
+    'Museum',
+    'Apartment',
+    'Commercial',
+    'Residential',
+    'Other',
+  ];
 
   List<String> get _cats =>
       _tabController.index == 0 ? _interiorCats : _exteriorCats;
@@ -101,14 +130,15 @@ class _ExploreScreenState extends State<ExploreScreen>
 
   String _spaceTypeForCategory(String category, {required bool isInterior}) {
     if (category == 'All') return '';
-    if (isInterior && category == 'Dining') return 'dining room';
     return category.toLowerCase();
   }
 
   void _loadDesignsForSelectedCategory() {
     final isInterior = _tabController.index == 0;
+    final currentCats = _cats;
+    final safeIdx = (_catIdx >= 0 && _catIdx < currentCats.length) ? _catIdx : 0;
     final spaceType = _spaceTypeForCategory(
-      _cats[_catIdx],
+      currentCats[safeIdx],
       isInterior: isInterior,
     );
 
@@ -146,10 +176,6 @@ class _ExploreScreenState extends State<ExploreScreen>
 
   @override
   Widget build(BuildContext context) {
-    final mq = MediaQuery.of(context);
-    final topPad = mq.padding.top;
-    final botPad = mq.padding.bottom;
-
     return BlocConsumer<GetAllInteriorDesignBloc, GetAllInteriorDesignState>(
       bloc: _getAllInteriorDesignBloc,
       listener: (context, intState) {
@@ -215,12 +241,13 @@ class _ExploreScreenState extends State<ExploreScreen>
   }
 
   Widget _buildTabBar() {
+    final l10n = AppLocalizations.of(context);
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: r.wp(context, 20)),
       child: GlassSegmentedControl(
-        segments: const [
-          GlassTab(label: 'Interior'),
-          GlassTab(label: 'Exterior'),
+        segments: [
+          GlassTab(label: l10n?.interiorDesignTitle ?? 'Interior'),
+          GlassTab(label: l10n?.exteriorDesignTitle ?? 'Exterior'),
         ],
         selectedIndex: _tabController.index,
         onSegmentSelected: (index) {
@@ -248,16 +275,129 @@ class _ExploreScreenState extends State<ExploreScreen>
     );
   }
 
+  // void _showFilterBottomSheet() {
+  //   showModalBottomSheet(
+  //     context: context,
+  //     backgroundColor: const Color(0xFFF5F2EE),
+  //     shape: const RoundedRectangleBorder(
+  //       borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+  //     ),
+  //     builder: (ctx) {
+  //       final currentCats = _cats;
+  //       final safeIdx = (_catIdx >= 0 && _catIdx < currentCats.length) ? _catIdx : 0;
+  //       return StatefulBuilder(
+  //         builder: (context, setSheetState) {
+  //           return Container(
+  //             padding: EdgeInsets.fromLTRB(
+  //               r.wp(context, 20),
+  //               r.hp(context, 18),
+  //               r.wp(context, 20),
+  //               MediaQuery.of(context).padding.bottom + 20,
+  //             ),
+  //             child: Column(
+  //               mainAxisSize: MainAxisSize.min,
+  //               crossAxisAlignment: CrossAxisAlignment.start,
+  //               children: [
+  //                 Row(
+  //                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //                   children: [
+  //                     Text(
+  //                       'Select Category',
+  //                       style: TextStyle(
+  //                         fontSize: r.sp(context, 20),
+  //                         fontFamily: 'Georgia',
+  //                         fontWeight: FontWeight.w600,
+  //                         color: const Color(0xFF1A1A1A),
+  //                       ),
+  //                     ),
+  //                     GestureDetector(
+  //                       onTap: () => Navigator.of(context).pop(),
+  //                       child: Container(
+  //                         padding: const EdgeInsets.all(6),
+  //                         decoration: const BoxDecoration(
+  //                           color: Color(0xFFE8E4DC),
+  //                           shape: BoxShape.circle,
+  //                         ),
+  //                         child: const Icon(Icons.close_rounded, size: 20, color: Color(0xFF4A4844)),
+  //                       ),
+  //                     ),
+  //                   ],
+  //                 ),
+  //                 SizedBox(height: r.hp(context, 16)),
+  //                 Flexible(
+  //                   child: SingleChildScrollView(
+  //                     physics: const BouncingScrollPhysics(),
+  //                     child: Wrap(
+  //                       spacing: r.wp(context, 10),
+  //                       runSpacing: r.hp(context, 10),
+  //                       children: List.generate(currentCats.length, (i) {
+  //                         final sel = safeIdx == i;
+  //                         return GestureDetector(
+  //                           onTap: () {
+  //                             setState(() {
+  //                               _catIdx = i;
+  //                             });
+  //                             _loadDesignsForSelectedCategory();
+  //                             Navigator.of(context).pop();
+  //                           },
+  //                           child: AnimatedContainer(
+  //                             duration: const Duration(milliseconds: 150),
+  //                             padding: EdgeInsets.symmetric(
+  //                               horizontal: r.wp(context, 16),
+  //                               vertical: r.hp(context, 10),
+  //                             ),
+  //                             decoration: BoxDecoration(
+  //                               color: sel
+  //                                   ? const Color(0xFF4A6A70)
+  //                                   : Colors.white,
+  //                               borderRadius: BorderRadius.circular(r.wp(context, 20)),
+  //                               border: Border.all(
+  //                                 color: sel ? const Color(0xFF4A6A70) : const Color(0xFFE0DDD8),
+  //                               ),
+  //                               boxShadow: [
+  //                                 BoxShadow(
+  //                                   color: Colors.black.withOpacity(0.04),
+  //                                   blurRadius: 4,
+  //                                   offset: const Offset(0, 2),
+  //                                 ),
+  //                               ],
+  //                             ),
+  //                             child: Text(
+  //                               currentCats[i],
+  //                               style: TextStyle(
+  //                                 fontSize: r.sp(context, 14),
+  //                                 fontWeight: sel ? FontWeight.w700 : FontWeight.w500,
+  //                                 color: sel ? Colors.white : const Color(0xFF3A3530),
+  //                               ),
+  //                             ),
+  //                           ),
+  //                         );
+  //                       }),
+  //                     ),
+  //                   ),
+  //                 ),
+  //               ],
+  //             ),
+  //           );
+  //         },
+  //       );
+  //     },
+  //   );
+  // }
+
   Widget _buildCategoryChips() {
+    final currentCats = _cats;
+    final safeIdx = (_catIdx >= 0 && _catIdx < currentCats.length) ? _catIdx : 0;
+
     return SizedBox(
       height: r.hp(context, 38),
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: EdgeInsets.symmetric(horizontal: r.wp(context, 20)),
-        itemCount: _cats.length,
+        itemCount: currentCats.length,
         separatorBuilder: (_, __) => SizedBox(width: r.wp(context, 8)),
         itemBuilder: (_, i) {
-          final sel = _catIdx == i;
+          final sel = safeIdx == i;
           return GestureDetector(
             onTap: () {
               setState(() {
@@ -283,7 +423,7 @@ class _ExploreScreenState extends State<ExploreScreen>
               ),
               alignment: Alignment.center,
               child: Text(
-                _cats[i],
+                currentCats[i],
                 style: TextStyle(
                   fontSize: r.sp(context, 14),
                   fontWeight: sel ? FontWeight.w700 : FontWeight.w500,
@@ -298,7 +438,8 @@ class _ExploreScreenState extends State<ExploreScreen>
   }
 
   Widget _buildGrid() {
-    final selectedCategory = _interiorCats[_catIdx];
+    final safeIdx = (_catIdx >= 0 && _catIdx < _interiorCats.length) ? _catIdx : 0;
+    final selectedCategory = _interiorCats[safeIdx];
     final designs = interiorDesignModelResponse?.data
             ?.where(
               (design) => _matchesCategory(
@@ -339,7 +480,8 @@ class _ExploreScreenState extends State<ExploreScreen>
   }
 
   Widget _buildGridNew() {
-    final selectedCategory = _exteriorCats[_catIdx];
+    final safeIdx = (_catIdx >= 0 && _catIdx < _exteriorCats.length) ? _catIdx : 0;
+    final selectedCategory = _exteriorCats[safeIdx];
     final designs = exteriorDesignModelResponse?.data
             ?.where(
               (design) => _matchesCategory(
@@ -579,7 +721,8 @@ class _CardPlaceholder extends StatelessWidget {
 class _NavBtn extends StatelessWidget {
   final IconData icon;
   final String label;
-  final int idx, current;
+  final int idx;
+  final int current;
   final ValueChanged<int> onTap;
 
   const _NavBtn({
@@ -621,7 +764,8 @@ class _NavBtn extends StatelessWidget {
 
 class _CompassNavBtn extends StatelessWidget {
   final String label;
-  final int idx, current;
+  final int idx;
+  final int current;
   final ValueChanged<int> onTap;
 
   const _CompassNavBtn({

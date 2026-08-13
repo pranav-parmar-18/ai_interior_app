@@ -30,11 +30,36 @@ class ReplaceEditScreen extends StatefulWidget {
 class _ReplaceEditScreenState extends State<ReplaceEditScreen>
     with TickerProviderStateMixin {
   int _selectedArea = 2;
-  double _eraserSize = 0.45;
   double _brushSize = 0.72;
-  bool _canUndo = true;
+
+  final List<BrushStroke> _strokes = [];
+  final List<BrushStroke> _undoStrokes = [];
+  Offset? _currentTouchPoint;
+
+  bool _canUndo = false;
   bool _canRedo = false;
   File? _picked;
+
+  void _undo() {
+    if (_strokes.isNotEmpty) {
+      setState(() {
+        _undoStrokes.add(_strokes.removeLast());
+        _canUndo = _strokes.isNotEmpty;
+        _canRedo = _undoStrokes.isNotEmpty;
+      });
+    }
+  }
+
+  void _redo() {
+    if (_undoStrokes.isNotEmpty) {
+      setState(() {
+        _strokes.add(_undoStrokes.removeLast());
+        _canUndo = _strokes.isNotEmpty;
+        _canRedo = _undoStrokes.isNotEmpty;
+      });
+    }
+  }
+
 
   late final AnimationController _fadeCtrl;
   late final Animation<double> _fadeAnim;
@@ -118,12 +143,7 @@ class _ReplaceEditScreenState extends State<ReplaceEditScreen>
   // ── Build ──────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
-    final isTablet = r.isTablet(context);
     final isTwoCols = MediaQuery.of(context).size.width >= 1024;
-    final double hPad = MediaQuery.of(context).size.width >= 1024 ? MediaQuery.of(context).size.width * 0.1 : (isTablet ? 32.0 : 20.0);
-    final double contentMaxWidth = MediaQuery.of(context).size.width >= 1024 ? 900.0 : double.infinity;
-    final double imageHeight = MediaQuery.of(context).size.width >= 1024 ? 440.0 : (isTablet ? 380.0 : 300.0);
-    final double btnHeight = MediaQuery.of(context).size.width >= 1024 ? 64.0 : (isTablet ? 60.0 : 54.0);
     final topPad = MediaQuery.of(context).padding.top;
     final botPad = MediaQuery.of(context).padding.bottom;
 
@@ -415,147 +435,194 @@ class _ReplaceEditScreenState extends State<ReplaceEditScreen>
       ),
       child: Column(
         children: [
-          // Image preview
-          Stack(
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.vertical(
-                  top: const Radius.circular(20),
-                  bottom: Radius.circular(!hasImage ? 0 : 20),
-                ),
-                child: Container(
-                  width: double.infinity,
-                  height: 330,
-                  color: const Color(0xFFF8F6F2),
-                  child: _passedPicked != null
-                      ? CustomImageview(
-                          imagePath: _passedPicked!.path,
-                          fit: BoxFit.cover,
-                        )
-                      : _passedTemplateIndex != -1
-                          ? CustomImageview(
-                              imagePath: "assets/images/interior/interior_${_passedTemplateIndex + 1}.jpg",
-                              fit: BoxFit.cover,
-                            )
-                          : _picked != null
-                              ? CustomImageview(
-                                  imagePath: _picked!.path,
-                                  fit: BoxFit.cover,
-                                )
-                              : CustomImageview(
-                                  imagePath: "assets/images/replace_home.png",
-                                  fit: BoxFit.contain,
-                                ),
-                ),
-              ),
-              
-              // Highlight Overlay (when not scanning)
-              if (!_detectingObjects && _detectedObjects.isNotEmpty)
-                Positioned.fill(
-                  child: IgnorePointer(
-                    child: CustomPaint(
-                      painter: _ObjectHighlightPainter(
-                        selectedObject: _detectedObjects[_selectedAreaIndex],
-                        templateIndex: _passedTemplateIndex,
-                        isCustomImage: _passedPicked != null || _picked != null,
+          // Image preview & Touch Brushing Canvas (clipped strictly to image area)
+          ClipRRect(
+            borderRadius: BorderRadius.vertical(
+              top: const Radius.circular(20),
+              bottom: Radius.circular(!hasImage ? 0 : 20),
+            ),
+            child: GestureDetector(
+              onPanStart: (details) {
+                if (_detectingObjects) return;
+                final strokeWidth = 8.0 + _brushSize * 40.0;
+                setState(() {
+                  _selectedAreaIndex = -1;
+                  _selectedArea = -1;
+                  _strokes.add(BrushStroke(
+                    points: [details.localPosition],
+                    strokeWidth: strokeWidth,
+                  ));
+                  _undoStrokes.clear();
+                  _canUndo = true;
+                  _canRedo = false;
+                  _currentTouchPoint = details.localPosition;
+                });
+              },
+              onPanUpdate: (details) {
+                if (_detectingObjects || _strokes.isEmpty) return;
+                setState(() {
+                  _strokes.last.points.add(details.localPosition);
+                  _currentTouchPoint = details.localPosition;
+                });
+              },
+              onPanEnd: (_) {
+                if (_detectingObjects) return;
+                setState(() {
+                  _currentTouchPoint = null;
+                });
+              },
+              child: Stack(
+                children: [
+                  Container(
+                    width: double.infinity,
+                    height: 330,
+                    color: const Color(0xFFF8F6F2),
+                    child: _passedPicked != null
+                        ? CustomImageview(
+                            imagePath: _passedPicked!.path,
+                            fit: BoxFit.cover,
+                          )
+                        : _passedTemplateIndex != -1
+                            ? CustomImageview(
+                                imagePath: "assets/images/interior/interior_${_passedTemplateIndex + 1}.jpg",
+                                fit: BoxFit.cover,
+                              )
+                            : _picked != null
+                                ? CustomImageview(
+                                    imagePath: _picked!.path,
+                                    fit: BoxFit.cover,
+                                  )
+                                : CustomImageview(
+                                    imagePath: "assets/images/replace_home.png",
+                                    fit: BoxFit.contain,
+                                  ),
+                  ),
+                  
+                  // Highlight Overlay (only when no manual brush strokes exist and an area chip is selected)
+                  if (!_detectingObjects && _strokes.isEmpty && _selectedAreaIndex >= 0 && _selectedAreaIndex < _detectedObjects.length)
+                    Positioned.fill(
+                      child: IgnorePointer(
+                        child: CustomPaint(
+                          painter: _ObjectHighlightPainter(
+                            selectedObject: _detectedObjects[_selectedAreaIndex],
+                            templateIndex: _passedTemplateIndex,
+                            isCustomImage: _passedPicked != null || _picked != null,
+                            brushSize: _brushSize,
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                ),
 
-              // AI Scan Animation overlay
-              if (_detectingObjects && hasImage)
-                Positioned.fill(
-                  child: AnimatedBuilder(
-                    animation: _scanCtrl,
-                    builder: (context, child) {
-                      final progress = _scanCtrl.value;
-                      return Stack(
-                        children: [
-                          // Dark tint
-                          Container(
-                            color: Colors.black.withOpacity(0.2),
+                  // Freehand iOS Brushing Overlay & Live Touch Cursor
+                  if (!_detectingObjects)
+                    Positioned.fill(
+                      child: IgnorePointer(
+                        child: CustomPaint(
+                          painter: _FreehandBrushPainter(
+                            strokes: _strokes,
+                            currentPoint: _currentTouchPoint,
+                            currentBrushSize: _brushSize,
                           ),
-                          // Moving scan line
-                          Positioned(
-                            top: progress * 330,
-                            left: 0,
-                            right: 0,
-                            child: Container(
-                              height: 3.0,
-                              decoration: BoxDecoration(
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: const Color(0xFF3A7D7B).withOpacity(0.8),
-                                    blurRadius: 12,
-                                    spreadRadius: 3,
-                                  ),
-                                ],
-                                color: const Color(0xFF3A7D7B),
-                              ),
-                            ),
-                          ),
-                          // Status panel
-                          Center(
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                              decoration: BoxDecoration(
-                                color: Colors.black.withOpacity(0.7),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: const [
-                                  SizedBox(
-                                    width: 18,
-                                    height: 18,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3A7D7B)),
-                                    ),
-                                  ),
-                                  SizedBox(width: 12),
-                                  Text(
-                                    'AI Detecting Objects...',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      );
-                    },
-                  ),
-                ),
+                        ),
+                      ),
+                    ),
 
-              Positioned(
-                top: 14,
-                right: 14,
-                child: _CircleButton(
-                  icon: Icons.info_outline_rounded,
-                  iconColor: const Color(0xFF5A5754),
-                  borderColor: const Color(0xFFD0CEC9),
-                  onTap: () {},
-                ),
+                  // AI Scan Animation overlay
+                  if (_detectingObjects && hasImage)
+                    Positioned.fill(
+                      child: AnimatedBuilder(
+                        animation: _scanCtrl,
+                        builder: (context, child) {
+                          final progress = _scanCtrl.value;
+                          return Stack(
+                            children: [
+                              // Dark tint
+                              Container(
+                                color: Colors.black.withOpacity(0.2),
+                              ),
+                              // Moving scan line
+                              Positioned(
+                                top: progress * 330,
+                                left: 0,
+                                right: 0,
+                                child: Container(
+                                  height: 3.0,
+                                  decoration: BoxDecoration(
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: const Color(0xFF3A7D7B).withOpacity(0.8),
+                                        blurRadius: 12,
+                                        spreadRadius: 3,
+                                      ),
+                                    ],
+                                    color: const Color(0xFF3A7D7B),
+                                  ),
+                                ),
+                              ),
+                              // Status panel
+                              Center(
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withOpacity(0.7),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: const [
+                                      SizedBox(
+                                        width: 18,
+                                        height: 18,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3A7D7B)),
+                                        ),
+                                      ),
+                                      SizedBox(width: 12),
+                                      Text(
+                                        'AI Detecting Objects...',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                    ),
+
+                  Positioned(
+                    top: 14,
+                    right: 14,
+                    child: _CircleButton(
+                      icon: Icons.info_outline_rounded,
+                      iconColor: const Color(0xFF5A5754),
+                      borderColor: const Color(0xFFD0CEC9),
+                      onTap: () {},
+                    ),
+                  ),
+                  if (_picked != null)
+                    Positioned(
+                      top: 14,
+                      left: 14,
+                      child: _CircleButton(
+                        icon: Icons.close_rounded,
+                        iconColor: const Color(0xFF5A5754),
+                        borderColor: const Color(0xFFD0CEC9),
+                        onTap: () => setState(() => _picked = null),
+                      ),
+                    ),
+                ],
               ),
-              if (_picked != null)
-                Positioned(
-                  top: 14,
-                  left: 14,
-                  child: _CircleButton(
-                    icon: Icons.close_rounded,
-                    iconColor: const Color(0xFF5A5754),
-                    borderColor: const Color(0xFFD0CEC9),
-                    onTap: () => setState(() => _picked = null),
-                  ),
-                ),
-            ],
+            ),
           ),
+
           
           if (!hasImage)
             Padding(
@@ -618,8 +685,7 @@ class _ReplaceEditScreenState extends State<ReplaceEditScreen>
             mainAxisSize: MainAxisSize.min,
             children: [
               GestureDetector(
-                onTap:
-                _canUndo ? () => setState(() => _canUndo = false) : null,
+                onTap: _canUndo ? _undo : null,
                 child: Icon(Icons.undo_rounded,
                     size: 22,
                     color: _canUndo
@@ -631,14 +697,33 @@ class _ReplaceEditScreenState extends State<ReplaceEditScreen>
                   width: 1, height: 18, color: const Color(0xFFE0DDD8)),
               const SizedBox(width: 10),
               GestureDetector(
-                onTap:
-                _canRedo ? () => setState(() => _canRedo = false) : null,
+                onTap: _canRedo ? _redo : null,
                 child: Icon(Icons.redo_rounded,
                     size: 22,
                     color: _canRedo
                         ? const Color(0xFF5A5550)
                         : const Color(0xFFBBB8B4)),
               ),
+              if (_strokes.isNotEmpty || _selectedAreaIndex != -1 || _selectedArea != -1) ...[
+                const SizedBox(width: 10),
+                Container(width: 1, height: 18, color: const Color(0xFFE0DDD8)),
+                const SizedBox(width: 10),
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _strokes.clear();
+                      _undoStrokes.clear();
+                      _selectedAreaIndex = -1;
+                      _selectedArea = -1;
+                      _canUndo = false;
+                      _canRedo = false;
+                    });
+                  },
+                  child: const Icon(Icons.delete_outline_rounded,
+                      size: 20, color: Color(0xFFD9534F)),
+                ),
+              ],
+
             ],
           ),
         ),
@@ -704,10 +789,14 @@ class _ReplaceEditScreenState extends State<ReplaceEditScreen>
             label: activeAreas[i],
             selected: selectedIndex == i,
             onTap: () => setState(() {
+              _strokes.clear();
+              _undoStrokes.clear();
+              _canUndo = false;
+              _canRedo = false;
               if (_detectedObjects.isNotEmpty) {
-                _selectedAreaIndex = i;
+                _selectedAreaIndex = (_selectedAreaIndex == i) ? -1 : i;
               } else {
-                _selectedArea = i;
+                _selectedArea = (_selectedArea == i) ? -1 : i;
               }
             }),
           ),
@@ -724,10 +813,14 @@ class _ReplaceEditScreenState extends State<ReplaceEditScreen>
           label: activeAreas[i],
           selected: selectedIndex == i,
           onTap: () => setState(() {
+            _strokes.clear();
+            _undoStrokes.clear();
+            _canUndo = false;
+            _canRedo = false;
             if (_detectedObjects.isNotEmpty) {
-              _selectedAreaIndex = i;
+              _selectedAreaIndex = (_selectedAreaIndex == i) ? -1 : i;
             } else {
-              _selectedArea = i;
+              _selectedArea = (_selectedArea == i) ? -1 : i;
             }
           }),
         ),
@@ -736,53 +829,101 @@ class _ReplaceEditScreenState extends State<ReplaceEditScreen>
   }
 
   // ─────────────────────────────────────────────
-  // Dual brush slider
+  // Single Brush Size Slider
   // ─────────────────────────────────────────────
   Widget _buildBrushSlider() {
+    final sizePx = (8 + _brushSize * 40).round();
+
     final sliderTheme = SliderThemeData(
-      trackHeight: 4,
-      thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
-      overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
-      thumbColor: const Color(0xFF4A5A68),
+      trackHeight: 6,
       activeTrackColor: const Color(0xFF4A5A68),
-      inactiveTrackColor: const Color(0xFFCCC8C2),
-      overlayColor: const Color(0xFF4A5A68).withOpacity(0.15),
+      inactiveTrackColor: const Color(0xFFE2DFD9),
+      thumbColor: const Color(0xFF4A5A68),
+      thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10, elevation: 3),
+      overlayColor: const Color(0xFF4A5A68).withOpacity(0.12),
+      overlayShape: const RoundSliderOverlayShape(overlayRadius: 20),
     );
 
-    return Row(
-      children: [
-        const Text('🖌️', style: TextStyle(fontSize: 22)),
-        const SizedBox(width: 8),
-        Expanded(
-          child: SliderTheme(
-            data: sliderTheme,
-            child: Slider(
-              value: _eraserSize,
-              onChanged: (v) => setState(() => _eraserSize = v),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFE8E5DF), width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          // Paintbrush icon container
+          Container(
+            width: 36,
+            height: 36,
+            decoration: const BoxDecoration(
+              color: Color(0xFFF4F1EA),
+              shape: BoxShape.circle,
+            ),
+            child: const Center(
+              child: Text('🖌️', style: TextStyle(fontSize: 18)),
             ),
           ),
-        ),
-        Container(
-          width: 3,
-          height: 24,
-          margin: const EdgeInsets.symmetric(horizontal: 2),
-          decoration: BoxDecoration(
-            color: const Color(0xFF5A6570),
-            borderRadius: BorderRadius.circular(2),
-          ),
-        ),
-        Expanded(
-          child: SliderTheme(
-            data: sliderTheme,
-            child: Slider(
-              value: _brushSize,
-              onChanged: (v) => setState(() => _brushSize = v),
+          const SizedBox(width: 8),
+
+          // Single Brush Size Slider
+          Expanded(
+            child: SliderTheme(
+              data: sliderTheme,
+              child: Slider(
+                value: _brushSize.clamp(0.0, 1.0),
+                min: 0.0,
+                max: 1.0,
+                onChanged: (v) => setState(() => _brushSize = v),
+              ),
             ),
           ),
-        ),
-      ],
+          const SizedBox(width: 8),
+
+          // Live Size Badge with dynamic preview dot
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF0ECE3),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: const Color(0xFFDDD8CD)),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: math.max(6.0, math.min(16.0, 4.0 + _brushSize * 12.0)),
+                  height: math.max(6.0, math.min(16.0, 4.0 + _brushSize * 12.0)),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF4A5A68),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  '$sizePx px',
+                  style: TextStyle(
+                    fontSize: r.sp(context, 12),
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF3A3632),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
+
 
   // ─────────────────────────────────────────────
   // Next button
@@ -796,11 +937,20 @@ class _ReplaceEditScreenState extends State<ReplaceEditScreen>
       height: btnHeight,
       child: GestureDetector(
         onTap: () {
+          final activeAreas = _detectedObjects.isNotEmpty ? _detectedObjects : _areas;
+          final selectedIndex = _detectedObjects.isNotEmpty ? _selectedAreaIndex : _selectedArea;
+          final selectedObject = (selectedIndex >= 0 && selectedIndex < activeAreas.length)
+              ? activeAreas[selectedIndex]
+              : 'custom area';
+
           Navigator.of(context).pushNamed(
             ReplaceDescribeVisionScreen.routeName,
             arguments: {
               "picked": _passedPicked ?? _picked,
               "templateIndex": _passedTemplateIndex,
+              "selectedObject": selectedObject,
+              "strokes": List<BrushStroke>.from(_strokes),
+              "brushSize": _brushSize,
             },
           );
         },
@@ -1276,168 +1426,174 @@ class _ObjectHighlightPainter extends CustomPainter {
     required this.selectedObject,
     required this.templateIndex,
     required this.isCustomImage,
+    this.brushSize = 0.5,
   });
 
   final String selectedObject;
   final int templateIndex;
   final bool isCustomImage;
+  final double brushSize;
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = const Color(0xFF3A7D7B).withOpacity(0.4)
+    canvas.clipRect(Offset.zero & size);
+
+    final maskPaint = Paint()
+      ..color = const Color(0xFF5CA39E).withOpacity(0.65)
       ..style = PaintingStyle.fill;
 
-    final strokePaint = Paint()
-      ..color = const Color(0xFF3A7D7B).withOpacity(0.8)
-      ..strokeWidth = 2.0
-      ..style = PaintingStyle.stroke;
-
-    final cx = size.width / 2;
-    final cy = size.height / 2;
-
     void highlightPath(Path path) {
-      canvas.drawPath(path, paint);
-      canvas.drawPath(path, strokePaint);
+      canvas.drawPath(path, maskPaint);
     }
 
-    void highlightOval(Rect rect) {
-      canvas.drawOval(rect, paint);
-      canvas.drawOval(rect, strokePaint);
-    }
+    final obj = selectedObject.toLowerCase();
 
-    if (!isCustomImage && templateIndex == -1) {
-      final cyAdjusted = cy + size.height * 0.05;
-      final s = math.min(size.width / 320, size.height / 300) * 0.95;
-
-      final obj = selectedObject.toLowerCase();
-      if (obj == 'sofa') {
-        final sofaBody = Path()
-          ..moveTo(cx - 72 * s, cyAdjusted - 30 * s)
-          ..lineTo(cx + 30 * s, cyAdjusted + 28 * s)
-          ..lineTo(cx + 20 * s, cyAdjusted + 50 * s)
-          ..lineTo(cx - 82 * s, cyAdjusted - 8 * s)
+    if (templateIndex == 1) {
+      // Bedroom template (Image 2)
+      if (obj.contains('bed')) {
+        final bedPath = Path()
+          ..moveTo(0, size.height * 0.92)
+          ..cubicTo(
+            size.width * 0.25, size.height * 0.48,
+            size.width * 0.65, size.height * 0.42,
+            size.width, size.height * 0.48,
+          )
+          ..lineTo(size.width, size.height)
+          ..lineTo(0, size.height)
           ..close();
-        highlightPath(sofaBody);
-
-        final sofaBack = Path()
-          ..moveTo(cx - 82 * s, cyAdjusted - 8 * s)
-          ..lineTo(cx - 72 * s, cyAdjusted - 30 * s)
-          ..lineTo(cx - 64 * s, cyAdjusted - 56 * s)
-          ..lineTo(cx - 74 * s, cyAdjusted - 34 * s)
-          ..close();
-        highlightPath(sofaBack);
-
-        final frontSofa = Path()
-          ..moveTo(cx - 30 * s, cyAdjusted + 52 * s)
-          ..lineTo(cx + 60 * s, cyAdjusted + 10 * s)
-          ..lineTo(cx + 68 * s, cyAdjusted + 28 * s)
-          ..lineTo(cx - 22 * s, cyAdjusted + 70 * s)
-          ..close();
-        highlightPath(frontSofa);
-
-        highlightOval(Rect.fromCenter(
-          center: Offset(cx - 20 * s, cyAdjusted - 8 * s),
-          width: 28 * s,
-          height: 18 * s,
-        ));
-        highlightOval(Rect.fromCenter(
-          center: Offset(cx + 5 * s, cyAdjusted + 8 * s),
-          width: 26 * s,
-          height: 16 * s,
-        ));
-      } else if (obj == 'table') {
-        highlightOval(Rect.fromCenter(
-          center: Offset(cx + 20 * s, cyAdjusted + 22 * s),
-          width: 46 * s,
-          height: 28 * s,
-        ));
-      } else if (obj == 'rug') {
-        final rug = Path()
-          ..moveTo(cx, cyAdjusted - 20 * s)
-          ..lineTo(cx + 80 * s, cyAdjusted + 20 * s)
-          ..lineTo(cx, cyAdjusted + 55 * s)
-          ..lineTo(cx - 80 * s, cyAdjusted + 20 * s)
-          ..close();
-        highlightPath(rug);
-      } else if (obj == 'cabinet') {
-        final tvConsole = Path()
-          ..moveTo(cx + 80 * s, cyAdjusted - 8 * s)
-          ..lineTo(cx + 135 * s, cyAdjusted + 24 * s)
-          ..lineTo(cx + 128 * s, cyAdjusted + 36 * s)
-          ..lineTo(cx + 73 * s, cyAdjusted + 4 * s)
-          ..close();
-        highlightPath(tvConsole);
-      } else if (obj == 'mirror' || obj == 'wall') {
-        final leftWall = Path()
-          ..moveTo(cx - 140 * s, cyAdjusted - 10 * s)
-          ..lineTo(cx, cyAdjusted - 80 * s)
-          ..lineTo(cx, cyAdjusted - 160 * s)
-          ..lineTo(cx - 140 * s, cyAdjusted - 90 * s)
-          ..close();
-        highlightPath(leftWall);
-
-        if (obj == 'mirror') {
-          for (int i = 0; i < 3; i++) {
-            final fx = cx - 60 * s + i * 34 * s;
-            final fy = cyAdjusted - 148 * s;
-            highlightPath(Path()..addRect(Rect.fromLTWH(fx, fy, 28 * s, 36 * s)));
-          }
-        } else {
-          final rightWall = Path()
-            ..moveTo(cx, cyAdjusted - 80 * s)
-            ..lineTo(cx + 140 * s, cyAdjusted - 10 * s)
-            ..lineTo(cx + 140 * s, cyAdjusted - 90 * s)
-            ..lineTo(cx, cyAdjusted - 160 * s)
-            ..close();
-          highlightPath(rightWall);
-        }
-      } else if (obj == 'plant') {
-        highlightOval(Rect.fromCenter(
-          center: Offset(cx + 120 * s, cyAdjusted + 10 * s),
-          width: 35 * s,
-          height: 65 * s,
-        ));
-      }
-    } else {
-      final obj = selectedObject.toLowerCase();
-      if (obj.contains('sofa') || obj.contains('bed')) {
-        highlightOval(Rect.fromCenter(
-          center: Offset(cx - 30, cy + 10),
-          width: size.width * 0.45,
-          height: size.height * 0.35,
-        ));
-      } else if (obj.contains('table') || obj.contains('desk')) {
-        highlightOval(Rect.fromCenter(
-          center: Offset(cx + 20, cy + 45),
-          width: size.width * 0.3,
-          height: size.height * 0.2,
-        ));
-      } else if (obj.contains('wall') || obj.contains('ceiling')) {
-        highlightPath(Path()
+        highlightPath(bedPath);
+      } else if (obj.contains('pillow')) {
+        final pillowPath = Path()
+          ..addOval(Rect.fromLTRB(size.width * 0.50, size.height * 0.42, size.width * 0.92, size.height * 0.58));
+        highlightPath(pillowPath);
+      } else if (obj.contains('wall')) {
+        final wallPath = Path()
           ..moveTo(0, 0)
           ..lineTo(size.width, 0)
-          ..lineTo(size.width, cy - 30)
-          ..lineTo(0, cy - 30)
-          ..close());
-      } else if (obj.contains('mirror') || obj.contains('painting') || obj.contains('window')) {
-        highlightOval(Rect.fromCenter(
-          center: Offset(cx - 70, cy - 40),
-          width: 80,
-          height: 90,
-        ));
-      } else if (obj.contains('plant') || obj.contains('lamp') || obj.contains('sink')) {
-        highlightOval(Rect.fromCenter(
-          center: Offset(cx + 80, cy - 10),
-          width: 55,
-          height: 110,
-        ));
+          ..lineTo(size.width, size.height * 0.45)
+          ..lineTo(0, size.height * 0.45)
+          ..close();
+        highlightPath(wallPath);
+      } else if (obj.contains('nightstand')) {
+        final nightstandPath = Path()
+          ..addRRect(RRect.fromRectAndRadius(
+            Rect.fromLTRB(size.width * 0.05, size.height * 0.55, size.width * 0.28, size.height * 0.78),
+            const Radius.circular(8),
+          ));
+        highlightPath(nightstandPath);
+      } else if (obj.contains('lamp')) {
+        final lampPath = Path()
+          ..addOval(Rect.fromLTRB(size.width * 0.82, size.height * 0.25, size.width * 0.95, size.height * 0.45));
+        highlightPath(lampPath);
       } else {
-        highlightOval(Rect.fromCenter(
-          center: Offset(cx, cy),
-          width: 120,
-          height: 80,
-        ));
+        final defaultPath = Path()
+          ..moveTo(0, size.height * 0.92)
+          ..cubicTo(
+            size.width * 0.25, size.height * 0.48,
+            size.width * 0.65, size.height * 0.42,
+            size.width, size.height * 0.48,
+          )
+          ..lineTo(size.width, size.height)
+          ..lineTo(0, size.height)
+          ..close();
+        highlightPath(defaultPath);
+      }
+    } else if (templateIndex == 0 || templateIndex == 4) {
+      // Living Room sofa / table templates
+      if (obj.contains('sofa')) {
+        final sofaPath = Path()
+          ..moveTo(0, size.height * 0.48)
+          ..lineTo(size.width * 0.78, size.height * 0.48)
+          ..lineTo(size.width * 0.75, size.height * 0.88)
+          ..lineTo(0, size.height * 0.88)
+          ..close();
+        highlightPath(sofaPath);
+      } else if (obj.contains('table')) {
+        final tablePath = Path()
+          ..addOval(Rect.fromLTRB(size.width * 0.28, size.height * 0.62, size.width * 0.82, size.height * 0.88));
+        highlightPath(tablePath);
+      } else if (obj.contains('rug')) {
+        final rugPath = Path()
+          ..moveTo(0, size.height * 0.68)
+          ..lineTo(size.width, size.height * 0.68)
+          ..lineTo(size.width, size.height)
+          ..lineTo(0, size.height)
+          ..close();
+        highlightPath(rugPath);
+      } else if (obj.contains('plant')) {
+        final plantPath = Path()
+          ..addOval(Rect.fromLTRB(size.width * 0.72, size.height * 0.38, size.width * 0.95, size.height * 0.82));
+        highlightPath(plantPath);
+      } else if (obj.contains('wall')) {
+        final wallPath = Path()
+          ..moveTo(0, 0)
+          ..lineTo(size.width, 0)
+          ..lineTo(size.width, size.height * 0.48)
+          ..lineTo(0, size.height * 0.48)
+          ..close();
+        highlightPath(wallPath);
+      } else {
+        final sofaPath = Path()
+          ..moveTo(0, size.height * 0.48)
+          ..lineTo(size.width * 0.78, size.height * 0.48)
+          ..lineTo(size.width * 0.75, size.height * 0.88)
+          ..lineTo(0, size.height * 0.88)
+          ..close();
+        highlightPath(sofaPath);
+      }
+    } else {
+      // General / custom images
+      if (obj.contains('bed') || obj.contains('sofa')) {
+        final bedPath = Path()
+          ..moveTo(0, size.height * 0.90)
+          ..cubicTo(
+            size.width * 0.25, size.height * 0.48,
+            size.width * 0.65, size.height * 0.42,
+            size.width, size.height * 0.48,
+          )
+          ..lineTo(size.width, size.height)
+          ..lineTo(0, size.height)
+          ..close();
+        highlightPath(bedPath);
+      } else if (obj.contains('table') || obj.contains('desk')) {
+        final tablePath = Path()
+          ..addOval(Rect.fromLTRB(size.width * 0.25, size.height * 0.55, size.width * 0.82, size.height * 0.85));
+        highlightPath(tablePath);
+      } else if (obj.contains('wall') || obj.contains('ceiling')) {
+        final wallPath = Path()
+          ..moveTo(0, 0)
+          ..lineTo(size.width, 0)
+          ..lineTo(size.width, size.height * 0.45)
+          ..lineTo(0, size.height * 0.45)
+          ..close();
+        highlightPath(wallPath);
+      } else if (obj.contains('pillow') || obj.contains('cushion')) {
+        final pillowPath = Path()
+          ..addOval(Rect.fromLTRB(size.width * 0.45, size.height * 0.45, size.width * 0.85, size.height * 0.65));
+        highlightPath(pillowPath);
+      } else if (obj.contains('mirror') || obj.contains('painting') || obj.contains('window')) {
+        final mirrorPath = Path()
+          ..addRRect(RRect.fromRectAndRadius(
+            Rect.fromLTRB(size.width * 0.2, size.height * 0.15, size.width * 0.6, size.height * 0.45),
+            const Radius.circular(12),
+          ));
+        highlightPath(mirrorPath);
+      } else if (obj.contains('plant') || obj.contains('lamp') || obj.contains('sink')) {
+        final plantPath = Path()
+          ..addOval(Rect.fromLTRB(size.width * 0.7, size.height * 0.35, size.width * 0.92, size.height * 0.78));
+        highlightPath(plantPath);
+      } else {
+        final defaultPath = Path()
+          ..moveTo(0, size.height * 0.90)
+          ..cubicTo(
+            size.width * 0.25, size.height * 0.48,
+            size.width * 0.65, size.height * 0.42,
+            size.width, size.height * 0.48,
+          )
+          ..lineTo(size.width, size.height)
+          ..lineTo(0, size.height)
+          ..close();
+        highlightPath(defaultPath);
       }
     }
   }
@@ -1446,6 +1602,106 @@ class _ObjectHighlightPainter extends CustomPainter {
   bool shouldRepaint(covariant _ObjectHighlightPainter oldDelegate) {
     return oldDelegate.selectedObject != selectedObject ||
         oldDelegate.templateIndex != templateIndex ||
-        oldDelegate.isCustomImage != isCustomImage;
+        oldDelegate.isCustomImage != isCustomImage ||
+        oldDelegate.brushSize != brushSize;
   }
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Brush Stroke Model & iOS-inspired Freehand Brush Painter
+// ─────────────────────────────────────────────────────────────────────────────
+class BrushStroke {
+  final List<Offset> points;
+  final double strokeWidth;
+
+  BrushStroke({
+    required this.points,
+    required this.strokeWidth,
+  });
+}
+
+class _FreehandBrushPainter extends CustomPainter {
+  final List<BrushStroke> strokes;
+  final Offset? currentPoint;
+  final double currentBrushSize;
+
+  _FreehandBrushPainter({
+    required this.strokes,
+    this.currentPoint,
+    required this.currentBrushSize,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    canvas.clipRect(Offset.zero & size);
+    for (final stroke in strokes) {
+      if (stroke.points.isEmpty) continue;
+
+      // Cutout paint (removes/erases object image content underneath stroke)
+      final cutoutFillPaint = Paint()
+        ..color = const Color(0xFFF0ECE3)
+        ..strokeWidth = stroke.strokeWidth
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round
+        ..style = PaintingStyle.stroke;
+
+      // Glow paint (outer soft mask border)
+      final glowPaint = Paint()
+        ..color = const Color(0xFF3A7D7B).withOpacity(0.35)
+        ..strokeWidth = stroke.strokeWidth + 6.0
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round
+        ..style = PaintingStyle.stroke
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4.0);
+
+      // Core mask paint
+      final corePaint = Paint()
+        ..color = const Color(0xFF3A7D7B).withOpacity(0.6)
+        ..strokeWidth = stroke.strokeWidth
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round
+        ..style = PaintingStyle.stroke;
+
+      if (stroke.points.length == 1) {
+        canvas.drawCircle(stroke.points.first, stroke.strokeWidth / 2, cutoutFillPaint);
+        canvas.drawCircle(stroke.points.first, stroke.strokeWidth / 2, corePaint);
+      } else {
+        final path = Path();
+        path.moveTo(stroke.points.first.dx, stroke.points.first.dy);
+        for (int i = 1; i < stroke.points.length; i++) {
+          path.lineTo(stroke.points[i].dx, stroke.points[i].dy);
+        }
+        canvas.drawPath(path, cutoutFillPaint);
+        canvas.drawPath(path, glowPaint);
+        canvas.drawPath(path, corePaint);
+      }
+    }
+
+    // Live iOS touch cursor ring when dragging finger
+    if (currentPoint != null) {
+      final radius = (8.0 + currentBrushSize * 40.0) / 2.0;
+
+      final cursorBg = Paint()
+        ..color = const Color(0xFF3A7D7B).withOpacity(0.35)
+        ..style = PaintingStyle.fill;
+
+      final cursorOuterRing = Paint()
+        ..color = Colors.black.withOpacity(0.2)
+        ..strokeWidth = 3.5
+        ..style = PaintingStyle.stroke;
+
+      final cursorRing = Paint()
+        ..color = Colors.white
+        ..strokeWidth = 2.0
+        ..style = PaintingStyle.stroke;
+
+      canvas.drawCircle(currentPoint!, radius, cursorBg);
+      canvas.drawCircle(currentPoint!, radius, cursorOuterRing);
+      canvas.drawCircle(currentPoint!, radius, cursorRing);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _FreehandBrushPainter oldDelegate) => true;
+}
+

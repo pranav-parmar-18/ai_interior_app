@@ -1,4 +1,12 @@
+import 'dart:io';
+import 'package:http/http.dart' as http;
+import 'package:gal/gal.dart';
+import 'package:permission_handler/permission_handler.dart';
+
+
+
 import 'package:ai_interior/bloc/delete_record/delete_record_bloc.dart';
+
 import 'package:ai_interior/bloc/publish_record/publish_record_bloc.dart';
 import 'package:ai_interior/widgets/custom_imageview.dart';
 import 'package:flutter/cupertino.dart';
@@ -9,6 +17,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ai_interior/utils/responsive_utils.dart';
 import 'package:ai_interior/features/style_transfer/presentation/style_transfer_screeen.dart';
+import 'package:ai_interior/l10n/generated/app_localizations.dart';
 
 class RecentOutputScreen extends StatefulWidget {
   const RecentOutputScreen({super.key});
@@ -25,7 +34,66 @@ class _RecentOutputScreenState extends State<RecentOutputScreen> {
 
   Map<String, dynamic> data = {};
 
+  Future<void> saveNetworkImageToGallery({
+    required BuildContext context,
+    required String imageUrl,
+  }) async {
+    try {
+      if (imageUrl.isEmpty) return;
+
+      if (Platform.isAndroid) {
+        final storagePermission = await Permission.storage.status;
+        if (storagePermission.isDenied) {
+          await Permission.storage.request();
+        }
+      }
+
+      if (!context.mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+
+
+        const SnackBar(
+          content: Text('Saving image to gallery...'),
+          duration: Duration(seconds: 1),
+        ),
+      );
+
+      final response = await http.get(Uri.parse(imageUrl));
+      if (response.statusCode != 200) {
+        throw Exception('Failed to download image');
+      }
+
+      Uint8List bytes = response.bodyBytes;
+      await Gal.putImageBytes(Uint8List.fromList(bytes));
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Image saved to gallery!'),
+            backgroundColor: Colors.black87,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error saving image: $e'),
+            backgroundColor: Colors.redAccent,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    }
+  }
+
+
   @override
+
   void didChangeDependencies() {
     super.didChangeDependencies();
     data = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>;
@@ -52,9 +120,18 @@ class _RecentOutputScreenState extends State<RecentOutputScreen> {
             bloc: _deleteRecordBloc,
             listener: (context, state) {
               if (state is DeleteRecordSuccessState) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Design deleted successfully!')),
+                );
+                Navigator.of(context).pop();
               } else if (state is DeleteRecordExceptionState ||
-                  state is DeleteRecordFailureState) {}
+                  state is DeleteRecordFailureState) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Delete failed. Please try again.')),
+                );
+              }
             },
+
             builder: (context, state) {
               return Scaffold(
                 backgroundColor: const Color(0xFFF2EFEA),
@@ -138,8 +215,8 @@ class _RecentOutputScreenState extends State<RecentOutputScreen> {
                               width: r.wp(context, 45),
                             ),
                             SizedBox(height: r.hp(context, 10)),
-                            Text(
-                              "Regenerate",
+                             Text(
+                              AppLocalizations.of(context)?.regenerate ?? "Regenerate",
                               style: TextStyle(
                                 fontSize: r.sp(context, 12),
                                 fontWeight: FontWeight.w500,
@@ -150,7 +227,11 @@ class _RecentOutputScreenState extends State<RecentOutputScreen> {
                         ),
                       ),
                       GestureDetector(
-                        onTap: () {},
+                        onTap: () => saveNetworkImageToGallery(
+                          context: context,
+                          imageUrl: data["image"]?.toString() ?? '',
+                        ),
+
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -161,7 +242,7 @@ class _RecentOutputScreenState extends State<RecentOutputScreen> {
                             ),
                             SizedBox(height: r.hp(context, 10)),
                             Text(
-                              "Save",
+                              AppLocalizations.of(context)?.save ?? "Save",
                               style: TextStyle(
                                 fontSize: r.sp(context, 12),
                                 fontWeight: FontWeight.w500,
@@ -185,7 +266,7 @@ class _RecentOutputScreenState extends State<RecentOutputScreen> {
                             ),
                             SizedBox(height: r.hp(context, 10)),
                             Text(
-                              "Publish",
+                              AppLocalizations.of(context)?.publish ?? "Publish",
                               style: TextStyle(
                                 fontSize: r.sp(context, 12),
                                 fontWeight: FontWeight.w500,
@@ -209,7 +290,7 @@ class _RecentOutputScreenState extends State<RecentOutputScreen> {
                             ),
                             SizedBox(height: r.hp(context, 10)),
                             Text(
-                              "Share",
+                              AppLocalizations.of(context)?.share ?? "Share",
                               style: TextStyle(
                                 fontSize: r.sp(context, 12),
                                 fontWeight: FontWeight.w500,
@@ -233,7 +314,7 @@ class _RecentOutputScreenState extends State<RecentOutputScreen> {
                             ),
                             SizedBox(height: r.hp(context, 10)),
                             Text(
-                              "Delete",
+                              AppLocalizations.of(context)?.delete ?? "Delete",
                               style: TextStyle(
                                 fontSize: r.sp(context, 12),
                                 fontWeight: FontWeight.w500,
@@ -263,18 +344,20 @@ class _RecentOutputScreenState extends State<RecentOutputScreen> {
   }
 
   void _showDeleteAlert(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     showCupertinoDialog<void>(
       context: context,
       builder:
           (BuildContext context) => CupertinoAlertDialog(
-            title: const Text('Delete This Design?'),
-            content: const Text(
-              'This action cannot be undone. Are you sure you want to permanently remove this design?',
+            title: Text(l10n?.deleteDesignTitle ?? 'Delete This Design?'),
+            content: Text(
+              l10n?.deleteDesignContent ??
+                  'This action cannot be undone. Are you sure you want to permanently remove this design?',
             ),
             actions: <CupertinoDialogAction>[
               CupertinoDialogAction(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('Cancel'),
+                child: Text(l10n?.cancel ?? 'Cancel'),
               ),
               CupertinoDialogAction(
                 isDestructiveAction: true,
@@ -284,22 +367,20 @@ class _RecentOutputScreenState extends State<RecentOutputScreen> {
                       await SharedPreferences.getInstance();
                   String userId = preferences.getString('user_id') ?? "";
 
-                  final publishData = {
+                  final deleteData = {
                     "user_id": userId,
-                    "module_id": 1,
+                    "module_id": int.tryParse(data["module_id"]?.toString() ?? "") ?? 1,
                     "id": data["id"],
                   };
 
-                  debugPrint("Publish Record DataEvent payload: $publishData");
-                  debugPrint("user_id: $userId");
-                  debugPrint("module_id: 1");
-                  debugPrint("id: ${data["id"]}");
+                  debugPrint("Delete Record DataEvent payload: $deleteData");
 
-                  _publishRecordBloc.add(
-                    PublishRecordDataEvent(login: publishData),
+                  _deleteRecordBloc.add(
+                    DeleteRecordDataEvent(login: deleteData),
                   );
+
                 },
-                child: const Text('Delete'),
+                child: Text(l10n?.delete ?? 'Delete'),
               ),
             ],
           ),
@@ -307,18 +388,20 @@ class _RecentOutputScreenState extends State<RecentOutputScreen> {
   }
 
   void _showRegenerateAlert(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     showCupertinoDialog<void>(
       context: context,
       builder:
           (BuildContext context) => CupertinoAlertDialog(
-            title: const Text('Regenerate Design?'),
-            content: const Text(
-              'This action will use 10 credits to generate a new design. Do you want to proceed?',
+            title: Text(l10n?.regenerateDesignTitle ?? 'Regenerate Design?'),
+            content: Text(
+              l10n?.regenerateDesignContent ??
+                  'This action will use 50 credits to generate a new design. Do you want to proceed?',
             ),
             actions: <CupertinoDialogAction>[
               CupertinoDialogAction(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('Cancel'),
+                child: Text(l10n?.cancel ?? 'Cancel'),
               ),
               CupertinoDialogAction(
                 isDefaultAction: true,
@@ -326,7 +409,7 @@ class _RecentOutputScreenState extends State<RecentOutputScreen> {
                   Navigator.pop(context);
                   // TODO: handle regenerate
                 },
-                child: const Text('Regenerate'),
+                child: Text(l10n?.regenerate ?? 'Regenerate'),
               ),
             ],
           ),
@@ -407,14 +490,11 @@ class _RecentOutputScreenState extends State<RecentOutputScreen> {
 
                 final publishData = {
                   "user_id": userId,
-                  "module_id": 1,
+                  "module_id": int.tryParse(data["module_id"]?.toString() ?? "") ?? 1,
                   "id": data["id"],
                 };
 
                 debugPrint("PublishRecordDataEvent payload: $publishData");
-                debugPrint("user_id: $userId");
-                debugPrint("module_id: 1");
-                debugPrint("id: ${data["id"]}");
 
                 _publishRecordBloc.add(
                   PublishRecordDataEvent(login: publishData),

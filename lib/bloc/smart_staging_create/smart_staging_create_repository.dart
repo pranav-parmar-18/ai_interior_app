@@ -51,7 +51,7 @@ class SmartStagingCreateRepository {
       ) async {
     try {
       final uri = Uri.parse(
-        '${ProjectConstant.baseUrl}interior/create',
+        '${ProjectConstant.baseUrl}smart-staging/create',
       );
 
       final verifyHeader = generateVerifyHeader('');
@@ -69,17 +69,38 @@ class SmartStagingCreateRepository {
       request.fields['design_asthetic'] = data['design_asthetic'];
       request.fields['space_type'] = data['space_type'];
 
-      // 🔹 Image
-      request.files.add(
-        await http.MultipartFile.fromPath(
-          'image',
-          image.path,
-        ),
-      );
+      // 🔹 Image (only attach if file exists)
+      if (image.path.isNotEmpty && await image.exists()) {
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            'image',
+            image.path,
+          ),
+        );
+      }
 
-      // 🔹 Send request
-      final streamedResponse = await request.send();
-      final response = await http.Response.fromStream(streamedResponse);
+      if (kDebugMode) {
+        print("SmartStaging URL: $uri");
+        print("SmartStaging Fields: ${request.fields}");
+        print("SmartStaging Files: ${request.files.length}");
+      }
+
+      // 🔹 Send request with extended timeout (AI image generation takes 50+ seconds)
+      final client = http.Client();
+      final http.Response response;
+      try {
+        final streamedResponse = await client.send(request).timeout(
+          const Duration(minutes: 3),
+        );
+        response = await http.Response.fromStream(streamedResponse);
+      } finally {
+        client.close();
+      }
+
+      if (kDebugMode) {
+        print("SmartStaging STATUS: ${response.statusCode}");
+        print("SmartStaging BODY: ${response.body}");
+      }
 
       if (response.statusCode == 200) {
         final responseJson =
@@ -105,7 +126,7 @@ class SmartStagingCreateRepository {
       } else {
         _message = 'Failed to create staging design';
         if (kDebugMode) {
-          print("FAILED: ${response.body}");
+          print("FAILED (HTTP ${response.statusCode}): ${response.body}");
         }
         _success = false;
       }
