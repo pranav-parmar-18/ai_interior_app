@@ -563,14 +563,13 @@
 //     return sub?.isActive ?? false;
 //   }
 // }
-import 'package:ai_interior/features/credit/presentataion/credit_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ai_interior/features/setting/presentation/contact_screen.dart';
 import 'package:ai_interior/features/setting/presentation/language_screen.dart';
 import 'package:ai_interior/widgets/custom_imageview.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:ai_interior/utils/responsive_utils.dart';
 import 'package:ai_interior/l10n/generated/app_localizations.dart';
 
@@ -589,6 +588,36 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
+  bool _isSubscribed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkSubscription();
+  }
+
+  Future<void> _checkSubscription() async {
+    final prefs = await SharedPreferences.getInstance();
+    final bool isSubscribedBool = prefs.getBool('is_subscribed') ?? false;
+    final String? data = prefs.getString('subscription_info');
+
+    bool active = isSubscribedBool;
+    if (data != null && data.isNotEmpty) {
+      try {
+        final sub = SubscriptionInfo.fromJson(data);
+        if (sub != null) {
+          active = sub.isActive;
+        }
+      } catch (_) {}
+    }
+
+    if (mounted) {
+      setState(() {
+        _isSubscribed = active;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final topPadding = MediaQuery.of(context).padding.top;
@@ -648,10 +677,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               physics: const BouncingScrollPhysics(),
               children: [
-                // ── Premium Banner ───────────────────────────────────
-                _PremiumBanner(),
-
-                r.verticalSpace(context, 20),
+                // ── Premium Banner (Only show if subscription is pending/not active) ─────
+                if (!_isSubscribed) ...[
+                  _PremiumBanner(
+                    onReturn: _checkSubscription,
+                  ),
+                  r.verticalSpace(context, 20),
+                ],
 
                 // ── Group 1 ──────────────────────────────────────────
                 _SettingsGroup(
@@ -758,8 +790,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
 // Premium Banner
 // ─────────────────────────────────────────────────────────────────────────────
 class _PremiumBanner extends StatelessWidget {
+  final VoidCallback? onReturn;
 
-  void openSubscriptionScreen(BuildContext context) {
+  const _PremiumBanner({this.onReturn});
+
+  void openSubscriptionScreen(BuildContext context) async {
     final nextIndex = SubscriptionScreenManager().getNextIndex();
 
     final screens = [
@@ -768,10 +803,12 @@ class _PremiumBanner extends StatelessWidget {
       SubscriptionScreenThree(),
     ];
 
-    Navigator.push(
+    await Navigator.push(
       context,
       CupertinoPageRoute(builder: (_) => screens[nextIndex]),
     );
+
+    onReturn?.call();
   }
 
   @override
