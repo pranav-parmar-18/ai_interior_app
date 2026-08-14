@@ -1058,6 +1058,7 @@ class _CreditsScreenState extends State<CreditsScreen> {
   @override
   void dispose() {
     _subscription.cancel();
+    _addCreditsBloc.close();
     super.dispose();
   }
 
@@ -1142,16 +1143,22 @@ class _CreditsScreenState extends State<CreditsScreen> {
       switch (purchase.status) {
         case PurchaseStatus.purchased:
         case PurchaseStatus.restored:
-          if (mounted) setState(() => _isPurchasing = false);
-          debugPrint('✅ Purchased: ${purchase.productID}');
+          final String rawTxnId = purchase.purchaseID ?? '';
+          final String serverData = purchase.verificationData.serverVerificationData;
+          final String transactionId = (rawTxnId.isNotEmpty && rawTxnId != 'null')
+              ? rawTxnId
+              : (serverData.isNotEmpty ? serverData : 'txn_${DateTime.now().millisecondsSinceEpoch}');
+
+          debugPrint('✅ Purchased: ${purchase.productID} (Transaction ID: $transactionId)');
+
+          _addCreditsBloc.add(
+            AddCreditsDataEvent(purchaseData: {
+              'transactionId': transactionId,
+              'product_id'  : purchase.productID.toString(),
+            }),
+          );
 
           if (Platform.isAndroid) {
-            _addCreditsBloc.add(
-              AddCreditsDataEvent(purchaseData: {
-                'transactionId': purchase.purchaseID.toString(),
-                'product_id'  : purchase.productID.toString(),
-              }),
-            );
             try {
               final androidAddition = InAppPurchase.instance
                   .getPlatformAddition<InAppPurchaseAndroidPlatformAddition>();
@@ -1160,13 +1167,6 @@ class _CreditsScreenState extends State<CreditsScreen> {
             } catch (e) {
               debugPrint('❌ consume error: $e');
             }
-          } else {
-            _addCreditsBloc.add(
-              AddCreditsDataEvent(purchaseData: {
-                'transactionId': purchase.purchaseID.toString(),
-                'product_id'  : purchase.productID.toString(),
-              }),
-            );
           }
 
         case PurchaseStatus.error:
@@ -1218,6 +1218,7 @@ class _CreditsScreenState extends State<CreditsScreen> {
         bloc: _addCreditsBloc,
         listener: (context, state) {
           if (state is AddCreditsSuccessState) {
+            if (mounted) setState(() => _isPurchasing = false);
             _addCreditResponse = state.categoryModalResponse;
             final addedCreditStr = _addCreditResponse?.result?.credit;
             if (addedCreditStr != null) {
@@ -1231,6 +1232,16 @@ class _CreditsScreenState extends State<CreditsScreen> {
             }
             setState(() { _selectedIndex = 0; });
             Navigator.of(context).pop();
+          } else if (state is AddCreditsFailureState) {
+            if (mounted) setState(() => _isPurchasing = false);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(state.message.isNotEmpty ? state.message : 'Top-up failed')),
+            );
+          } else if (state is AddCreditsExceptionState) {
+            if (mounted) setState(() => _isPurchasing = false);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(state.message.isNotEmpty ? state.message : 'Something went wrong')),
+            );
           }
         },
         builder: (context, state) {

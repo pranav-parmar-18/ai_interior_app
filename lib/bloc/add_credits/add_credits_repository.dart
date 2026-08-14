@@ -21,7 +21,10 @@ class AddCreditsRepository {
       
       String uuid = await DeviceIdManager.getDeviceId();
       String productId = data['product_id'] ?? "";
-      String transactionId = data['transactionId'] ?? data['transaction_id'] ?? "";
+      String rawTxnId = (data['transactionId'] ?? data['transaction_id'] ?? "").toString();
+      String transactionId = (rawTxnId.isEmpty || rawTxnId == "null")
+          ? "txn_${DateTime.now().millisecondsSinceEpoch}"
+          : rawTxnId;
 
       Map<String, dynamic> payload = {
         "uuid": uuid,
@@ -31,7 +34,9 @@ class AddCreditsRepository {
 
       String jsonPayload = jsonEncode(payload);
 
-      print("DATA : $payload");
+      debugPrint("ADD CREDITS URL: $url");
+      debugPrint("ADD CREDITS PAYLOAD: $jsonPayload");
+      debugPrint("ADD CREDITS TOKEN: $accessToken");
 
       final response = await http.post(
         Uri.parse(url),
@@ -39,38 +44,45 @@ class AddCreditsRepository {
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer $accessToken'
+          if (accessToken.isNotEmpty) 'Authorization': 'Bearer $accessToken',
         },
       );
+
+      debugPrint("ADD CREDITS RESPONSE [${response.statusCode}]: ${response.body}");
 
       if (response.statusCode == 200) {
         final responseJsonMap =
             jsonDecode(response.body) as Map<String, dynamic>;
-        print("API SUCCESS : ${response.body}");
         final responseData = AddCreditResponse.fromJson(responseJsonMap);
         _makeSongResponse = responseData;
-        if(_makeSongResponse!.status==true){
-          print("STATUS : ${_makeSongResponse!.status}");
+        if (_makeSongResponse!.status == true) {
+          debugPrint("STATUS SUCCESS: ${_makeSongResponse!.status}");
           _message = "Success";
           _success = true;
-        }else{
-          _message = "Fail";
+        } else {
+          debugPrint("STATUS FAIL: ${_makeSongResponse!.status}");
+          _message = responseData.message ?? "Top-up failed";
           _success = false;
         }
-
       } else {
         if (kDebugMode) {
-          print("API FAILED : ${response.body}");
+          debugPrint("API FAILED : ${response.body}");
         }
-        final responseJsonMap =
-            jsonDecode(response.body) as Map<String, dynamic>;
-        final responseData = AddCreditResponse.fromJson(responseJsonMap);
-        _makeSongResponse = responseData;
-        _message = "Fail";
+        try {
+          final responseJsonMap =
+              jsonDecode(response.body) as Map<String, dynamic>;
+          final responseData = AddCreditResponse.fromJson(responseJsonMap);
+          _makeSongResponse = responseData;
+          _message = responseData.message ?? "Fail";
+        } catch (_) {
+          _message = "Server error (${response.statusCode})";
+        }
         _success = false;
       }
     } catch (error) {
+      debugPrint("ADD CREDITS EXCEPTION: $error");
       _message = 'Something went wrong!';
+      _success = false;
       rethrow;
     }
   }
