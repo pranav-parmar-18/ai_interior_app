@@ -1034,13 +1034,12 @@ class CreditsScreen extends StatefulWidget {
 
 class _CreditsScreenState extends State<CreditsScreen> {
   final AddCreditsBloc _addCreditsBloc = AddCreditsBloc();
+  final Set<String> _processedTxnIds = {};
 
   int _selectedIndex = 0;
   late StreamSubscription<List<PurchaseDetails>> _subscription;
   final InAppPurchase _iap = InAppPurchase.instance;
-  List<ProductDetails> _products = [
-
-  ];
+  List<ProductDetails> _products = [];
   AddCreditResponse? _addCreditResponse;
 
   bool _loadingProducts = true;
@@ -1116,11 +1115,15 @@ class _CreditsScreenState extends State<CreditsScreen> {
 
     if (_products.isEmpty) {
       // Simulate sandbox purchase on simulator/test environment when products cannot be loaded
+      final dummyTxnId = 'simulated_txn_${DateTime.now().millisecondsSinceEpoch}';
+      if (_processedTxnIds.contains(dummyTxnId)) return;
+      _processedTxnIds.add(dummyTxnId);
+
       Future.delayed(const Duration(seconds: 1), () async {
         final dummyProductId = _productIds[_selectedIndex];
         _addCreditsBloc.add(
           AddCreditsDataEvent(purchaseData: {
-            'transactionId': 'simulated_txn_${DateTime.now().millisecondsSinceEpoch}',
+            'transactionId': dummyTxnId,
             'product_id'  : dummyProductId,
           }),
         );
@@ -1133,7 +1136,7 @@ class _CreditsScreenState extends State<CreditsScreen> {
 
     final product = _products[_selectedIndex];
     // Credits are consumable — use buyConsumable
-    print("HELLO  BUY ");
+    debugPrint("BUY CONSUMABLE: ${product.id}");
     final param = PurchaseParam(productDetails: product);
     _iap.buyConsumable(purchaseParam: param);
   }
@@ -1148,6 +1151,12 @@ class _CreditsScreenState extends State<CreditsScreen> {
           final String transactionId = (rawTxnId.isNotEmpty && rawTxnId != 'null')
               ? rawTxnId
               : (serverData.isNotEmpty ? serverData : 'txn_${DateTime.now().millisecondsSinceEpoch}');
+
+          if (_processedTxnIds.contains(transactionId)) {
+            debugPrint('⚠️ Skipping duplicate purchase update for Transaction ID: $transactionId');
+            break;
+          }
+          _processedTxnIds.add(transactionId);
 
           debugPrint('✅ Purchased: ${purchase.productID} (Transaction ID: $transactionId)');
 
@@ -1168,11 +1177,13 @@ class _CreditsScreenState extends State<CreditsScreen> {
               debugPrint('❌ consume error: $e');
             }
           }
+          break;
 
         case PurchaseStatus.error:
         case PurchaseStatus.canceled:
           debugPrint('❌ Purchase failed: ${purchase.error}');
           if (mounted) setState(() => _isPurchasing = false);
+          break;
 
         case PurchaseStatus.pending:
           break;

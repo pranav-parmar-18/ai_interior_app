@@ -602,11 +602,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final String? data = prefs.getString('subscription_info');
 
     bool active = isSubscribedBool;
-    if (data != null && data.isNotEmpty) {
+    if (!active && data != null && data.isNotEmpty) {
       try {
         final sub = SubscriptionInfo.fromJson(data);
-        if (sub != null) {
-          active = sub.isActive;
+        if (sub != null && sub.isActive) {
+          active = true;
         }
       } catch (_) {}
     }

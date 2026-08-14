@@ -50,40 +50,34 @@ class AddCreditsRepository {
 
       debugPrint("ADD CREDITS RESPONSE [${response.statusCode}]: ${response.body}");
 
-      if (response.statusCode == 200) {
-        final responseJsonMap =
-            jsonDecode(response.body) as Map<String, dynamic>;
-        final responseData = AddCreditResponse.fromJson(responseJsonMap);
-        _makeSongResponse = responseData;
-        if (_makeSongResponse!.status == true) {
-          debugPrint("STATUS SUCCESS: ${_makeSongResponse!.status}");
-          _message = "Success";
-          _success = true;
-        } else {
-          debugPrint("STATUS FAIL: ${_makeSongResponse!.status}");
-          _message = responseData.message ?? "Top-up failed";
+      if (response.body.isNotEmpty) {
+        try {
+          final responseJsonMap = jsonDecode(response.body) as Map<String, dynamic>;
+          final responseData = AddCreditResponse.fromJson(responseJsonMap);
+          _makeSongResponse = responseData;
+
+          if (response.statusCode == 200 && responseData.status == true) {
+            debugPrint("STATUS SUCCESS: ${responseData.status}");
+            _message = responseData.message ?? "Success";
+            _success = true;
+          } else {
+            debugPrint("STATUS FAIL: ${responseData.status} - ${responseData.message}");
+            _message = responseData.message ?? "Top-up failed (${response.statusCode})";
+            _success = false;
+          }
+        } catch (e) {
+          debugPrint("PARSING ERROR: $e");
+          _message = "Server response error (${response.statusCode})";
           _success = false;
         }
       } else {
-        if (kDebugMode) {
-          debugPrint("API FAILED : ${response.body}");
-        }
-        try {
-          final responseJsonMap =
-              jsonDecode(response.body) as Map<String, dynamic>;
-          final responseData = AddCreditResponse.fromJson(responseJsonMap);
-          _makeSongResponse = responseData;
-          _message = responseData.message ?? "Fail";
-        } catch (_) {
-          _message = "Server error (${response.statusCode})";
-        }
+        _message = "Empty server response (${response.statusCode})";
         _success = false;
       }
     } catch (error) {
       debugPrint("ADD CREDITS EXCEPTION: $error");
       _message = 'Something went wrong!';
       _success = false;
-      rethrow;
     }
   }
 }
