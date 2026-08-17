@@ -3268,15 +3268,13 @@ class _SubscriptionScreenThreeState extends State<SubscriptionScreenThree>
                         ],
                       ),
                     ),
-
-                    // ── Content ──────────────────────────────────────────
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: Column(
                         children: [
-                          SizedBox(height: spacing1),
+                           SizedBox(height: spacing1),
                           _buildTitle(),
-                          SizedBox(height: spacing3),
+                           SizedBox(height: spacing3),
                           _buildFeatureCard(),
                            SizedBox(height: spacing3),
                            SizedBox(height: spacing3),

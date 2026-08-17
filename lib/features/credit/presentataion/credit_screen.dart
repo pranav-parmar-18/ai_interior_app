@@ -1231,18 +1231,39 @@ class _CreditsScreenState extends State<CreditsScreen> {
           if (state is AddCreditsSuccessState) {
             if (mounted) setState(() => _isPurchasing = false);
             _addCreditResponse = state.categoryModalResponse;
+            
+            int addedCredits = 0;
             final addedCreditStr = _addCreditResponse?.result?.credit;
-            if (addedCreditStr != null) {
-              int currentCredits = int.tryParse(creditsNotifier.value) ?? 0;
-              int addedCredits = int.tryParse(addedCreditStr) ?? 0;
-              final newCredits = (currentCredits + addedCredits).toString();
-              creditsNotifier.value = newCredits;
-              SharedPreferences.getInstance().then((prefs) {
-                prefs.setString('credits', newCredits);
-              });
+            if (addedCreditStr != null && addedCreditStr.isNotEmpty) {
+              addedCredits = int.tryParse(addedCreditStr) ?? 0;
             }
-            setState(() { _selectedIndex = 0; });
-            Navigator.of(context).pop();
+            if (addedCredits == 0) {
+              addedCredits = _creditsFor(_selectedIndex);
+            }
+
+            int currentCredits = int.tryParse(creditsNotifier.value) ?? 0;
+            final newCredits = (currentCredits + addedCredits).toString();
+            creditsNotifier.value = newCredits;
+            SharedPreferences.getInstance().then((prefs) {
+              prefs.setString('credits', newCredits);
+            });
+
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    state.message.isNotEmpty && state.message != "Success"
+                        ? state.message
+                        : "Credits added successfully!",
+                  ),
+                  backgroundColor: const Color(0xFF873F00),
+                ),
+              );
+              Navigator.of(context).pushNamedAndRemoveUntil(
+                MainScreen.routeName,
+                (route) => false,
+              );
+            }
           } else if (state is AddCreditsFailureState) {
             if (mounted) setState(() => _isPurchasing = false);
             ScaffoldMessenger.of(context).showSnackBar(

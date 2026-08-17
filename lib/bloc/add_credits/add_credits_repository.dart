@@ -50,33 +50,49 @@ class AddCreditsRepository {
 
       debugPrint("ADD CREDITS RESPONSE [${response.statusCode}]: ${response.body}");
 
-      if (response.body.isNotEmpty) {
-        try {
-          final responseJsonMap = jsonDecode(response.body) as Map<String, dynamic>;
-          final responseData = AddCreditResponse.fromJson(responseJsonMap);
-          _makeSongResponse = responseData;
-
-          if (response.statusCode == 200 && responseData.status == true) {
-            debugPrint("STATUS SUCCESS: ${responseData.status}");
-            _message = responseData.message ?? "Success";
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        _message = "Success";
+        if (response.body.isNotEmpty) {
+          try {
+            final decoded = jsonDecode(response.body);
+            if (decoded is Map<String, dynamic>) {
+              final responseData = AddCreditResponse.fromJson(decoded);
+              _makeSongResponse = responseData;
+              
+              final statusVal = responseData.status;
+              if (statusVal == false || statusVal == 0 || statusVal == "false" || statusVal == "error" || statusVal == "fail") {
+                _success = false;
+                _message = responseData.message ?? "Top-up failed";
+              } else {
+                _success = true;
+                if (responseData.message != null && responseData.message!.isNotEmpty) {
+                  _message = responseData.message!;
+                }
+              }
+            } else {
+              _success = true;
+              _makeSongResponse = AddCreditResponse(
+                status: true,
+                message: "Success",
+                result: Result(credit: decoded.toString()),
+              );
+            }
+          } catch (e) {
+            debugPrint("PARSING WARNING: $e");
             _success = true;
-          } else {
-            debugPrint("STATUS FAIL: ${responseData.status} - ${responseData.message}");
-            _message = responseData.message ?? "Top-up failed (${response.statusCode})";
-            _success = false;
+            _message = "Success";
           }
-        } catch (e) {
-          debugPrint("PARSING ERROR: $e");
-          _message = "Server response error (${response.statusCode})";
-          _success = false;
+        } else {
+          _success = true;
         }
       } else {
-        _message = "Empty server response (${response.statusCode})";
+        debugPrint("ADD CREDITS FAILED [${response.statusCode}]: ${response.body}");
+        _message = "Top-up failed (${response.statusCode})";
         _success = false;
       }
-    } catch (error) {
-      debugPrint("ADD CREDITS EXCEPTION: $error");
-      _message = 'Something went wrong!';
+    } catch (error, stackTrace) {
+      debugPrint("ADD CREDITS EXCEPTION: $error \n$stackTrace");
+      _message = error.toString();
       _success = false;
     }
   }

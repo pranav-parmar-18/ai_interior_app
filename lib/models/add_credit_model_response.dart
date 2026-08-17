@@ -1,5 +1,5 @@
 class AddCreditResponse {
-  final bool? status;
+  final dynamic status;
   final String? message;
   final Result? result;
 
@@ -10,22 +10,31 @@ class AddCreditResponse {
   });
 
   factory AddCreditResponse.fromJson(Map<String, dynamic> json) {
-    bool isSuccess = false;
-    if (json["status"] is bool) {
-      isSuccess = json["status"] as bool;
-    } else if (json["status"] is int) {
-      isSuccess = (json["status"] as int) == 200 || (json["status"] as int) == 1;
-    } else if (json["status"] is String) {
-      final s = (json["status"] as String).toLowerCase();
-      isSuccess = s == 'true' || s == '200' || s == '1' || s == 'success';
+    Result? res;
+    if (json["result"] != null) {
+      if (json["result"] is Map<String, dynamic>) {
+        res = Result.fromJson(json["result"] as Map<String, dynamic>);
+      } else {
+        res = Result(credit: json["result"].toString());
+      }
+    } else if (json["data"] != null) {
+      if (json["data"] is Map<String, dynamic>) {
+        res = Result.fromJson(json["data"] as Map<String, dynamic>);
+      } else {
+        res = Result(credit: json["data"].toString());
+      }
+    } else if (json["credit"] != null) {
+      res = Result(credit: json["credit"].toString());
+    } else if (json["credits"] != null) {
+      res = Result(credit: json["credits"].toString());
+    } else if (json["total_credits"] != null) {
+      res = Result(credit: json["total_credits"].toString());
     }
 
-    String? msg = json["message"]?.toString() ?? json["error"]?.toString();
-
     return AddCreditResponse(
-      status: isSuccess,
-      message: msg,
-      result: json["result"] == null ? null : Result.fromJson(json["result"]),
+      status: json["status"] ?? json["success"],
+      message: json["message"]?.toString() ?? json["error"]?.toString() ?? json["msg"]?.toString(),
+      result: res,
     );
   }
 
@@ -43,9 +52,23 @@ class Result {
     this.credit,
   });
 
-  factory Result.fromJson(Map<String, dynamic> json) => Result(
-    credit: json["credit"]?.toString(),
-  );
+  factory Result.fromJson(Map<String, dynamic> json) {
+    dynamic rawCredit = json["credit"] ??
+        json["credits"] ??
+        json["total_credits"] ??
+        json["user_credits"] ??
+        json["new_credits"] ??
+        json["balance"];
+
+    if (rawCredit == null && json["user"] is Map<String, dynamic>) {
+      final userMap = json["user"] as Map<String, dynamic>;
+      rawCredit = userMap["credit"] ?? userMap["credits"] ?? userMap["total_credits"];
+    }
+
+    return Result(
+      credit: rawCredit?.toString(),
+    );
+  }
 
   Map<String, dynamic> toJson() => {
     "credit": credit,

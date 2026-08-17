@@ -36,8 +36,9 @@ class AddCreditsBloc extends Bloc<AddCreditsEvent, AddCreditsState> {
       }
     } catch (error) {
       print(error);
+      final errMsg = adminKeyLoginRepository.message.toString().trim();
       emit(AddCreditsExceptionState(
-        message: adminKeyLoginRepository.message.toString().trim(),
+        message: errMsg.isNotEmpty ? errMsg : error.toString(),
       ));
     }
   }
