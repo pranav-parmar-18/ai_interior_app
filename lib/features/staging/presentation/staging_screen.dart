@@ -1,4 +1,6 @@
 import '../../credit/presentataion/credit_screen.dart';
+import '../../../services/subscription_manager.dart';
+import '../../../services/user_credit_service.dart';
 import 'dart:io';
 
 import 'package:ai_interior/features/snap_trip/presentation/snap_trip_screen.dart';
@@ -14,6 +16,7 @@ import 'staging_list_screen.dart';
 
 import 'package:image_picker/image_picker.dart';
 File? picked;
+int stagingSelectedTemplate = -1;
 
 class StagingDesignScreen extends StatefulWidget {
   const StagingDesignScreen({super.key});
@@ -138,8 +141,8 @@ class _StagingDesignScreenState extends State<StagingDesignScreen> {
           ),
           // Coin badge
           GestureDetector(
-            onTap: () {
-              Navigator.of(context).pushNamed(CreditsScreen.routeName);
+            onTap: () async {
+              await SubscriptionScreenManager.openCreditOrSubscriptionScreen(context);
             },
             child: Container(
               padding: EdgeInsets.symmetric(
@@ -293,7 +296,7 @@ class _StagingDesignScreenState extends State<StagingDesignScreen> {
                             ),
                             child: CustomImageview(
                               imagePath:
-                                  "assets/images/interior/interior_${_selectedTemplate + 1}.jpg",
+                                  "assets/images/smart_staging/smart_staging${_selectedTemplate + 1}.png",
                               width: double.infinity,
                               height: r.hp(context, 330),
                               fit: BoxFit.cover,
@@ -352,6 +355,7 @@ class _StagingDesignScreenState extends State<StagingDesignScreen> {
                   onFilePicked: (file) => setState(() {
                     picked = file;
                     _selectedTemplate = -1;
+                    stagingSelectedTemplate = -1;
                   }),
                 ),
                 child: Container(
@@ -471,6 +475,7 @@ class _StagingDesignScreenState extends State<StagingDesignScreen> {
           return GestureDetector(
             onTap: () => setState(() {
               _selectedTemplate = i;
+              stagingSelectedTemplate = i;
               picked = null;
             }),
             child: AnimatedContainer(
@@ -498,7 +503,7 @@ class _StagingDesignScreenState extends State<StagingDesignScreen> {
                   children: [
                     // Gradient background mimicking photo
                     CustomImageview(
-                      imagePath: "assets/images/interior/interior_${i + 1}.jpg",
+                      imagePath: "assets/images/smart_staging/smart_staging${i + 1}.png",
                     ),
                     if (selected)
                       Positioned(

@@ -563,6 +563,8 @@
 //     return sub?.isActive ?? false;
 //   }
 // }
+import 'package:in_app_review/in_app_review.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ai_interior/features/setting/presentation/contact_screen.dart';
 import 'package:ai_interior/features/setting/presentation/language_screen.dart';
@@ -715,7 +717,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         color: const Color(0xFF1A1A1A),
                       ),
                       label: l10n.shareApp,
-                      onTap: () {},
+                      onTap: () {
+                        final box = context.findRenderObject() as RenderBox?;
+                        final origin = box != null
+                            ? box.localToGlobal(Offset.zero) & box.size
+                            : const Rect.fromLTWH(0, 0, 100, 100);
+                        Share.share(
+                          'Transform and redesign your space with AI Interior Design! Download now: https://apps.apple.com/app/ai-interior-design',
+                          subject: 'AI Interior Design',
+                          sharePositionOrigin: origin,
+                        );
+                      },
                     ),
                     _SettingsItem(
                       icon: Icon(
@@ -724,7 +736,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         color: const Color(0xFF1A1A1A),
                       ),
                       label: l10n.rateUs,
-                      onTap: () {},
+                      onTap: () async {
+                        final InAppReview inAppReview = InAppReview.instance;
+                        if (await inAppReview.isAvailable()) {
+                          await inAppReview.requestReview();
+                        } else {
+                          await inAppReview.openStoreListing();
+                        }
+                      },
                     ),
                     _SettingsItem(
                       icon: Icon(
@@ -795,19 +814,7 @@ class _PremiumBanner extends StatelessWidget {
   const _PremiumBanner({this.onReturn});
 
   void openSubscriptionScreen(BuildContext context) async {
-    final nextIndex = SubscriptionScreenManager().getNextIndex();
-
-    final screens = [
-      SubscriptionScreen(),
-      SubscriptionScreenTwo(),
-      SubscriptionScreenThree(),
-    ];
-
-    await Navigator.push(
-      context,
-      CupertinoPageRoute(builder: (_) => screens[nextIndex]),
-    );
-
+    await SubscriptionScreenManager.openSubscriptionScreen(context);
     onReturn?.call();
   }
 

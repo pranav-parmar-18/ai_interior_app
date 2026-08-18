@@ -1,4 +1,6 @@
 import '../../credit/presentataion/credit_screen.dart';
+import '../../../services/subscription_manager.dart';
+import '../../../services/user_credit_service.dart';
 import 'dart:io';
 
 import 'package:ai_interior/features/replace/presentation/replace_edit_screen.dart';
@@ -130,8 +132,8 @@ class _ReplaceScreenState extends State<ReplaceScreen> {
           ),
           // Coin badge
           GestureDetector(
-            onTap: () {
-              Navigator.of(context).pushNamed(CreditsScreen.routeName);
+            onTap: () async {
+              await SubscriptionScreenManager.openCreditOrSubscriptionScreen(context);
             },
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: r.wp(context, 10), vertical: r.hp(context, 5)),
@@ -280,7 +282,7 @@ class _ReplaceScreenState extends State<ReplaceScreen> {
                             ),
                             child: CustomImageview(
                               imagePath:
-                                  "assets/images/interior/interior_${_selectedTemplate + 1}.jpg",
+                                  "assets/images/replace/replace${_selectedTemplate + 1}.png",
                               width: double.infinity,
                               height: r.hp(context, 330),
                               fit: BoxFit.cover,
@@ -486,7 +488,7 @@ class _ReplaceScreenState extends State<ReplaceScreen> {
                   children: [
                     // Gradient background mimicking photo
                     CustomImageview(
-                      imagePath: "assets/images/interior/interior_${i + 1}.jpg",
+                      imagePath: "assets/images/replace/replace${i + 1}.png",
                     ),
                     if (selected)
                       Positioned(

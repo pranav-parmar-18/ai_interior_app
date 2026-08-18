@@ -25,8 +25,8 @@ android {
         applicationId = "com.app.interiordesignainest"
         minSdk = 26
         targetSdk = 35
-        versionCode = 9
-        versionName = "9.1.0"
+        versionCode = 13
+        versionName = "13.1.0"
     }
 
     buildTypes {

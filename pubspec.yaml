@@ -122,6 +122,8 @@ flutter:
     - assets/images/
     - assets/images/interior/
     - assets/images/exterior/
+    - assets/images/replace/
+    - assets/images/smart_staging/
     - assets/gifs/
     - assets/videos/
   #   - images/a_dot_ham.jpeg

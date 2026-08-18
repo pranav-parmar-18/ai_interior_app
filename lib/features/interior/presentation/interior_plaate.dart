@@ -248,19 +248,14 @@ class _InteriorColorPaletteScreenState
 
   bool? isSubscribed = false;
 
-  void openSubscriptionScreen(BuildContext context) {
-    final nextIndex = SubscriptionScreenManager().getNextIndex();
-
-    final screens = [
-      SubscriptionScreen(),
-      SubscriptionScreenTwo(),
-      SubscriptionScreenThree(),
-    ];
-
-    Navigator.push(
-      context,
-      CupertinoPageRoute(builder: (_) => screens[nextIndex]),
-    );
+  Future<bool> openSubscriptionScreen(BuildContext context) async {
+    final subscribed = await SubscriptionScreenManager.openSubscriptionScreen(context);
+    if (mounted) {
+      setState(() {
+        isSubscribed = subscribed;
+      });
+    }
+    return subscribed;
   }
 
   Future<bool> isSubscriptionActive() async {
@@ -669,27 +664,30 @@ class _InteriorColorPaletteScreenState
             showSnackError(context, 'Please select a color palette');
             return;
           }
-          if (isSubscribed == true) {
-            final imageFile = await assetToFile(
-              'assets/images/interior/interior_home.png',
-            );
-            final prefs = await SharedPreferences.getInstance();
-            final userId = prefs.getString('user_id') ?? '0';
-
-            _interiorDeignCreateBloc.add(
-              InteriorDeignCreateDataEvent(
-                login: {
-                  "user_id": int.tryParse(userId) ?? 0,
-                  "colors": _selectedPalette?.toLowerCase(),
-                  "design_asthetic": intAshType,
-                  "space_type": intSpaceType,
-                },
-                image: picked != null ? picked ?? File("") : imageFile,
-              ),
-            );
-          } else {
-            openSubscriptionScreen(context);
+          bool active = await isSubscriptionActive();
+          if (!active) {
+            final purchased = await openSubscriptionScreen(context);
+            if (!purchased) {
+              return;
+            }
           }
+          final imageFile = await assetToFile(
+            'assets/images/interior/interior_home.png',
+          );
+          final prefs = await SharedPreferences.getInstance();
+          final userId = prefs.getString('user_id') ?? '0';
+
+          _interiorDeignCreateBloc.add(
+            InteriorDeignCreateDataEvent(
+              login: {
+                "user_id": int.tryParse(userId) ?? 0,
+                "colors": _selectedPalette?.toLowerCase(),
+                "design_asthetic": intAshType,
+                "space_type": intSpaceType,
+              },
+              image: picked != null ? picked ?? File("") : imageFile,
+            ),
+          );
         },
         child: Container(
           width: double.infinity,

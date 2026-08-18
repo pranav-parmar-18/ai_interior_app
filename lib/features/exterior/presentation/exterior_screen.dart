@@ -1,4 +1,6 @@
 import '../../credit/presentataion/credit_screen.dart';
+import '../../../services/subscription_manager.dart';
+import '../../../services/user_credit_service.dart';
 import 'dart:io';
 
 import 'package:ai_interior/features/snap_trip/presentation/snap_trip_screen.dart';
@@ -14,6 +16,7 @@ import 'exterior_list_screen.dart';
 
 import 'package:image_picker/image_picker.dart';
 File? extpicked;
+int extSelectedTemplate = -1;
 
 class ExteriorDesignScreen extends StatefulWidget {
   const ExteriorDesignScreen({super.key});
@@ -117,8 +120,8 @@ class _ExteriorDesignScreenState extends State<ExteriorDesignScreen> {
           ),
           // Coin badge
           GestureDetector(
-            onTap: () {
-              Navigator.of(context).pushNamed(CreditsScreen.routeName);
+            onTap: () async {
+              await SubscriptionScreenManager.openCreditOrSubscriptionScreen(context);
             },
             child: Container(
               padding: EdgeInsets.symmetric(
@@ -290,7 +293,7 @@ class _ExteriorDesignScreenState extends State<ExteriorDesignScreen> {
                             ),
                             child: CustomImageview(
                               imagePath:
-                                  "assets/images/interior/interior_${_selectedTemplate + 1}.jpg",
+                                  "assets/images/exterior/exterior_${_selectedTemplate + 1}.png",
                               width: double.infinity,
                               height: uploadImageHeight,
                               fit: BoxFit.cover,
@@ -350,6 +353,7 @@ class _ExteriorDesignScreenState extends State<ExteriorDesignScreen> {
                   onFilePicked: (file) => setState(() {
                     extpicked = file;
                     _selectedTemplate = -1;
+                    extSelectedTemplate = -1;
                   }),
                 ),
                 child: Container(
@@ -446,6 +450,7 @@ class _ExteriorDesignScreenState extends State<ExteriorDesignScreen> {
           return GestureDetector(
             onTap: () => setState(() {
               _selectedTemplate = i;
+              extSelectedTemplate = i;
               extpicked = null;
             }),
             child: AnimatedContainer(
@@ -473,7 +478,7 @@ class _ExteriorDesignScreenState extends State<ExteriorDesignScreen> {
                   children: [
                     // Gradient background mimicking photo
                     CustomImageview(
-                      imagePath: "assets/images/interior/interior_${i + 1}.jpg",
+                      imagePath: "assets/images/exterior/exterior_${i + 1}.png",
                     ),
                     if (selected)
                       Positioned(

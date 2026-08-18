@@ -564,6 +564,57 @@ class _PhotoSection extends StatelessWidget {
                   ),
                 ),
           ),
+
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: r.hp(context, 15),
+            child: Center(
+              child: Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: r.wp(context, 10),
+                  vertical: r.hp(context, 5),
+                ),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(r.wp(context, 50)),
+                  gradient: const LinearGradient(
+                    colors: [
+                      Color.fromRGBO(230, 203, 168, 1),
+                      Color.fromRGBO(167, 196, 188, 1),
+                    ],
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      AppLocalizations.of(context)?.enhance ?? "Enhance",
+                      style: TextStyle(
+                        fontSize: r.sp(context, 16),
+                        fontWeight: FontWeight.w500,
+                        color: const Color.fromRGBO(46, 46, 46, 1),
+                      ),
+                    ),
+                    r.horizontalSpace(context, 3),
+                    CustomImageview(
+                      imagePath: "assets/images/credit.png",
+                      height: r.wp(context, 25),
+                      width: r.wp(context, 25),
+                    ),
+                    r.horizontalSpace(context, 3),
+                    Text(
+                      "50",
+                      style: TextStyle(
+                        fontSize: r.sp(context, 16),
+                        fontWeight: FontWeight.w500,
+                        color: const Color.fromRGBO(46, 46, 46, 1),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
           Positioned(
             top: 0,
             left: 0,

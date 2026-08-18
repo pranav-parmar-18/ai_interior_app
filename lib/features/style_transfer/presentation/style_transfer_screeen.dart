@@ -1,4 +1,6 @@
 import '../../credit/presentataion/credit_screen.dart';
+import '../../../services/subscription_manager.dart';
+import '../../../services/user_credit_service.dart';
 import 'dart:io';
 
 import 'package:ai_interior/bloc/create_style_transfer/create_style_transfer_bloc.dart';
@@ -48,19 +50,14 @@ class _StyleTransferScreenState extends State<StyleTransferScreen> {
     isSubscriptionActive();
   }
 
-  void openSubscriptionScreen(BuildContext context) {
-    final nextIndex = SubscriptionScreenManager().getNextIndex();
-
-    final screens = [
-      SubscriptionScreen(),
-      SubscriptionScreenTwo(),
-      SubscriptionScreenThree(),
-    ];
-
-    Navigator.push(
-      context,
-      CupertinoPageRoute(builder: (_) => screens[nextIndex]),
-    );
+  Future<bool> openSubscriptionScreen(BuildContext context) async {
+    final subscribed = await SubscriptionScreenManager.openSubscriptionScreen(context);
+    if (mounted) {
+      setState(() {
+        isSubscribed = subscribed;
+      });
+    }
+    return subscribed;
   }
 
   Future<bool> isSubscriptionActive() async {
@@ -419,8 +416,8 @@ class _StyleTransferScreenState extends State<StyleTransferScreen> {
           ),
           // Coin badge
           GestureDetector(
-            onTap: () {
-              Navigator.of(context).pushNamed(CreditsScreen.routeName);
+            onTap: () async {
+              await SubscriptionScreenManager.openCreditOrSubscriptionScreen(context);
             },
             child: Container(
               padding: EdgeInsets.symmetric(
@@ -857,62 +854,66 @@ class _StyleTransferScreenState extends State<StyleTransferScreen> {
       padding: EdgeInsets.symmetric(horizontal: r.wp(context, 20)),
       child: GestureDetector(
         onTap: () async {
-          if (isSubscribed == true) {
-            File? roomFile = picked;
-            if (roomFile == null && _selectedTemplate >= 0) {
-              final assetPath =
-                  "assets/images/interior/interior_${_selectedTemplate + 1}.jpg";
-              try {
-                final byteData = await rootBundle.load(assetPath);
-                final directory = await getTemporaryDirectory();
-                final file = File("${directory.path}/temp_template_room.jpg");
-                await file.writeAsBytes(
-                  byteData.buffer.asUint8List(
-                    byteData.offsetInBytes,
-                    byteData.lengthInBytes,
-                  ),
-                );
-                roomFile = file;
-              } catch (e) {
-                showSnackError(context, "Error loading template image: $e");
-                return;
-              }
-            }
-
-            if (roomFile == null) {
-              showSnackError(
-                context,
-                "Please upload a photo of your room or choose a template",
-              );
+          bool active = await isSubscriptionActive();
+          if (!active) {
+            final purchased = await openSubscriptionScreen(context);
+            if (!purchased) {
               return;
             }
-            if (refImage == null) {
-              showSnackError(context, "Please upload a style reference");
-              return;
-            }
-            final prefs = await SharedPreferences.getInstance();
-            final userId = prefs.getString('user_id') ?? '0';
-
-            final selectedIdx = _selectedTemplate >= 0 ? _selectedTemplate : 0;
-            final colorVal =
-                _templateColors[selectedIdx % _templateColors.length];
-            final spaceTypeVal = _getSpaceType(selectedIdx);
-
-            _createStyleTransferBloc.add(
-              CreateStyleTransferDataEvent(
-                login: {
-                  "user_id": userId,
-                  "colors": colorVal,
-                  "design_asthetic": "Modern",
-                  "space_type": spaceTypeVal,
-                },
-                image: roomFile,
-                refImage: refImage!,
-              ),
-            );
-          } else {
-            openSubscriptionScreen(context);
           }
+
+          File? roomFile = picked;
+          if (roomFile == null && _selectedTemplate >= 0) {
+            final assetPath =
+                "assets/images/interior/interior_${_selectedTemplate + 1}.jpg";
+            try {
+              final byteData = await rootBundle.load(assetPath);
+              final directory = await getTemporaryDirectory();
+              final file = File("${directory.path}/temp_template_room.jpg");
+              await file.writeAsBytes(
+                byteData.buffer.asUint8List(
+                  byteData.offsetInBytes,
+                  byteData.lengthInBytes,
+                ),
+              );
+              roomFile = file;
+            } catch (e) {
+              showSnackError(context, "Error loading template image: $e");
+              return;
+            }
+          }
+
+          if (roomFile == null) {
+            showSnackError(
+              context,
+              "Please upload a photo of your room or choose a template",
+            );
+            return;
+          }
+          if (refImage == null) {
+            showSnackError(context, "Please upload a style reference");
+            return;
+          }
+          final prefs = await SharedPreferences.getInstance();
+          final userId = prefs.getString('user_id') ?? '0';
+
+          final selectedIdx = _selectedTemplate >= 0 ? _selectedTemplate : 0;
+          final colorVal =
+              _templateColors[selectedIdx % _templateColors.length];
+          final spaceTypeVal = _getSpaceType(selectedIdx);
+
+          _createStyleTransferBloc.add(
+            CreateStyleTransferDataEvent(
+              login: {
+                "user_id": userId,
+                "colors": colorVal,
+                "design_asthetic": "Modern",
+                "space_type": spaceTypeVal,
+              },
+              image: roomFile,
+              refImage: refImage!,
+            ),
+          );
         },
         child: Container(
           width: double.infinity,

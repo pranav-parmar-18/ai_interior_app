@@ -42,6 +42,7 @@ class _ReplaceDescribeVisionScreenState
   }
   final SmartReplaceCreateBloc _smartReplaceCreateBloc =
       SmartReplaceCreateBloc();
+  bool? isSubscribed = false;
   final TextEditingController _controller = TextEditingController(
     text: 'Transform my living room into a cozy aesthetic.',
   );
@@ -53,21 +54,14 @@ class _ReplaceDescribeVisionScreenState
     isSubscriptionActive();
   }
 
-  bool? isSubscribed = false;
-
-  void openSubscriptionScreen(BuildContext context) {
-    final nextIndex = SubscriptionScreenManager().getNextIndex();
-
-    final screens = [
-      SubscriptionScreen(),
-      SubscriptionScreenTwo(),
-      SubscriptionScreenThree(),
-    ];
-
-    Navigator.push(
-      context,
-      CupertinoPageRoute(builder: (_) => screens[nextIndex]),
-    );
+  Future<bool> openSubscriptionScreen(BuildContext context) async {
+    final subscribed = await SubscriptionScreenManager.openSubscriptionScreen(context);
+    if (mounted) {
+      setState(() {
+        isSubscribed = subscribed;
+      });
+    }
+    return subscribed;
   }
 
   Future<bool> isSubscriptionActive() async {
@@ -124,7 +118,7 @@ class _ReplaceDescribeVisionScreenState
             if (data["picked"] != null) {
               imageVal = data["picked"] is File ? (data["picked"] as File).path : data["picked"].toString();
             } else if (data["templateIndex"] != null && data["templateIndex"] is int && (data["templateIndex"] as int) >= 0) {
-              imageVal = "assets/images/interior/interior_${(data["templateIndex"] as int) + 1}.jpg";
+              imageVal = "assets/images/replace/replace${(data["templateIndex"] as int) + 1}.png";
             }
 
             final outputUrl = state.login?.data?.outputImage ?? "";
@@ -476,7 +470,7 @@ class _ReplaceDescribeVisionScreenState
     if (pickedFile != null) {
       size = await getImageSize(pickedFile);
     } else if (templateIndex != -1) {
-      size = await getAssetImageSize("assets/images/interior/interior_${templateIndex + 1}.jpg");
+      size = await getAssetImageSize("assets/images/replace/replace${templateIndex + 1}.png");
     } else {
       size = const ui.Size(512, 512);
     }
@@ -696,50 +690,54 @@ class _ReplaceDescribeVisionScreenState
             showSnackError(context, 'Please enter your vision description');
             return;
           }
-          if (isSubscribed == true) {
-            final prefs = await SharedPreferences.getInstance();
-            final userId = prefs.getString('user_id') ?? '0';
-
-            // Get original image file
-            File imageFile;
-            final picked = data["picked"];
-            final templateIndex = data["templateIndex"] as int? ?? -1;
-
-            if (picked != null) {
-              imageFile = picked is File ? picked : File(picked.toString());
-            } else if (templateIndex != -1) {
-              imageFile = await assetToFile("assets/images/interior/interior_${templateIndex + 1}.jpg");
-            } else {
-              showSnackError(context, 'No image found');
+          bool active = await isSubscriptionActive();
+          if (!active) {
+            final purchased = await openSubscriptionScreen(context);
+            if (!purchased) {
               return;
             }
-
-            // Generate mask file
-            final selectedObject = data["selectedObject"] as String? ?? "sofa";
-            final strokes = data["strokes"] as List<BrushStroke>?;
-            final brushSize = data["brushSize"] as double? ?? 0.5;
-
-            final maskFile = await generateMaskFile(
-              pickedFile: picked != null ? imageFile : null,
-              templateIndex: templateIndex,
-              selectedObject: selectedObject,
-              strokes: strokes,
-              brushSize: brushSize,
-            );
-
-            _smartReplaceCreateBloc.add(
-              SmartReplaceCreateDataEvent(
-                login: {
-                  "user_id": int.tryParse(userId) ?? 0,
-                  "prompt": _controller.text,
-                },
-                image: imageFile,
-                mask: maskFile,
-              ),
-            );
-          } else {
-            openSubscriptionScreen(context);
           }
+
+          final prefs = await SharedPreferences.getInstance();
+          final userId = prefs.getString('user_id') ?? '0';
+
+          // Get original image file
+          File imageFile;
+          final picked = data["picked"];
+          final templateIndex = data["templateIndex"] as int? ?? -1;
+
+          if (picked != null) {
+            imageFile = picked is File ? picked : File(picked.toString());
+          } else if (templateIndex != -1) {
+            imageFile = await assetToFile("assets/images/replace/replace${templateIndex + 1}.png");
+          } else {
+            showSnackError(context, 'No image found');
+            return;
+          }
+
+          // Generate mask file
+          final selectedObject = data["selectedObject"] as String? ?? "sofa";
+          final strokes = data["strokes"] as List<BrushStroke>?;
+          final brushSize = data["brushSize"] as double? ?? 0.5;
+
+          final maskFile = await generateMaskFile(
+            pickedFile: picked != null ? imageFile : null,
+            templateIndex: templateIndex,
+            selectedObject: selectedObject,
+            strokes: strokes,
+            brushSize: brushSize,
+          );
+
+          _smartReplaceCreateBloc.add(
+            SmartReplaceCreateDataEvent(
+              login: {
+                "user_id": int.tryParse(userId) ?? 0,
+                "prompt": _controller.text,
+              },
+              image: imageFile,
+              mask: maskFile,
+            ),
+          );
         },
         child: Container(
           width: double.infinity,

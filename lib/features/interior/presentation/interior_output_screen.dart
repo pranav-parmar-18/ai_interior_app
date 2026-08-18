@@ -771,7 +771,7 @@ class _PhotoSection extends StatelessWidget {
                             ),
                             SizedBox(width: r.wp(context, 3)),
                             Text(
-                              "1",
+                              "50",
                               style: TextStyle(
                                 fontSize: r.sp(context, 16),
                                 fontWeight: FontWeight.w500,

@@ -979,6 +979,8 @@ import 'package:in_app_purchase_android/in_app_purchase_android.dart';
 import 'package:ai_interior/utils/responsive_utils.dart';
 
 import '../../../models/add_credit_model_response.dart';
+import '../../../services/subscription_manager.dart';
+import '../../../services/user_credit_service.dart';
 import '../../home/presentation/home_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../main/presentaion/main_screen.dart';
@@ -1051,6 +1053,16 @@ class _CreditsScreenState extends State<CreditsScreen> {
   @override
   void initState() {
     super.initState();
+    _checkSubscriptionAndInit();
+  }
+
+  Future<void> _checkSubscriptionAndInit() async {
+    final isSub = await SubscriptionScreenManager.isUserSubscribed();
+    if (!isSub && mounted) {
+      Navigator.of(context).pop();
+      SubscriptionScreenManager.openSubscriptionScreen(context);
+      return;
+    }
     _initialize();
   }
 
@@ -1080,6 +1092,7 @@ class _CreditsScreenState extends State<CreditsScreen> {
       onError: (error) => debugPrint('Purchase Stream Error: $error'),
     );
 
+    UserCreditService.fetchLatestCredits();
     await _loadProducts();
   }
 
@@ -1227,7 +1240,7 @@ class _CreditsScreenState extends State<CreditsScreen> {
       backgroundColor: _bg,
       body: BlocConsumer<AddCreditsBloc, AddCreditsState>(
         bloc: _addCreditsBloc,
-        listener: (context, state) {
+        listener: (context, state) async {
           if (state is AddCreditsSuccessState) {
             if (mounted) setState(() => _isPurchasing = false);
             _addCreditResponse = state.categoryModalResponse;
@@ -1244,9 +1257,11 @@ class _CreditsScreenState extends State<CreditsScreen> {
             int currentCredits = int.tryParse(creditsNotifier.value) ?? 0;
             final newCredits = (currentCredits + addedCredits).toString();
             creditsNotifier.value = newCredits;
-            SharedPreferences.getInstance().then((prefs) {
-              prefs.setString('credits', newCredits);
-            });
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setString('credits', newCredits);
+
+            // Fetch actual server balance to ensure perfect sync
+            await UserCreditService.fetchLatestCredits();
 
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
@@ -1473,7 +1488,12 @@ class _Header extends StatelessWidget {
           Align(
             alignment: Alignment.centerRight,
             child: GestureDetector(
-              onTap: () => Navigator.maybePop(context),
+              onTap: () async {
+                await UserCreditService.fetchLatestCredits();
+                if (context.mounted) {
+                  Navigator.maybePop(context);
+                }
+              },
               child: Container(
                 width: r.adaptiveValue(context, mobile: 32, tablet: 42),
                 height: r.adaptiveValue(context, mobile: 32, tablet: 42),

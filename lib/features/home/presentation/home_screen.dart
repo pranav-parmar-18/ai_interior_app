@@ -13,6 +13,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:math' as math;
 
 import '../../../services/device_indentification_service.dart';
+import '../../../services/subscription_manager.dart';
+import '../../../services/user_credit_service.dart';
 import '../../credit/presentataion/credit_screen.dart';
 import '../../dream/presentation/dream_screen.dart';
 import '../../exterior/presentation/exterior_screen.dart';
@@ -112,6 +114,8 @@ class _HomeScreenState extends State<HomeScreen> {
         creditsNotifier.value = localCredits;
       }
     });
+
+    UserCreditService.fetchLatestCredits();
 
     getDeviceId().then((value) {
       _createUserBloc.add(
@@ -255,10 +259,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                   subtitle: subtitle,
                                   icon: icon,
                                   imagePath: imagePath,
-                                  onTap: () {
+                                  onTap: () async {
                                     final route = config["route"] as String?;
                                     if (route != null) {
-                                      Navigator.of(context).pushNamed(route);
+                                      await Navigator.of(context).pushNamed(route);
+                                      UserCreditService.fetchLatestCredits();
                                     } else {
                                       ScaffoldMessenger.of(context).showSnackBar(
                                         SnackBar(
@@ -353,8 +358,8 @@ class TopBarAppBar extends StatelessWidget implements PreferredSizeWidget {
       actions: [
         // Coin balance
         GestureDetector(
-          onTap: () {
-            Navigator.of(context).pushNamed(CreditsScreen.routeName);
+          onTap: () async {
+            await SubscriptionScreenManager.openCreditOrSubscriptionScreen(context);
           },
           child: Container(
             margin: EdgeInsets.only(right: r.wp(context, 8)),
@@ -400,8 +405,9 @@ class TopBarAppBar extends StatelessWidget implements PreferredSizeWidget {
 
         // Settings icon
         InkWell(
-          onTap: () {
-            Navigator.of(context).pushNamed(SettingsScreen.routeName);
+          onTap: () async {
+            await Navigator.of(context).pushNamed(SettingsScreen.routeName);
+            UserCreditService.fetchLatestCredits();
           },
           child: Padding(
             padding: EdgeInsets.only(right: r.wp(context, 16)),

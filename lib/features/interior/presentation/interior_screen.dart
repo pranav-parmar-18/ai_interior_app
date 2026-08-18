@@ -1,4 +1,6 @@
 import '../../credit/presentataion/credit_screen.dart';
+import '../../../services/subscription_manager.dart';
+import '../../../services/user_credit_service.dart';
 import 'dart:io';
 
 import 'package:ai_interior/features/snap_trip/presentation/snap_trip_screen.dart';
@@ -137,8 +139,8 @@ class _InteriorDesignScreenState extends State<InteriorDesignScreen> {
           ),
           // Coin badge
           GestureDetector(
-            onTap: () {
-              Navigator.of(context).pushNamed(CreditsScreen.routeName);
+            onTap: () async {
+              await SubscriptionScreenManager.openCreditOrSubscriptionScreen(context);
             },
             child: Container(
               padding: EdgeInsets.symmetric(

@@ -12,6 +12,8 @@ import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import '../../../bloc/get_all_exterior_designs/get_all_exterior_designs_bloc.dart';
 import '../../../models/get_all_interrior_design_model_response.dart';
 import '../../../widgets/custom_imageview.dart';
+import '../../../services/subscription_manager.dart';
+import '../../../services/user_credit_service.dart';
 import '../../credit/presentataion/credit_screen.dart';
 import '../../home/presentation/home_screen.dart';
 import '../../setting/presentation/setting_screens.dart';
@@ -252,8 +254,8 @@ class _DreamSpaceScreenState extends State<DreamSpaceScreen>
           ),
           // Coin badge
           GestureDetector(
-            onTap: () {
-              Navigator.of(context).pushNamed(CreditsScreen.routeName);
+            onTap: () async {
+              await SubscriptionScreenManager.openCreditOrSubscriptionScreen(context);
             },
             child: Container(
               padding: EdgeInsets.symmetric(
@@ -558,8 +560,8 @@ class _TopBar extends StatelessWidget {
           const Spacer(),
           // Coin balance
           GestureDetector(
-            onTap: () {
-              Navigator.of(context).pushNamed(CreditsScreen.routeName);
+            onTap: () async {
+              await SubscriptionScreenManager.openCreditOrSubscriptionScreen(context);
             },
             child: Container(
               padding: EdgeInsets.symmetric(

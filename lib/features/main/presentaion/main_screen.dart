@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../services/user_credit_service.dart';
 import '../../../theme/app_colors.dart';
 import '../../../widgets/custom_bottom_bar.dart';
 import '../../../widgets/custom_snackbar.dart';
@@ -52,6 +53,7 @@ class _MainScreenState extends State<MainScreen> {
   void _onTabChanged(BottomBarEnum type) {
     if (type == BottomBarEnum.Home) {
       selectedIndex.value = 0;
+      UserCreditService.fetchLatestCredits();
     } else if (type == BottomBarEnum.Explore) {
       selectedIndex.value = 1;
     } else if (type == BottomBarEnum.Recents) {

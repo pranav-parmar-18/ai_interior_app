@@ -7,6 +7,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ai_interior/utils/responsive_utils.dart';
 import '../../../widgets/custom_imageview.dart';
+import '../../../services/subscription_manager.dart';
+import '../../../services/user_credit_service.dart';
 import '../../credit/presentataion/credit_screen.dart';
 import '../../home/presentation/home_screen.dart';
 import '../../main/presentaion/main_screen.dart';
@@ -619,8 +621,8 @@ class _TopBar extends StatelessWidget {
           const Spacer(),
           // Coin balance
           GestureDetector(
-            onTap: () {
-              Navigator.of(context).pushNamed(CreditsScreen.routeName);
+            onTap: () async {
+              await SubscriptionScreenManager.openCreditOrSubscriptionScreen(context);
             },
             child: Container(
               padding: EdgeInsets.symmetric(

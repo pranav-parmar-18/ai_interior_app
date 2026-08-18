@@ -8,6 +8,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:ai_interior/utils/responsive_utils.dart';
 import '../../credit/presentataion/credit_screen.dart';
 import '../../home/presentation/home_screen.dart';
+import '../../../services/subscription_manager.dart';
+import '../../../services/user_credit_service.dart';
 import 'replace_describe_me.dart';
 
 import '../../../widgets/custom_imageview.dart';
@@ -332,8 +334,8 @@ class _ReplaceEditScreenState extends State<ReplaceEditScreen>
           ),
           // Coin badge
           GestureDetector(
-            onTap: () {
-              Navigator.of(context).pushNamed(CreditsScreen.routeName);
+            onTap: () async {
+              await SubscriptionScreenManager.openCreditOrSubscriptionScreen(context);
             },
             child: Container(
               padding: EdgeInsets.symmetric(
@@ -484,7 +486,7 @@ class _ReplaceEditScreenState extends State<ReplaceEditScreen>
                           )
                         : _passedTemplateIndex != -1
                             ? CustomImageview(
-                                imagePath: "assets/images/interior/interior_${_passedTemplateIndex + 1}.jpg",
+                                imagePath: "assets/images/replace/replace${_passedTemplateIndex + 1}.png",
                                 fit: BoxFit.cover,
                               )
                             : _picked != null
